@@ -4,7 +4,6 @@ object Main extends App {
 
   import scalaz.std.list._
   import scalaz.std.stream._
-  import Transducer.{run, into}
 
   val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
@@ -19,15 +18,15 @@ object Main extends App {
     println(s"result = ${result}")
   }
 
-//  {
-//    val isEven = filter((_: Int) % 2 == 0)
-//    val plusOne = map((_: Int).toString + "1")
-//    val splitChars = flatMap((_: String).toList)
-//    val first6 = take[Char](6)
-//
-//    val xform = isEven >> plusOne >> splitChars >> first6 // alternate syntax
-//    val result = into[Stream].run(data, xform) // shape may change
-//    println(s"result = ${result}")
-//    println(s"result.toList = ${result.toList}")
-//  }
+  {
+    val isEven = filter((_: Int) % 2 == 0)
+    val plusOne = map((_: Int).toString + "1")
+    val splitChars = flatMap((_: String).toList)
+    val first6 = take[Char](6)
+
+    val xform = isEven >> plusOne >> splitChars >> first6 // alternate syntax
+    val result = into[Stream].run(data, xform) // shape may change
+    println(s"result = ${result}")
+    println(s"result.toList = ${result.toList}")
+  }
 }
