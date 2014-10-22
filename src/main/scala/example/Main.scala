@@ -1,9 +1,8 @@
-package scala.transducer
+package example
+
+import scala.transducer._
 
 object Main extends App {
-
-  import scalaz.std.list._
-  import scalaz.std.stream._
 
   val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
@@ -25,7 +24,7 @@ object Main extends App {
     val first6 = take[Char](6)
 
     val xform = isEven >> plusOne >> splitChars >> first6 // alternate syntax
-    val result = into[Stream].run(data, xform) // shape may change
+  val result = into[Stream].run(data, xform) // shape may change
     println(s"result = ${result}")
     println(s"result.toList = ${result.toList}")
   }
