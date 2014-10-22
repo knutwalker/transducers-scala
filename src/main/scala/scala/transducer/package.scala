@@ -10,13 +10,22 @@ package object transducer extends TransducerOps {
 
   type Reducer[A, R] = (R, A, AtomicBoolean) => R
 
-  def run[A, B, F[_]](xs: F[A], xf: Transducer[B, A])(implicit F: AsSource[F], x: AsTarget[F]): F[B] =
-    into[F].run(xs, xf)
+  def run[A, B, F[_]](xf: Transducer[B, A])(xs: F[A])(implicit F: AsSource[F], x: AsTarget[F]): F[B] =
+    into[F].run(xf)(xs)
 
-  def into[F[_] : AsTarget] = new Into[F]
+  def into[A, B, F[_], G[_]](init: F[B])(xf: Transducer[B, A])(xs: G[A])(implicit F: AsTarget[F], F2: AsSource[G]): F[B] =
+    transduce(init, xs)(xf, (bs, b: B, _) => F.append(bs, b))
+
+  def into[F[_] : AsTarget]: Into[F] = new Into[F]
 
   final class Into[F[_]](implicit F: AsTarget[F]) {
-    def run[A, B, G[_] : AsSource](xs: G[A], xf: Transducer[B, A]): F[B] =
+    def run[A, B, G[_] : AsSource](xf: Transducer[B, A])(xs: G[A]): F[B] =
+      transduce(F.empty[B], xs)(xf, (bs, b: B, _) => F.append(bs, b))
+    def from[G[_]: AsSource]: IntoFrom[F, G] = new IntoFrom[F, G]
+  }
+
+  final class IntoFrom[F[_], G[_]](implicit F: AsTarget[F], G: AsSource[G]) {
+    def run[A, B](xf: Transducer[B, A])(xs: G[A]): F[B] =
       transduce(F.empty[B], xs)(xf, (bs, b: B, _) => F.append(bs, b))
   }
 

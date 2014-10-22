@@ -1,5 +1,6 @@
 package scala.transducer
 
+import scala.concurrent.Future
 import scala.language.{higherKinds, implicitConversions}
 
 // scalaz.ApplicativePlus
@@ -35,6 +36,14 @@ trait AsTargetInstances {
     def empty[A] = Set.empty
     def append[A](fa: Set[A], a: A) = fa + a
   }
+  implicit val iterator: AsTarget[Iterator] = new AsTarget[Iterator] {
+    def empty[A] = Iterator.empty
+    def append[A](fa: Iterator[A], a: A) = fa ++ List(a)
+  }
+  implicit val iterable: AsTarget[Iterable] = new AsTarget[Iterable] {
+    def empty[A] = Iterable.empty
+    def append[A](fa: Iterable[A], a: A) = fa ++ List(a)
+  }
 }
 
 trait AsSourceInstances {
@@ -56,6 +65,14 @@ trait AsSourceInstances {
   }
   implicit val set: AsSource[Set] = new AsSource[Set] {
     def foldLeft[A, B](fa: Set[A], z: B)(f: (B, A) => B) =
+      fa.foldLeft(z)(f)
+  }
+  implicit val iterator: AsSource[Iterator] = new AsSource[Iterator] {
+    def foldLeft[A, B](fa: Iterator[A], z: B)(f: (B, A) => B) =
+      fa.foldLeft(z)(f)
+  }
+  implicit val iterable: AsSource[Iterable] = new AsSource[Iterable] {
+    def foldLeft[A, B](fa: Iterable[A], z: B)(f: (B, A) => B) =
       fa.foldLeft(z)(f)
   }
 }
