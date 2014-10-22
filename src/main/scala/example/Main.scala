@@ -13,7 +13,8 @@ object Main extends App {
       .take(3)
       .drop(2)
 
-    val result = run(data, xform) // same shape as input
+    // run uses the same shape as input
+    val result = run(data, xform)
     println(s"result = ${result}")
   }
 
@@ -21,10 +22,13 @@ object Main extends App {
     val isEven = filter((_: Int) % 2 == 0)
     val plusOne = map((_: Int).toString + "1")
     val splitChars = flatMap((_: String).toList)
-    val first6 = take[Char](6)
+    val first3 = take[Char](3)
+    val lastOne = drop[Char](2)
 
-    val xform = isEven >> plusOne >> splitChars >> first6 // alternate syntax
-  val result = into[Stream].run(data, xform) // shape may change
+    // alternate syntax
+    val xform = isEven >> plusOne >> splitChars >> first3 >> lastOne
+    // into can change the shape
+    val result = into[Stream].run(data, xform)
     println(s"result = ${result}")
     println(s"result.toList = ${result.toList}")
   }
