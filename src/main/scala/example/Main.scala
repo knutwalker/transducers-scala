@@ -2,7 +2,6 @@ package example
 
 import scala.transducer._
 
-
 object DRMain extends App {
 
   val xform = map((_: Int).toString + "x")
@@ -13,7 +12,7 @@ object DRMain extends App {
     .buffer[List](5)
     .partition[Vector](_.count(_ == 'x').toString)
 
-//  val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+  //  val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
   val data = Iterator.from(1)
 
   val result = into[List].run(xform)(data)
@@ -65,13 +64,12 @@ object Main extends App {
 
     // into[F[_]].from[G[_]].run(t: Transducer[A, B])  ==>
     // G[B] => F[A]
-    val t: (Iterator[Int]) => List[String] = into[List].from[Iterator].run(xform) _
+    val t: (Iterator[Int]) ⇒ List[String] = into[List].from[Iterator].run(xform) _
 
     println(s"t(Iterator.from(0)) = ${t(Iterator.from(0))}")
     println(s"t2(Iterator(10, 8, 6, 5, 3, 1)) = ${t(Iterator(10, 8, 6, 5, 3, 1))}")
 
   }
-
 
   {
     val xform = filter((_: Int) % 2 == 0)
@@ -82,7 +80,7 @@ object Main extends App {
     val ints = Iterator.from(0)
 
     // with drop/take in place, you can use infinite collections
-    val result = into(List("a", "b", "c"))(xform)(ints)
+    val result = addto(List("a", "b", "c"))(xform)(ints)
     println(s"using custom initial value = $result")
   }
 

@@ -2,7 +2,6 @@ package scala.transducer.internal
 
 import scala.reflect.ClassTag
 
-
 final class CappedEvictingQueue[A: ClassTag](capacity: Int) {
   private val backing = new Array[A](capacity)
   private var cursor = 0L

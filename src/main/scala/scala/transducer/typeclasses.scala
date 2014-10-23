@@ -1,6 +1,6 @@
 package scala.transducer
 
-import scala.language.{higherKinds, implicitConversions}
+import scala.language.{ higherKinds, implicitConversions }
 
 trait AsTarget[F[_]] {
   def empty[A]: F[A]
@@ -21,7 +21,6 @@ trait Sized[F[_]] {
 
   def nonEmpty(f: F[_]): Boolean = !isEmpty(f)
 }
-
 
 trait AsTargetInstances {
   implicit val list: AsTarget[List] = new AsTarget[List] {
@@ -134,8 +133,14 @@ trait SizedInstances {
   }
 }
 
-object AsTarget extends AsTargetInstances
+object AsTarget extends AsTargetInstances {
+  @inline def apply[F[_]](implicit F: AsTarget[F]): AsTarget[F] = F
+}
 
-object AsSource extends AsSourceInstances
+object AsSource extends AsSourceInstances {
+  @inline def apply[F[_]](implicit F: AsSource[F]): AsSource[F] = F
+}
 
-object Sized extends SizedInstances
+object Sized extends SizedInstances {
+  @inline def apply[F[_]](implicit F: Sized[F]): Sized[F] = F
+}
