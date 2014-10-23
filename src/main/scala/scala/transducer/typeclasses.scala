@@ -1,81 +1,141 @@
 package scala.transducer
 
-import scala.concurrent.Future
 import scala.language.{higherKinds, implicitConversions}
 
-// scalaz.ApplicativePlus
 trait AsTarget[F[_]] {
   def empty[A]: F[A]
+
   def append[A](fa: F[A], a: A): F[A]
 }
 
-// scalaz.Foldable
 trait AsSource[F[_]] {
-  def foldLeft[A, B](fa: F[A], z: B)(f: (B, A) => B): B
+  def hasNext[A](fa: F[A]): Boolean
+
+  def produceNext[A](fa: F[A]): (A, F[A])
+}
+
+trait Sized[F[_]] {
+  def size(f: F[_]): Int
+
+  def isEmpty(f: F[_]): Boolean = size(f) == 0
+
+  def nonEmpty(f: F[_]): Boolean = !isEmpty(f)
 }
 
 
 trait AsTargetInstances {
   implicit val list: AsTarget[List] = new AsTarget[List] {
     def empty[A] = Nil
+
     def append[A](fa: List[A], a: A) = fa :+ a
   }
   implicit val vector: AsTarget[Vector] = new AsTarget[Vector] {
     def empty[A] = Vector.empty
+
     def append[A](fa: Vector[A], a: A) = fa :+ a
   }
   implicit val stream: AsTarget[Stream] = new AsTarget[Stream] {
     def empty[A] = Stream.empty
+
     def append[A](fa: Stream[A], a: A) = fa :+ a
   }
   implicit val option: AsTarget[Option] = new AsTarget[Option] {
     def empty[A] = None
+
     def append[A](fa: Option[A], a: A) = fa orElse Some(a)
   }
   implicit val set: AsTarget[Set] = new AsTarget[Set] {
     def empty[A] = Set.empty
+
     def append[A](fa: Set[A], a: A) = fa + a
   }
   implicit val iterator: AsTarget[Iterator] = new AsTarget[Iterator] {
     def empty[A] = Iterator.empty
+
     def append[A](fa: Iterator[A], a: A) = fa ++ List(a)
   }
   implicit val iterable: AsTarget[Iterable] = new AsTarget[Iterable] {
     def empty[A] = Iterable.empty
+
     def append[A](fa: Iterable[A], a: A) = fa ++ List(a)
   }
 }
 
 trait AsSourceInstances {
   implicit val list: AsSource[List] = new AsSource[List] {
-    def foldLeft[A, B](fa: List[A], z: B)(f: (B, A) => B) =
-      fa.foldLeft(z)(f)
+    def hasNext[A](fa: List[A]) = fa.nonEmpty
+
+    def produceNext[A](fa: List[A]) = fa.head -> fa.tail
   }
   implicit val vector: AsSource[Vector] = new AsSource[Vector] {
-    def foldLeft[A, B](fa: Vector[A], z: B)(f: (B, A) => B) =
-      fa.foldLeft(z)(f)
+    def hasNext[A](fa: Vector[A]) = fa.nonEmpty
+
+    def produceNext[A](fa: Vector[A]) = fa.head -> fa.tail
   }
   implicit val stream: AsSource[Stream] = new AsSource[Stream] {
-    def foldLeft[A, B](fa: Stream[A], z: B)(f: (B, A) => B) =
-      fa.foldLeft(z)(f)
+    def hasNext[A](fa: Stream[A]) = fa.nonEmpty
+
+    def produceNext[A](fa: Stream[A]) = fa.head -> fa.tail
   }
   implicit val option: AsSource[Option] = new AsSource[Option] {
-    def foldLeft[A, B](fa: Option[A], z: B)(f: (B, A) => B) =
-      fa.fold(z)(a => f(z, a))
+    def hasNext[A](fa: Option[A]) = fa.nonEmpty
+
+    def produceNext[A](fa: Option[A]) = fa.get -> None
   }
   implicit val set: AsSource[Set] = new AsSource[Set] {
-    def foldLeft[A, B](fa: Set[A], z: B)(f: (B, A) => B) =
-      fa.foldLeft(z)(f)
+    def hasNext[A](fa: Set[A]) = fa.nonEmpty
+
+    def produceNext[A](fa: Set[A]) = fa.head -> fa.tail
   }
   implicit val iterator: AsSource[Iterator] = new AsSource[Iterator] {
-    def foldLeft[A, B](fa: Iterator[A], z: B)(f: (B, A) => B) =
-      fa.foldLeft(z)(f)
+    def hasNext[A](fa: Iterator[A]) = fa.hasNext
+
+    def produceNext[A](fa: Iterator[A]) = {
+      val next = fa.next()
+      next -> fa
+    }
   }
   implicit val iterable: AsSource[Iterable] = new AsSource[Iterable] {
-    def foldLeft[A, B](fa: Iterable[A], z: B)(f: (B, A) => B) =
-      fa.foldLeft(z)(f)
+    def hasNext[A](fa: Iterable[A]) = fa.nonEmpty
+
+    def produceNext[A](fa: Iterable[A]) = fa.head -> fa.tail
+  }
+}
+
+trait SizedInstances {
+  implicit val list: Sized[List] = new Sized[List] {
+    def size(f: List[_]) = f.size
+
+    override def isEmpty(f: List[_]) = f.isEmpty
+  }
+  implicit val vector: Sized[Vector] = new Sized[Vector] {
+    def size(f: Vector[_]) = f.size
+  }
+  implicit val stream: Sized[Stream] = new Sized[Stream] {
+    def size(f: Stream[_]) = f.size
+
+    override def isEmpty(f: Stream[_]) = f.isEmpty
+  }
+  implicit val option: Sized[Option] = new Sized[Option] {
+    def size(f: Option[_]) = if (f.isEmpty) 0 else 1
+  }
+  implicit val set: Sized[Set] = new Sized[Set] {
+    def size(f: Set[_]) = f.size
+
+    override def isEmpty(f: Set[_]) = f.isEmpty
+  }
+  implicit val iterator: Sized[Iterator] = new Sized[Iterator] {
+    def size(f: Iterator[_]) = f.size
+
+    override def isEmpty(f: Iterator[_]) = f.isEmpty
+  }
+  implicit val iterable: Sized[Iterable] = new Sized[Iterable] {
+    def size(f: Iterable[_]) = f.size
   }
 }
 
 object AsTarget extends AsTargetInstances
+
 object AsSource extends AsSourceInstances
+
+object Sized extends SizedInstances
