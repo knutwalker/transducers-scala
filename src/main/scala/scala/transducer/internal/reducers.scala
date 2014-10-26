@@ -94,6 +94,16 @@ private[internal] final class TakeNthReducer[A, R](rf: ReduceFn[A, R], n: Long) 
   }
 }
 
+private[internal] final class TakeRightReducer[A: ClassTag, R](rf: ReduceFn[A, R], n: Int) extends ReduceFn[A, R] {
+  private val queue = new CappedEvictingQueue[A](n)
+
+  def apply(r: R, a: A, s: AtomicBoolean) =
+    { queue.add(a); r }
+
+  def apply(r: R) =
+    Reducers.reduce(rf, r, queue.elements, new AtomicBoolean)
+}
+
 private[internal] final class DropReducer[A, R](rf: ReduceFn[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var dropped = 0L
 

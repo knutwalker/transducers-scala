@@ -40,6 +40,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def takeWhile(f: A ⇒ Boolean): Transducer[A, B] =
     this >> transducer.takeWhile[A](f)
 
+  def takeRight(n: Int)(implicit ct: ClassTag[A]): Transducer[A, B] =
+    this >> transducer.takeRight[A](n)
+
   def takeNth(n: Long): Transducer[A, B] =
     this >> transducer.takeNth[A](n)
 

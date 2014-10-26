@@ -30,6 +30,9 @@ private[transducer] trait TransducerOps {
   def takeWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
     new TakeWhileTransducer[A](f)
 
+  def takeRight[A: ClassTag](n: Int): Transducer[A, A] =
+    new TakeRightTransducer[A](n)
+
   def takeNth[A](n: Long): Transducer[A, A] =
     new TakeNthTransducer(n)
 

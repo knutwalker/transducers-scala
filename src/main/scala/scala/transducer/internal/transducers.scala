@@ -44,6 +44,11 @@ private[transducer] final class TakeWhileTransducer[A](f: A ⇒ Boolean) extends
     new TakeWhileReducer[A, R](rf, f)
 }
 
+private[transducer] final class TakeRightTransducer[A: ClassTag](n: Int) extends Transducer[A, A] {
+  def apply[R](rf: Reducer[A, R]) =
+    new TakeRightReducer[A, R](rf, n)
+}
+
 private[transducer] final class TakeNthTransducer[A](n: Long) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new TakeNthReducer[A, R](rf, n)
