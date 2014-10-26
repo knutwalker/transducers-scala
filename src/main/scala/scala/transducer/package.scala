@@ -3,7 +3,7 @@ package scala
 import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.language.higherKinds
-import scala.transducer.internal.Reducer
+import scala.transducer.internal.Reducers
 
 package object transducer extends TransducerOps {
 
@@ -21,11 +21,11 @@ package object transducer extends TransducerOps {
 
   private[transducer] def transduceInit[G[_]: AsSource, A, F[_]: AsTarget, B](init: F[B], xf: Transducer[B, A], xs: G[A]): F[B] = {
     val F = AsTarget[F]
-    transduce(init, xs)(xf, Reducer[B, F[B]]((bs, b, _) ⇒ F.append(bs, b)))
+    transduce(init, xs)(xf, Reducers[B, F[B]]((bs, b, _) ⇒ F.append(bs, b)))
   }
 
   private def transduce[A, B, R, F[_]: AsSource](init: R, xs: F[A])(xf: Transducer[B, A], rf: Reducer[B, R]): R = {
     val xf1 = xf(rf)
-    Reducer.reduce(xf1, init, xs, new AtomicBoolean)
+    Reducers.reduce(xf1, init, xs, new AtomicBoolean)
   }
 }
