@@ -18,15 +18,14 @@ private[transducer] object Reducers {
     runReduce(f, identity[R], result, input, reduced)
 
   private def runReduce[A, R, F[_]](f: Reducer[A, R], g: (R ⇒ R), result: R, input: F[A], reduced: AtomicBoolean)(implicit F: AsSource[F]): R = {
-    @tailrec
-    def go(xs: F[A], r: R): R =
-      if (reduced.get() || !F.hasNext(xs)) g(r)
-      else {
-        val (head, tail) = F.produceNext(xs)
-        val res = f(r, head, reduced)
-        go(tail, res)
-      }
-    go(input, result)
+    var acc = result
+    var these = input
+    while (F.hasNext(these) && !reduced.get()) {
+      val (head, tail) = F.produceNext(these)
+      acc = f(acc, head, reduced)
+      these = tail
+    }
+    g(acc)
   }
 
   final class SimpleReducer[A, R](f: (R, A, AtomicBoolean) ⇒ R) extends Reducer[A, R] {
