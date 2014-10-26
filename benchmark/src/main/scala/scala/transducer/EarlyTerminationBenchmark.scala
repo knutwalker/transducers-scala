@@ -3,6 +3,7 @@ package scala.transducer
 import java.lang.{Iterable => JIterable}
 import java.util
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 import com.cognitect.transducers.Fns
 import org.openjdk.jmh.annotations._
@@ -18,7 +19,12 @@ import scala.collection.JavaConverters._
 @OutputTimeUnit(TimeUnit.SECONDS)
 class EarlyTerminationBenchmark {
 
-  import scala.transducer.EarlyTerminationBenchmark.{IntList, ScalaCollections, TransducerJava, TransducerScala}
+  import scala.transducer.EarlyTerminationBenchmark.{IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala}
+
+  @Benchmark
+  def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
+    bh.consume(f.f(ints.jxs))
+  }
 
   @Benchmark
   def scalaList(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
@@ -28,6 +34,11 @@ class EarlyTerminationBenchmark {
   @Benchmark
   def scalaListAsVector(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
     bh.consume(f.fAsVector(ints.xs))
+  }
+
+  @Benchmark
+  def scalaListAsView(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
+    bh.consume(f.fAsView(ints.xs))
   }
 
   @Benchmark
@@ -57,11 +68,24 @@ object EarlyTerminationBenchmark {
   }
 
   @State(Scope.Benchmark)
+  class JavaCollections {
+    val f: (util.List[Int]) => util.List[Int] =
+      xs => xs.stream()
+        .map[Int]((_: Int) + 1)
+        .map[Int]((_: Int) + 1)
+        .map[Int]((_: Int) + 1)
+        .limit(3)
+        .collect(Collectors.toList[Int])
+  }
+
+  @State(Scope.Benchmark)
   class ScalaCollections {
     val f: (List[Int]) => Vector[Int] =
       xs => xs.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
     val fAsVector: (List[Int]) => Vector[Int] =
       xs => xs.toVector.map(_ + 1).map(_ + 1).map(_ + 1).take(3)
+    val fAsView: (List[Int]) => Vector[Int] =
+      xs => xs.view.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
     val fAsStream: (List[Int]) => Vector[Int] =
       xs => xs.toStream.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
   }

@@ -3,6 +3,7 @@ package scala.transducer
 import java.lang.{Iterable => JIterable}
 import java.util
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 import com.cognitect.transducers.Fns
 import org.openjdk.jmh.annotations._
@@ -18,7 +19,12 @@ import scala.collection.JavaConverters._
 @OutputTimeUnit(TimeUnit.SECONDS)
 class SimpleBenchmark {
 
-  import scala.transducer.SimpleBenchmark.{IntList, ScalaCollections, TransducerJava, TransducerScala}
+  import scala.transducer.SimpleBenchmark.{IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala}
+
+  @Benchmark
+  def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
+    bh.consume(f.f(ints.jxs))
+  }
 
   @Benchmark
   def scalaList(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
@@ -50,6 +56,12 @@ object SimpleBenchmark {
   class IntList {
     val xs = (1 to 1e7.toInt).toList
     val jxs = xs.asJava
+  }
+
+  @State(Scope.Benchmark)
+  class JavaCollections {
+    val f: (util.List[Int]) => util.List[Int] =
+      xs => xs.stream().map[Int]((_: Int) + 1).collect(Collectors.toList[Int])
   }
 
   @State(Scope.Benchmark)
