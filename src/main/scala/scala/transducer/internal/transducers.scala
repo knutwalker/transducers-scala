@@ -69,6 +69,11 @@ private[transducer] final class DropRightTransducer[A: ClassTag](n: Int) extends
     new DropRightReducer[A, R](rf, n)
 }
 
+private[transducer] final class DropNthTransducer[A](n: Long) extends Transducer[A, A] {
+  def apply[R](rf: Reducer[A, R]) =
+    new DropNthReducer[A, R](rf, n)
+}
+
 private[transducer] final class DistinctTransducer[A]() extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new DistinctReducer[A, R](rf)

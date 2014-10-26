@@ -45,6 +45,9 @@ private[transducer] trait TransducerOps {
   def dropRight[A: ClassTag](n: Int): Transducer[A, A] =
     new DropRightTransducer[A](n)
 
+  def dropNth[A](n: Long): Transducer[A, A] =
+    new DropNthTransducer[A](n)
+
   def distinct[A]: Transducer[A, A] =
     new DistinctTransducer[A]
 

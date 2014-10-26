@@ -130,6 +130,17 @@ private[internal] final class DropWhileReducer[A, R](rf: ReduceFn[A, R], f: A â‡
   }
 }
 
+private[internal] final class DropNthReducer[A, R](rf: ReduceFn[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
+  private var nth = 0L
+
+  def apply(r: R, a: A, s: AtomicBoolean) = {
+    //    println(s"dropNth: a = [$a] nth = [$nth] r = [$r]")
+    val res = if (nth % n == 0) r else rf(r, a, s)
+    nth += 1
+    res
+  }
+}
+
 private[internal] final class DropRightReducer[A: ClassTag, R](rf: ReduceFn[A, R], n: Int) extends Reducers.Delegate[A, R](rf) {
   private val queue = new CappedEvictingQueue[A](n)
 

@@ -55,6 +55,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def dropRight(n: Int)(implicit ct: ClassTag[A]): Transducer[A, B] =
     this >> transducer.dropRight[A](n)
 
+  def dropNth(n: Long): Transducer[A, B] =
+    this >> transducer.dropNth[A](n)
+
   def distinct: Transducer[A, B] =
     this >> transducer.distinct[A]
 
