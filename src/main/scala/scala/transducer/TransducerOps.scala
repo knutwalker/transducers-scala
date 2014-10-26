@@ -18,6 +18,9 @@ private[transducer] trait TransducerOps {
   def collect[A, B](pf: PartialFunction[A, B]): Transducer[B, A] =
     new CollectTransducer[A, B](pf)
 
+  def foreach[A](f: A ⇒ Unit): Transducer[Unit, A] =
+    new ForeachTransducer[A](f)
+
   def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[B, A] =
     new FlatMapTransducer[A, B, F](f)
 

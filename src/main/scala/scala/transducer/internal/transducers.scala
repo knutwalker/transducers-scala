@@ -24,6 +24,11 @@ private[transducer] final class CollectTransducer[A, B](pf: PartialFunction[A, B
     new CollectReducer[A, B, R](rf, pf)
 }
 
+private[transducer] final class ForeachTransducer[A](f: A ⇒ Unit) extends Transducer[Unit, A] {
+  def apply[R](rf: Reducer[Unit, R]) =
+    new ForeachReducer[A, R](rf, f)
+}
+
 private[transducer] final class FlatMapTransducer[A, B, F[_]: AsSource](f: A ⇒ F[B]) extends Transducer[B, A] {
   def apply[R](rf: Reducer[B, R]) =
     new FlatMapReducer[A, B, R, F](rf, f)

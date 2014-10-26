@@ -28,6 +28,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def collect[C](pf: PartialFunction[A, C]): Transducer[C, B] =
     this >> transducer.collect(pf)
 
+  def foreach(f: A ⇒ Unit): Transducer[Unit, B] =
+    this >> transducer.foreach[A](f)
+
   def flatMap[C, F[_]: AsSource](f: A ⇒ F[C]): Transducer[C, B] =
     this >> transducer.flatMap[A, C, F](f)
 

@@ -37,6 +37,14 @@ private[internal] final class CollectReducer[A, B, R](rf: ReduceFn[B, R], pf: Pa
   }
 }
 
+private[internal] final class ForeachReducer[A, R](rf: ReduceFn[Unit, R], f: A ⇒ Unit) extends Reducers.Delegate[A, R](rf) {
+  def apply(r: R, a: A, s: AtomicBoolean) = {
+    //    println(s"foreach: a = [$a] r = [$r]")
+    f(a)
+    r
+  }
+}
+
 private[internal] final class FlatMapReducer[A, B, R, F[_]: AsSource](rf: ReduceFn[B, R], f: A ⇒ F[B]) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"flatMap: a = [$a] r = [$r]")
