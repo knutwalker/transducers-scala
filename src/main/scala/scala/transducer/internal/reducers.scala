@@ -124,7 +124,7 @@ private[internal] final class DropRightReducer[A: ClassTag, R](rf: ReduceFn[A, R
   }
 }
 
-private[internal] final class UniqueReducer[A, R](rf: ReduceFn[A, R]) extends Reducer.Delegate[A, R](rf) {
+private[internal] final class DistinctReducer[A, R](rf: ReduceFn[A, R]) extends Reducer.Delegate[A, R](rf) {
   private var previous: A = null.asInstanceOf[A]
 
   def apply(r: R, a: A, s: AtomicBoolean) = {

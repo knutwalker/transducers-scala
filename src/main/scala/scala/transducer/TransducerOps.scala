@@ -39,8 +39,8 @@ private[transducer] trait TransducerOps {
   def dropRight[A: ClassTag](n: Int): Transducer[A, A] =
     new DropRightTransducer[A](n)
 
-  def unique[A]: Transducer[A, A] =
-    new UniqueTransducer[A]
+  def distinct[A]: Transducer[A, A] =
+    new DistinctTransducer[A]
 
   def buffer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[F[A], A] =
     new BufferTransducer[A, F](n)

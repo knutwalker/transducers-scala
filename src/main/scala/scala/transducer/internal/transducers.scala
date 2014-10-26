@@ -59,9 +59,9 @@ private[transducer] final class DropRightTransducer[A: ClassTag](n: Int) extends
     new DropRightReducer[A, R](rf, n)
 }
 
-private[transducer] final class UniqueTransducer[A]() extends Transducer[A, A] {
+private[transducer] final class DistinctTransducer[A]() extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
-    new UniqueReducer[A, R](rf)
+    new DistinctReducer[A, R](rf)
 }
 
 private[transducer] final class BufferTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[F[A], A] {
