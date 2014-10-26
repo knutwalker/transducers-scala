@@ -64,40 +64,37 @@ trait AsSourceInstances {
   implicit val list: AsSource[List] = new AsSource[List] {
     def hasNext[A](fa: List[A]) = fa.nonEmpty
 
-    def produceNext[A](fa: List[A]) = fa.head -> fa.tail
+    def produceNext[A](fa: List[A]) = (fa.head, fa.tail)
   }
   implicit val vector: AsSource[Vector] = new AsSource[Vector] {
     def hasNext[A](fa: Vector[A]) = fa.nonEmpty
 
-    def produceNext[A](fa: Vector[A]) = fa.head -> fa.tail
+    def produceNext[A](fa: Vector[A]) = (fa.head, fa.tail)
   }
   implicit val stream: AsSource[Stream] = new AsSource[Stream] {
     def hasNext[A](fa: Stream[A]) = fa.nonEmpty
 
-    def produceNext[A](fa: Stream[A]) = fa.head -> fa.tail
+    def produceNext[A](fa: Stream[A]) = (fa.head, fa.tail)
   }
   implicit val option: AsSource[Option] = new AsSource[Option] {
     def hasNext[A](fa: Option[A]) = fa.nonEmpty
 
-    def produceNext[A](fa: Option[A]) = fa.get -> None
+    def produceNext[A](fa: Option[A]) = (fa.get, None)
   }
   implicit val set: AsSource[Set] = new AsSource[Set] {
     def hasNext[A](fa: Set[A]) = fa.nonEmpty
 
-    def produceNext[A](fa: Set[A]) = fa.head -> fa.tail
+    def produceNext[A](fa: Set[A]) = (fa.head, fa.tail)
   }
   implicit val iterator: AsSource[Iterator] = new AsSource[Iterator] {
     def hasNext[A](fa: Iterator[A]) = fa.hasNext
 
-    def produceNext[A](fa: Iterator[A]) = {
-      val next = fa.next()
-      next -> fa
-    }
+    def produceNext[A](fa: Iterator[A]) = (fa.next(), fa)
   }
   implicit val iterable: AsSource[Iterable] = new AsSource[Iterable] {
     def hasNext[A](fa: Iterable[A]) = fa.nonEmpty
 
-    def produceNext[A](fa: Iterable[A]) = fa.head -> fa.tail
+    def produceNext[A](fa: Iterable[A]) = (fa.head, fa.tail)
   }
 }
 
