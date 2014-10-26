@@ -1,5 +1,8 @@
 package scala.transducer
 
+import java.util.{ Iterator ⇒ JIterator }
+import java.util
+
 import scala.language.{ higherKinds, implicitConversions }
 
 trait AsTarget[F[_]] {
@@ -58,6 +61,10 @@ trait AsTargetInstances {
 
     def append[A](fa: Iterable[A], a: A) = fa ++ List(a)
   }
+  implicit val javaList: AsTarget[util.List] = new AsTarget[util.List] {
+    def empty[A] = new util.ArrayList[A]
+    def append[A](fa: util.List[A], a: A) = { fa.add(a); fa }
+  }
 }
 
 trait AsSourceInstances {
@@ -95,6 +102,11 @@ trait AsSourceInstances {
     def hasNext[A](fa: Iterable[A]) = fa.nonEmpty
 
     def produceNext[A](fa: Iterable[A]) = (fa.head, fa.tail)
+  }
+  implicit val javaIterator: AsSource[JIterator] = new AsSource[JIterator] {
+    def hasNext[A](fa: JIterator[A]) = fa.hasNext
+
+    def produceNext[A](fa: JIterator[A]) = (fa.next(), fa)
   }
 }
 

@@ -60,8 +60,8 @@ object SimpleBenchmark {
 
   @State(Scope.Benchmark)
   class TransducerScala {
-    val f: (List[Int]) => Vector[Int] =
-      into[Vector].from[List].run(map((_: Int) + 1)) _
+    val f: (List[Int]) => util.List[Int] =
+      into[util.List].from[List].run(map((_: Int) + 1)) _
   }
 
   @State(Scope.Benchmark)
