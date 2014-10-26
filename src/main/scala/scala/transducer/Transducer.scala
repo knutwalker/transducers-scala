@@ -9,12 +9,12 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def apply[R](rf: Reducer[A, R]): Reducer[B, R]
 
   def >>[C](right: Transducer[C, A]): Transducer[C, B] =
-    comp[C](right)
-
-  def comp[C](right: Transducer[C, A]): Transducer[C, B] =
     new Transducer[C, B] {
       def apply[R](rf: Reducer[C, R]) = left(right(rf))
     }
+
+  def andThen[C](right: Transducer[C, A]): Transducer[C, B] =
+    >>[C](right)
 
   def filter(f: A ⇒ Boolean): Transducer[A, B] =
     this >> transducer.filter[A](f)
