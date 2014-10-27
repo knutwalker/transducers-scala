@@ -2,7 +2,6 @@ package scala.transducer.internal
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import scala.annotation.tailrec
 import scala.language.higherKinds
 import scala.transducer.{ AsSource, Reducer }
 

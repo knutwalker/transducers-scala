@@ -4,30 +4,30 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.language.higherKinds
 import scala.reflect.ClassTag
-import scala.transducer.{ AsSource, AsTarget, Reducer ⇒ ReduceFn, Sized }
+import scala.transducer.{ AsSource, AsTarget, Reducer, Sized }
 
-private[internal] final class FilterReducer[A, R](rf: ReduceFn[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class FilterReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"filter: a = [$a] r = [$r]")
     if (f(a)) rf(r, a, s) else r
   }
 }
 
-private[internal] final class FilterNotReducer[A, R](rf: ReduceFn[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class FilterNotReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"filterNot: a = [$a] r = [$r]")
     if (!f(a)) rf(r, a, s) else r
   }
 }
 
-private[internal] final class MapReducer[B, A, R](rf: ReduceFn[B, R], f: A ⇒ B) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class MapReducer[B, A, R](rf: Reducer[B, R], f: A ⇒ B) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"map: a = [$a] r = [$r]")
     rf(r, f(a), s)
   }
 }
 
-private[internal] final class CollectReducer[A, B, R](rf: ReduceFn[B, R], pf: PartialFunction[A, B]) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class CollectReducer[A, B, R](rf: Reducer[B, R], pf: PartialFunction[A, B]) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"collect: a = [$a] r = [$r]")
     if (pf.isDefinedAt(a))
@@ -37,7 +37,7 @@ private[internal] final class CollectReducer[A, B, R](rf: ReduceFn[B, R], pf: Pa
   }
 }
 
-private[internal] final class ForeachReducer[A, R](rf: ReduceFn[Unit, R], f: A ⇒ Unit) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class ForeachReducer[A, R](rf: Reducer[Unit, R], f: A ⇒ Unit) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"foreach: a = [$a] r = [$r]")
     f(a)
@@ -45,14 +45,14 @@ private[internal] final class ForeachReducer[A, R](rf: ReduceFn[Unit, R], f: A �
   }
 }
 
-private[internal] final class FlatMapReducer[A, B, R, F[_]: AsSource](rf: ReduceFn[B, R], f: A ⇒ F[B]) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class FlatMapReducer[A, B, R, F[_]: AsSource](rf: Reducer[B, R], f: A ⇒ F[B]) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"flatMap: a = [$a] r = [$r]")
     Reducers.reduceStep(rf, r, f(a), s)
   }
 }
 
-private[internal] final class TakeReducer[A, R](rf: ReduceFn[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var taken = 1L
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -71,7 +71,7 @@ private[internal] final class TakeReducer[A, R](rf: ReduceFn[A, R], n: Long) ext
   }
 }
 
-private[internal] final class TakeWhileReducer[A, R](rf: ReduceFn[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class TakeWhileReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
     //    println(s"takeWhile: a = [$a] r = [$r]")
@@ -83,7 +83,7 @@ private[internal] final class TakeWhileReducer[A, R](rf: ReduceFn[A, R], f: A �
   }
 }
 
-private[internal] final class TakeNthReducer[A, R](rf: ReduceFn[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class TakeNthReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var nth = 0L
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -94,7 +94,7 @@ private[internal] final class TakeNthReducer[A, R](rf: ReduceFn[A, R], n: Long) 
   }
 }
 
-private[internal] final class TakeRightReducer[A: ClassTag, R](rf: ReduceFn[A, R], n: Int) extends ReduceFn[A, R] {
+private[internal] final class TakeRightReducer[A: ClassTag, R](rf: Reducer[A, R], n: Int) extends Reducer[A, R] {
   private val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: AtomicBoolean) =
@@ -104,7 +104,7 @@ private[internal] final class TakeRightReducer[A: ClassTag, R](rf: ReduceFn[A, R
     Reducers.reduce(rf, r, queue.elements, new AtomicBoolean)
 }
 
-private[internal] final class DropReducer[A, R](rf: ReduceFn[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var dropped = 0L
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -117,7 +117,7 @@ private[internal] final class DropReducer[A, R](rf: ReduceFn[A, R], n: Long) ext
   }
 }
 
-private[internal] final class DropWhileReducer[A, R](rf: ReduceFn[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class DropWhileReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
   private var drop = true
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -130,7 +130,7 @@ private[internal] final class DropWhileReducer[A, R](rf: ReduceFn[A, R], f: A �
   }
 }
 
-private[internal] final class DropNthReducer[A, R](rf: ReduceFn[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class DropNthReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var nth = 0L
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -141,7 +141,7 @@ private[internal] final class DropNthReducer[A, R](rf: ReduceFn[A, R], n: Long) 
   }
 }
 
-private[internal] final class DropRightReducer[A: ClassTag, R](rf: ReduceFn[A, R], n: Int) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class DropRightReducer[A: ClassTag, R](rf: Reducer[A, R], n: Int) extends Reducers.Delegate[A, R](rf) {
   private val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -153,7 +153,7 @@ private[internal] final class DropRightReducer[A: ClassTag, R](rf: ReduceFn[A, R
   }
 }
 
-private[internal] final class DistinctReducer[A, R](rf: ReduceFn[A, R]) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {
   private var previous: A = null.asInstanceOf[A]
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -168,7 +168,7 @@ private[internal] final class DistinctReducer[A, R](rf: ReduceFn[A, R]) extends 
   }
 }
 
-private[internal] final class BufferReducer[A, R, F[_]](rf: ReduceFn[F[A], R], n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends ReduceFn[A, R] {
+private[internal] final class BufferReducer[A, R, F[_]](rf: Reducer[F[A], R], n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Reducer[A, R] {
   private var buffer = F.empty[A]
 
   def apply(r: R, a: A, s: AtomicBoolean) = {
@@ -194,7 +194,7 @@ private[internal] final class BufferReducer[A, R, F[_]](rf: ReduceFn[F[A], R], n
   }
 }
 
-private[internal] final class PartitionReducer[A, B <: AnyRef, R, F[_]](rf: ReduceFn[F[A], R], f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends ReduceFn[A, R] {
+private[internal] final class PartitionReducer[A, B <: AnyRef, R, F[_]](rf: Reducer[F[A], R], f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Reducer[A, R] {
   private var buffer = F.empty[A]
   private val mark = new AnyRef
   private var previous = mark
