@@ -11,8 +11,8 @@ in many contexts and carry only the simple processing logic.
 clone this repo and run
 
 ```bash
-sbt publishLocal # for ivy-style repositories
-sbt publishM2    # for maven-style repositories
+./sbt publishLocal # for ivy-style repositories
+./sbt publishM2    # for maven-style repositories
 ```
 
 ## Using it
@@ -69,14 +69,6 @@ An important note is, that `Transducer[A, B]` is a rank-2 type to quantify `R` w
 needing to know about it. This makes transducers completly unaware of their input or output.
 
 
-## Acknowledgement
-
-This stuff is build on top of Rich Hickeys transducers for Clojure and Java.
-See [this talk](https://www.youtube.com/watch?v=6mTbuzafcII)
-and [this post](http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming) for more info.
-Also, there is a [Java implementation](https://github.com/cognitect-labs/transducers-java).
-
-
 ## Some other projects with partially similar traits
 
 Besides [Clojure](http://clojure.org/) and [transducers-java](https://github.com/cognitect-labs/transducers-java)
@@ -96,6 +88,17 @@ Paul Phillips'
 inlcudes collections, that are thouroughly non-strict and thus, achieve the same traits on terms of
 laziness and early termination. These are, however, regular collections where the operations are
 bound to the specific collection.
+
+
+## Acknowledgement
+
+This stuff is build on top of Rich Hickeys transducers for Clojure and Java.
+See [this talk](https://www.youtube.com/watch?v=6mTbuzafcII)
+and [this post](http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming) for more info.
+Also, there is a [Java implementation](https://github.com/cognitect-labs/transducers-java).
+
+The sbt launcher is provided by [Paul Phillips](https://github.com/paulp/sbt-extras).
+
 
 ## Stuff todo
 
