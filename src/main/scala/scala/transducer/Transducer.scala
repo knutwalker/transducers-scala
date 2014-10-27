@@ -66,8 +66,8 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def distinct: Transducer[A, B] =
     this >> transducer.distinct[B]
 
-  def buffer[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
-    this >> transducer.buffer[B, F](n)
+  def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+    this >> transducer.grouped[B, F](n)
 
   def partition[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducer.partition(f)

@@ -9,7 +9,7 @@ object DRMain extends App {
     .take(45)
     .flatMap(_.toList)
     .dropRight(2)
-    .buffer[List](5)
+    .grouped[List](5)
     .partition[Vector](_.count(_ == 'x').toString)
 
   //  val data = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)

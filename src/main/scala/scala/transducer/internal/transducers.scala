@@ -79,9 +79,9 @@ private[transducer] final class DistinctTransducer[A]() extends Transducer[A, A]
     new DistinctReducer[A, R](rf)
 }
 
-private[transducer] final class BufferTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
+private[transducer] final class GroupedTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
   def apply[R](rf: Reducer[F[A], R]) =
-    new BufferReducer[A, R, F](rf, n)
+    new GroupedReducer[A, R, F](rf, n)
 }
 
 private[transducer] final class PartitionTransducer[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {

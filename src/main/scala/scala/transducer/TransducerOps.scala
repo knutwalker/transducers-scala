@@ -51,8 +51,8 @@ private[transducer] trait TransducerOps {
   def distinct[A]: Transducer[A, A] =
     new DistinctTransducer[A]
 
-  def buffer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
-    new BufferTransducer[A, F](n)
+  def grouped[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
+    new GroupedTransducer[A, F](n)
 
   def partition[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new PartitionTransducer[A, B, F](f)

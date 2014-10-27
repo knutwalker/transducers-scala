@@ -168,7 +168,7 @@ private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends R
   }
 }
 
-private[internal] final class BufferReducer[A, R, F[_]](rf: Reducer[F[A], R], n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Reducer[A, R] {
+private[internal] final class GroupedReducer[A, R, F[_]](rf: Reducer[F[A], R], n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Reducer[A, R] {
   private var buffer = F.empty[A]
 
   def apply(r: R, a: A, s: AtomicBoolean) = {

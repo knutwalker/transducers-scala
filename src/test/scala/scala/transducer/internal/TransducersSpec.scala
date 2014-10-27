@@ -96,8 +96,8 @@ class TransducersSpec extends FunSuite {
     assert(transduce[String, String]("42", "42", "1337", "42", "1337") == List("42", "1337", "42", "1337"))
   }
 
-  test("the buffer transducer") {
-    implicit val tx = transducer.buffer[String, List](2)
+  test("the grouped transducer") {
+    implicit val tx = transducer.grouped[String, List](2)
     assert(transduce[String, List[String]]("42", "42", "42", "1337", "1337", "1337") ==
       List(List("42", "42"), List("42", "1337"), List("1337", "1337")))
   }
