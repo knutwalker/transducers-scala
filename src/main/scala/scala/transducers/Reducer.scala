@@ -17,7 +17,7 @@ package scala.transducers
 
 import scala.transducers.internal.Reduced
 
-trait Reducer[A, R] extends ((R, A, Reduced) ⇒ R) with (R ⇒ R) {
+trait Reducer[@specialized(Int, Long, Double, Char, Boolean) A, R] extends ((R, A, Reduced) ⇒ R) with (R ⇒ R) {
   def apply(r: R, a: A, s: Reduced): R
 
   def apply(r: R): R
