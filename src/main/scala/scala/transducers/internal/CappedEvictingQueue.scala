@@ -1,4 +1,4 @@
-package scala.transducer.internal
+package scala.transducers.internal
 
 import scala.collection.AbstractIterator
 import scala.reflect.ClassTag

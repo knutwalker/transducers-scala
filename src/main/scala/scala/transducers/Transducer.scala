@@ -1,4 +1,4 @@
-package scala.transducer
+package scala.transducers
 
 import scala.language.{ existentials, higherKinds }
 import scala.reflect.ClassTag
@@ -22,53 +22,53 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
     }
 
   def filter(f: B ⇒ Boolean): Transducer[A, B] =
-    this >> transducer.filter[B](f)
+    this >> transducers.filter[B](f)
 
   def filterNot(f: B ⇒ Boolean): Transducer[A, B] =
-    this >> transducer.filterNot[B](f)
+    this >> transducers.filterNot[B](f)
 
   def map[C](f: B ⇒ C): Transducer[A, C] =
-    this >> transducer.map[B, C](f)
+    this >> transducers.map[B, C](f)
 
   def collect[C](pf: PartialFunction[B, C]): Transducer[A, C] =
-    this >> transducer.collect[B, C](pf)
+    this >> transducers.collect[B, C](pf)
 
   def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
-    this >> transducer.foreach[B](f)
+    this >> transducers.foreach[B](f)
 
   def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
-    this >> transducer.flatMap[B, C, F](f)
+    this >> transducers.flatMap[B, C, F](f)
 
   def take(n: Long): Transducer[A, B] =
-    this >> transducer.take[B](n)
+    this >> transducers.take[B](n)
 
   def takeWhile(f: B ⇒ Boolean): Transducer[A, B] =
-    this >> transducer.takeWhile[B](f)
+    this >> transducers.takeWhile[B](f)
 
   def takeRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
-    this >> transducer.takeRight[B](n)
+    this >> transducers.takeRight[B](n)
 
   def takeNth(n: Long): Transducer[A, B] =
-    this >> transducer.takeNth[B](n)
+    this >> transducers.takeNth[B](n)
 
   def drop(n: Long): Transducer[A, B] =
-    this >> transducer.drop[B](n)
+    this >> transducers.drop[B](n)
 
   def dropWhile(f: B ⇒ Boolean): Transducer[A, B] =
-    this >> transducer.dropWhile[B](f)
+    this >> transducers.dropWhile[B](f)
 
   def dropRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
-    this >> transducer.dropRight[B](n)
+    this >> transducers.dropRight[B](n)
 
   def dropNth(n: Long): Transducer[A, B] =
-    this >> transducer.dropNth[B](n)
+    this >> transducers.dropNth[B](n)
 
   def distinct: Transducer[A, B] =
-    this >> transducer.distinct[B]
+    this >> transducers.distinct[B]
 
   def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
-    this >> transducer.grouped[B, F](n)
+    this >> transducers.grouped[B, F](n)
 
   def partition[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
-    this >> transducer.partition(f)
+    this >> transducers.partition(f)
 }

@@ -1,4 +1,4 @@
-package scala.transducer
+package scala.transducers
 
 import java.lang.{Iterable => JIterable}
 import java.util
@@ -19,7 +19,7 @@ import scala.collection.JavaConverters._
 @OutputTimeUnit(TimeUnit.SECONDS)
 class EarlyTerminationBenchmark {
 
-  import scala.transducer.EarlyTerminationBenchmark.{IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala}
+  import scala.transducers.EarlyTerminationBenchmark.{IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala}
 
   @Benchmark
   def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
@@ -59,7 +59,7 @@ class EarlyTerminationBenchmark {
 
 object EarlyTerminationBenchmark {
 
-  import scala.transducer.JTransducersConversions._
+  import scala.transducers.JTransducersConversions._
 
   @State(Scope.Benchmark)
   class IntList {
@@ -93,7 +93,7 @@ object EarlyTerminationBenchmark {
   @State(Scope.Benchmark)
   class TransducerScala {
     val f: (List[Int]) => util.List[Int] =
-      into[util.List].from[List].run(map((_: Int) + 1).map(_ + 1).map(_ + 1).take(3)) _
+      into[util.List].from[List].run(map((_: Int) + 1).map(_ + 1).map(_ + 1).take(3))
   }
 
   @State(Scope.Benchmark)

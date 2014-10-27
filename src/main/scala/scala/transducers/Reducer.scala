@@ -1,6 +1,6 @@
-package scala.transducer
+package scala.transducers
 
-import scala.transducer.internal.Reduced
+import scala.transducers.internal.Reduced
 
 trait Reducer[A, R] extends ((R, A, Reduced) ⇒ R) with (R ⇒ R) {
   def apply(r: R, a: A, s: Reduced): R

@@ -1,4 +1,4 @@
-package scala.transducer
+package scala.transducers
 
 import scala.language.higherKinds
 

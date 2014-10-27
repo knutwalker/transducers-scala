@@ -1,4 +1,4 @@
-package scala.transducer.internal
+package scala.transducers.internal
 
 import java.util.concurrent.atomic.AtomicBoolean
 

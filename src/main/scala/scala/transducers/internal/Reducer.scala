@@ -1,9 +1,9 @@
-package scala.transducer.internal
+package scala.transducers
+package internal
 
 import scala.language.higherKinds
-import scala.transducer.{ Sized, AsTarget, AsSource, Reducer }
 
-private[transducer] object Reducers {
+private[transducers] object Reducers {
 
   def apply[A, R](f: (R, A, Reduced) ⇒ R): Reducer[A, R] =
     new SimpleReducer[A, R](f)

@@ -1,10 +1,10 @@
-package scala.transducer
+package scala.transducers
 
 import scala.language.higherKinds
 import scala.reflect.ClassTag
-import scala.transducer.internal._
+import scala.transducers.internal._
 
-private[transducer] trait TransducerOps {
+private[transducers] trait TransducerOps {
 
   def filter[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FilterTransducer[A](f)

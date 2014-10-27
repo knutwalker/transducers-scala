@@ -1,8 +1,8 @@
-package scala.transducer.internal
+package scala.transducers
+package internal
 
 import scala.language.higherKinds
 import scala.reflect.ClassTag
-import scala.transducer.{ AsSource, AsTarget, Reducer, Sized }
 
 private[internal] final class FilterReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: Reduced) =
