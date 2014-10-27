@@ -4,11 +4,15 @@ import java.util.{ Iterator ⇒ JIterator }
 import java.util
 
 import scala.language.{ higherKinds, implicitConversions }
+import scala.transducer.internal.Reducers
 
 trait AsTarget[F[_]] {
   def empty[A]: F[A]
 
   def append[A](fa: F[A], a: A): F[A]
+
+  def reducer[A]: Reducer[A, F[A]] =
+    Reducers[A, F[A]]((as, a, _) ⇒ append(as, a))
 }
 
 trait AsSource[F[_]] {
