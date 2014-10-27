@@ -2,14 +2,14 @@ package scala.transducer
 
 import scala.language.higherKinds
 
-final class Into[F[_]: AsTarget] {
-  def run[G[_]: AsSource, A, B](xf: Transducer[B, A])(xs: G[A]): F[B] =
+final class Into[G[_]: AsTarget] {
+  def run[A, F[_]: AsSource, B](xf: Transducer[A, B])(xs: F[A]): G[B] =
     transduceEmpty(xf, xs)
 
-  def from[G[_]: AsSource]: IntoFrom[G, F] = new IntoFrom[G, F]
+  def from[F[_]: AsSource]: IntoFrom[F, G] = new IntoFrom[F, G]
 }
 
-final class IntoFrom[G[_]: AsSource, F[_]: AsTarget] {
-  def run[A, B](xf: Transducer[B, A])(xs: G[A]): F[B] =
+final class IntoFrom[F[_]: AsSource, G[_]: AsTarget] {
+  def run[A, B](xf: Transducer[A, B])(xs: F[A]): G[B] =
     transduceEmpty(xf, xs)
 }

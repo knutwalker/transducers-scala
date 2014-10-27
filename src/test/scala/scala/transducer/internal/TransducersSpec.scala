@@ -7,7 +7,7 @@ import scala.transducer.Transducer
 class TransducersSpec extends FunSuite {
 
   def nil[A] = List.empty[A]
-  def transduce[A, B](x: A*)(implicit tf: Transducer[B, A]): List[B] =
+  def transduce[A, B](x: A*)(implicit tf: Transducer[A, B]): List[B] =
     transducer.transduceInit(tf)(nil[B], x.toList)
 
   test("the filter transducer") {

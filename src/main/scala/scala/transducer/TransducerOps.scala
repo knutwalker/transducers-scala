@@ -12,16 +12,16 @@ private[transducer] trait TransducerOps {
   def filterNot[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FilterNotTransducer[A](f)
 
-  def map[A, B](f: A ⇒ B): Transducer[B, A] =
-    new MapTransducer[B, A](f)
+  def map[A, B](f: A ⇒ B): Transducer[A, B] =
+    new MapTransducer[A, B](f)
 
-  def collect[A, B](pf: PartialFunction[A, B]): Transducer[B, A] =
+  def collect[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     new CollectTransducer[A, B](pf)
 
-  def foreach[A](f: A ⇒ Unit): Transducer[Unit, A] =
+  def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
     new ForeachTransducer[A](f)
 
-  def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[B, A] =
+  def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[A, B] =
     new FlatMapTransducer[A, B, F](f)
 
   def take[A](n: Long): Transducer[A, A] =
@@ -51,9 +51,9 @@ private[transducer] trait TransducerOps {
   def distinct[A]: Transducer[A, A] =
     new DistinctTransducer[A]
 
-  def buffer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[F[A], A] =
+  def buffer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new BufferTransducer[A, F](n)
 
-  def partition[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[F[A], A] =
+  def partition[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new PartitionTransducer[A, B, F](f)
 }

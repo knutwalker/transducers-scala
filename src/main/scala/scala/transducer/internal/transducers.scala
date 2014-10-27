@@ -14,22 +14,22 @@ private[transducer] final class FilterNotTransducer[A](f: A ⇒ Boolean) extends
     new FilterNotReducer[A, R](rf, f)
 }
 
-private[transducer] final class MapTransducer[B, A](f: A ⇒ B) extends Transducer[B, A] {
+private[transducer] final class MapTransducer[A, B](f: A ⇒ B) extends Transducer[A, B] {
   def apply[R](rf: Reducer[B, R]) =
     new MapReducer[B, A, R](rf, f)
 }
 
-private[transducer] final class CollectTransducer[A, B](pf: PartialFunction[A, B]) extends Transducer[B, A] {
+private[transducer] final class CollectTransducer[A, B](pf: PartialFunction[A, B]) extends Transducer[A, B] {
   def apply[R](rf: Reducer[B, R]) =
     new CollectReducer[A, B, R](rf, pf)
 }
 
-private[transducer] final class ForeachTransducer[A](f: A ⇒ Unit) extends Transducer[Unit, A] {
+private[transducer] final class ForeachTransducer[A](f: A ⇒ Unit) extends Transducer[A, Unit] {
   def apply[R](rf: Reducer[Unit, R]) =
     new ForeachReducer[A, R](rf, f)
 }
 
-private[transducer] final class FlatMapTransducer[A, B, F[_]: AsSource](f: A ⇒ F[B]) extends Transducer[B, A] {
+private[transducer] final class FlatMapTransducer[A, B, F[_]: AsSource](f: A ⇒ F[B]) extends Transducer[A, B] {
   def apply[R](rf: Reducer[B, R]) =
     new FlatMapReducer[A, B, R, F](rf, f)
 }
@@ -79,12 +79,12 @@ private[transducer] final class DistinctTransducer[A]() extends Transducer[A, A]
     new DistinctReducer[A, R](rf)
 }
 
-private[transducer] final class BufferTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[F[A], A] {
+private[transducer] final class BufferTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
   def apply[R](rf: Reducer[F[A], R]) =
     new BufferReducer[A, R, F](rf, n)
 }
 
-private[transducer] final class PartitionTransducer[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[F[A], A] {
+private[transducer] final class PartitionTransducer[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
   def apply[R](rf: Reducer[F[A], R]) =
     new PartitionReducer[A, B, R, F](rf, f)
 }
