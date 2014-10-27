@@ -10,6 +10,6 @@ final class Into[G[_]: AsTarget] {
 }
 
 final class IntoFrom[F[_]: AsSource, G[_]: AsTarget] {
-  def run[A, B](xf: Transducer[A, B])(xs: F[A]): G[B] =
-    transduceEmpty(xf)(xs)
+  def run[A, B](xf: Transducer[A, B]): F[A] ⇒ G[B] =
+    xs ⇒ transduceEmpty(xf)(xs)
 }
