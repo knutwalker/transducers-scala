@@ -1,7 +1,7 @@
 package scala.transducer.internal
 
 import scala.language.higherKinds
-import scala.transducer.{ AsSource, Reducer }
+import scala.transducer.{ Sized, AsTarget, AsSource, Reducer }
 
 private[transducer] object Reducers {
 
@@ -36,6 +36,30 @@ private[transducer] object Reducers {
 
   abstract class Delegate[A, R](rf: Reducer[_, R]) extends Reducer[A, R] {
     final def apply(r: R) = rf(r)
+  }
+
+  abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implicit F: AsTarget[F], S: Sized[F]) extends Reducer[A, R] {
+    private var buffer = F.empty[A]
+
+    final def apply(r: R) =
+      rf(if (S.nonEmpty(buffer)) {
+        val r2 = rf(r, buffer, new Reduced)
+        buffer = F.empty[A]
+        r2
+      }
+      else r)
+
+    protected final def append(a: A): Unit =
+      buffer = F.append(buffer, a)
+
+    protected final def size: Long =
+      S.size(buffer)
+
+    protected final def flush(r: R, s: Reduced): R = {
+      val ret = rf(r, buffer, s)
+      buffer = F.empty[A]
+      ret
+    }
   }
 
 }
