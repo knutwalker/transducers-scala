@@ -3,8 +3,7 @@ import scalariform.formatter.preferences._
 
 lazy val root = project.in(file("."))
   .settings(libraryDependencies ++= List(
-    "org.scalatest"  %% "scalatest"  % "2.2.2" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.11.6" % "test"))
+    "org.scalatest"  %% "scalatest"  % "2.2.2" % "test"))
 
 lazy val benchmark = project
   .dependsOn(root)
@@ -15,7 +14,7 @@ lazy val benchmark = project
 
 lazy val reactiveStreams = project
   .in(file("contrib") / "reactive-streams")
-  .dependsOn(root)
+  .dependsOn(root % "test->test;compile->compile")
   .settings(scalariformSettings: _*)
   .settings(ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(AlignParameters, true)
@@ -26,5 +25,4 @@ lazy val reactiveStreams = project
     .setPreference(RewriteArrowSymbols, true))
   .settings(libraryDependencies ++= List(
     "org.reactivestreams" % "reactive-streams" % "0.4.0",
-    "org.scalatest"  %% "scalatest"  % "2.2.2" % "test",
     "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1" % "test" exclude("org.reactivestreams", "reactive-streams")))

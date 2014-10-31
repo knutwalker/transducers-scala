@@ -22,39 +22,25 @@ import org.reactivestreams.Publisher
 import org.scalatest.FunSuite
 import org.scalatest.concurrent.ScalaFutures
 
-import scala.transducers.Transducer
+import scala.transducers.ContribTransducer
 import scala.transducers.contrib.ReactiveStreamsSupport
 
-class ReactiveStreamsSpec extends FunSuite with ReactiveStreamsSupport with ScalaFutures {
+class ReactiveStreamsSpec extends FunSuite with ReactiveStreamsSupport with ScalaFutures with ContribTransducer {
 
   test("transducing on a producer") {
     implicit val system = ActorSystem("foo")
     implicit val mat = FlowMaterializer()
 
-    val tx: Transducer[Int, (Char, Int)] = transducers
-      .filter[Int](_ % 2 == 0)
-      .map(x ⇒ s">$x<")
-      .take(7)
-      .flatMap(_.toList)
-      .zipWithIndex
-      .dropRight(4)
-
     val publisher: Publisher[(Char, Int)] =
       Source(Iterator.from(0))
         .runWith(Sink.publisher)
-        .transduce(tx)
+        .transduce(testTx)
 
-    val result: Vector[(Char, Int)] =
-      Source(publisher).runWith(Sink.fold(Vector.empty[(Char, Int)])(_ :+ _)).futureValue
+    val result: List[(Char, Int)] =
+      Source(publisher).runWith(Sink.fold(List.empty[(Char, Int)])(_ :+ _)).futureValue
 
     system.shutdown()
 
-    assert(result == Vector(
-      '>' -> 0, '0' -> 1, '<' -> 2,
-      '>' -> 3, '2' -> 4, '<' -> 5,
-      '>' -> 6, '4' -> 7, '<' -> 8,
-      '>' -> 9, '6' -> 10, '<' -> 11,
-      '>' -> 12, '8' -> 13, '<' -> 14,
-      '>' -> 15, '1' -> 16, '0' -> 17, '<' -> 18))
+    assert(result == expectedResult)
   }
 }
