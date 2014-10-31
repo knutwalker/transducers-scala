@@ -1,10 +1,6 @@
 import AssemblyKeys._
 import scalariform.formatter.preferences._
 
-Revolver.settings
-
-javaOptions in Revolver.reStart += " -Xms4G -Xmx4G"
-
 scalariformSettings
 
 ScalariformKeys.preferences := ScalariformKeys.preferences.value
