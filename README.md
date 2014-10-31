@@ -21,10 +21,10 @@ Add `"de.knutwalker" %% "transducers-scala" % "0.1.0-SNAPSHOT"` to your dependen
 The full artifact names are `transducers-scala_2.10` and `transducers-scala_2.11`, so
 this library is available for Scala 2.10 and 2.11.
 
-After that, simply use `scala.transducers._`
+After that, simply use `scalax.transducers._`
 
 ```scala
-import scala.transducers._
+import scalax.transducers._
 
 val xform = filter[Int](_ % 2 == 0).map(_.toString).flatMap(_.toList).take(10)
 val data = Stream.from(13)
@@ -32,7 +32,7 @@ val result = into[List].run(xform)(data)
 assert(result == List('1', '4', '1', '6', '1', '8', '2', '0', '2', '2'))
 ```
 
-For more examples and a better introduction, see the [ExampleSpec](src/test/scala/scala/transducers/ExampleSpec.scala)
+For more examples and a better introduction, see the [ExampleSpec](src/test/scala/scalax/transducers/ExampleSpec.scala)
 
 
 ## Explanation

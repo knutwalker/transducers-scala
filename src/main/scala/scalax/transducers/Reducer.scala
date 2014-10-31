@@ -13,24 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.example
+package scalax.transducers
 
-import org.scalatest.FunSuite
-import rx.lang.scala.Observable
+import scalax.transducers.internal.Reduced
 
-import scalax.transducers.ContribTransducer
-import scalax.transducers.contrib.RxSupport
+trait Reducer[@specialized(Int, Long, Double, Char, Boolean) A, R] extends ((R, A, Reduced) ⇒ R) with (R ⇒ R) {
+  def apply(r: R, a: A, s: Reduced): R
 
-class RxSpec extends FunSuite with RxSupport with ContribTransducer {
-
-  test("transducing on an rx observable") {
-
-    val observable: Observable[(Char, Int)] = Observable.from(new Iterable[Int] {
-      def iterator = Iterator.from(0)
-    }).transduce(testTx)
-
-    val result = observable.toBlocking.toList
-
-    assert(result == expectedResult)
-  }
+  def apply(r: R): R
 }

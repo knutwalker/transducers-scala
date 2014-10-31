@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.example
+package scalax.transducers
 
-import org.scalatest.FunSuite
-import rx.lang.scala.Observable
+import scala.language.higherKinds
 
-import scalax.transducers.ContribTransducer
-import scalax.transducers.contrib.RxSupport
+final class Into[G[_]: AsTarget] {
+  def run[A, F[_]: AsSource, B](xf: Transducer[A, B])(xs: F[A]): G[B] =
+    transduceEmpty(xf)(xs)
 
-class RxSpec extends FunSuite with RxSupport with ContribTransducer {
+  def from[F[_]: AsSource]: IntoFrom[F, G] = new IntoFrom[F, G]
+}
 
-  test("transducing on an rx observable") {
-
-    val observable: Observable[(Char, Int)] = Observable.from(new Iterable[Int] {
-      def iterator = Iterator.from(0)
-    }).transduce(testTx)
-
-    val result = observable.toBlocking.toList
-
-    assert(result == expectedResult)
-  }
+final class IntoFrom[F[_]: AsSource, G[_]: AsTarget] {
+  def run[A, B](xf: Transducer[A, B]): F[A] ⇒ G[B] =
+    xs ⇒ transduceEmpty(xf)(xs)
 }

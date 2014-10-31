@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.example
+package scalax.transducers.internal
 
-import org.scalatest.FunSuite
-import rx.lang.scala.Observable
+import java.util.concurrent.atomic.AtomicBoolean
 
-import scalax.transducers.ContribTransducer
-import scalax.transducers.contrib.RxSupport
+class Reduced {
+  private[this] final val state = new AtomicBoolean()
 
-class RxSpec extends FunSuite with RxSupport with ContribTransducer {
+  def apply[T](x: T): T = {
+    state.set(true)
+    x
+  }
 
-  test("transducing on an rx observable") {
+  def ? : Boolean = state.get()
 
-    val observable: Observable[(Char, Int)] = Observable.from(new Iterable[Int] {
-      def iterator = Iterator.from(0)
-    }).transduce(testTx)
+  override def toString = s"Reduced(${state.get()}})"
 
-    val result = observable.toBlocking.toList
+  override def hashCode() = 31 * state.get().##
 
-    assert(result == expectedResult)
+  override def equals(obj: scala.Any) = obj match {
+    case r: Reduced ⇒ r.? == state.get()
+    case _          ⇒ false
   }
 }

@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.example
+package scalax
+package transducers
 
-import org.scalatest.FunSuite
-import rx.lang.scala.Observable
+trait ContribTransducer {
 
-import scalax.transducers.ContribTransducer
-import scalax.transducers.contrib.RxSupport
+  val testTx: Transducer[Int, (Char, Int)] = transducers
+    .filter[Int](_ % 2 == 0)
+    .map(x ⇒ s">$x<")
+    .take(7)
+    .flatMap(_.toList)
+    .zipWithIndex
+    .dropRight(4)
 
-class RxSpec extends FunSuite with RxSupport with ContribTransducer {
-
-  test("transducing on an rx observable") {
-
-    val observable: Observable[(Char, Int)] = Observable.from(new Iterable[Int] {
-      def iterator = Iterator.from(0)
-    }).transduce(testTx)
-
-    val result = observable.toBlocking.toList
-
-    assert(result == expectedResult)
-  }
+  val expectedResult: List[(Char, Int)] = List(
+    '>' -> 0, '0' -> 1, '<' -> 2,
+    '>' -> 3, '2' -> 4, '<' -> 5,
+    '>' -> 6, '4' -> 7, '<' -> 8,
+    '>' -> 9, '6' -> 10, '<' -> 11,
+    '>' -> 12, '8' -> 13, '<' -> 14,
+    '>' -> 15, '1' -> 16, '0' -> 17, '<' -> 18)
 }

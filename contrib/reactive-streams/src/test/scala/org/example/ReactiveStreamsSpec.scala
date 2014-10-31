@@ -22,8 +22,8 @@ import org.reactivestreams.Publisher
 import org.scalatest.FunSuite
 import org.scalatest.concurrent.ScalaFutures
 
-import scala.transducers.ContribTransducer
-import scala.transducers.contrib.ReactiveStreamsSupport
+import scalax.transducers.ContribTransducer
+import scalax.transducers.contrib.ReactiveStreamsSupport
 
 class ReactiveStreamsSpec extends FunSuite with ReactiveStreamsSupport with ScalaFutures with ContribTransducer {
 
