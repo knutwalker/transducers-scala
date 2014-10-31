@@ -89,9 +89,14 @@ private[transducers] final class DropNthTransducer[A](n: Long) extends Transduce
     new DropNthReducer[A, R](rf, n)
 }
 
-private[transducers] final class DistinctTransducer[A]() extends Transducer[A, A] {
+private[transducers] final class DistinctTransducer[A] extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new DistinctReducer[A, R](rf)
+}
+
+private[transducers] final class ZipWithIndexTransducer[A] extends Transducer[A, (A, Int)] {
+  def apply[R](rf: Reducer[(A, Int), R]) =
+    new ZipWithIndexReducer[A, R](rf)
 }
 
 private[transducers] final class GroupedTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {

@@ -66,6 +66,9 @@ private[transducers] trait TransducerOps {
   def distinct[A]: Transducer[A, A] =
     new DistinctTransducer[A]
 
+  def zipWithIndex[A]: Transducer[A, (A, Int)] =
+    new ZipWithIndexTransducer[A]
+
   def grouped[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new GroupedTransducer[A, F](n)
 

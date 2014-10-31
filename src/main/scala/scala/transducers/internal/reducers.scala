@@ -146,6 +146,13 @@ private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends R
     else r
 }
 
+private[internal] final class ZipWithIndexReducer[A, R](rf: Reducer[(A, Int), R]) extends Reducers.Delegate[A, R](rf) {
+  private val ids = Iterator.from(0)
+
+  def apply(r: R, a: A, s: Reduced) =
+    rf(r, (a, ids.next()), s)
+}
+
 private[internal] final class GroupedReducer[A, R, F[_]](rf: Reducer[F[A], R], n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Reducers.Buffer[A, R, F](rf) {
 
   def apply(r: R, a: A, s: Reduced) = {

@@ -111,6 +111,12 @@ class TransducersSpec extends FunSuite {
     assert(transduce[String, String]("42", "42", "1337", "42", "1337") == List("42", "1337", "42", "1337"))
   }
 
+  test("the zipWithIndex transducer") {
+    implicit val tx = transducers.zipWithIndex[String]
+    assert(transduce[String, (String, Int)]("42", "1337", "421337") ==
+      List(("42", 0), ("1337", 1), ("421337", 2)))
+  }
+
   test("the grouped transducer") {
     implicit val tx = transducers.grouped[String, List](2)
     assert(transduce[String, List[String]]("42", "42", "42", "1337", "1337", "1337") ==

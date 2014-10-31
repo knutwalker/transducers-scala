@@ -81,6 +81,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def distinct: Transducer[A, B] =
     this >> transducers.distinct[B]
 
+  def zipWithIndex: Transducer[A, (B, Int)] =
+    this >> transducers.zipWithIndex[B]
+
   def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.grouped[B, F](n)
 
