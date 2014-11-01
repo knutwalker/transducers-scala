@@ -18,6 +18,7 @@ package transducers
 
 import scala.language.{ existentials, higherKinds }
 import scala.reflect.ClassTag
+import scalax.transducers.internal.CombinedTransducer
 
 trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(Int, Long, Double, Char, Boolean) B] {
   self ⇒
@@ -25,17 +26,13 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def apply[R](rf: Reducer[B, R]): Reducer[A, R]
 
   def >>[C](that: Transducer[B, C]): Transducer[A, C] =
-    new Transducer[A, C] {
-      def apply[R](rf: Reducer[C, R]) = self(that(rf))
-    }
+    new CombinedTransducer(self, that)
 
   def andThen[C](that: Transducer[B, C]): Transducer[A, C] =
     >>[C](that)
 
   def compose[C](that: Transducer[C, A]): Transducer[C, B] =
-    new Transducer[C, B] {
-      def apply[R](rf: Reducer[B, R]) = that(self(rf))
-    }
+    new CombinedTransducer(that, self)
 
   def filter(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filter[B](f)
