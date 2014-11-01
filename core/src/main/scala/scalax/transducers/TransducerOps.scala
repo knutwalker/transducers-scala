@@ -48,6 +48,9 @@ private[transducers] trait TransducerOps {
   def scan[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
     new ScanTransducer[A, B](z, f)
 
+  def find[A](f: A ⇒ Boolean): Transducer[A, A] =
+    new FindTransducer[A](f)
+
   def take[A](n: Long): Transducer[A, A] =
     new TakeTransducer[A](n)
 

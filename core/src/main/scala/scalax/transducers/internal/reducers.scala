@@ -96,6 +96,16 @@ private[internal] final class ScanReducer[A, B, R](rf: Reducer[B, R], z: B, f: (
   }
 }
 
+private[internal] final class FindReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
+  private var found = false
+
+  def apply(r: R, a: A, s: Reduced) =
+    if (!found && f(a)) {
+      s(rf(r, a, s))
+    }
+    else r
+}
+
 private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var taken = 1L
 
