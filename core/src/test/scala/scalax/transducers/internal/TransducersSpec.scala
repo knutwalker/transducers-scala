@@ -59,6 +59,16 @@ class TransducersSpec extends FunSuite {
     assert(transduce[Int, String](13) == List())
   }
 
+  test("the collectFirst transducer") {
+    implicit val tx = transducers.collectFirst[Int, String] {
+      case 42   ⇒ "42"
+      case 1337 ⇒ "1337"
+    }
+    assert(transduce[Int, String](12, 42, 1337, 42) == List("42"))
+    assert(transduce[Int, String](1337) == List("1337"))
+    assert(transduce[Int, String](13) == List())
+  }
+
   test("the foreach transducer") {
     var effected = List.empty[String]
     implicit val tx = transducers.foreach((x: String) ⇒ effected = x :: effected)

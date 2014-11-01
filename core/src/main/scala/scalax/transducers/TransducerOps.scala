@@ -36,6 +36,9 @@ private[transducers] trait TransducerOps {
   def collect[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     new CollectTransducer[A, B](pf)
 
+  def collectFirst[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
+    collect[A, B](pf).take(1)
+
   def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
     new ForeachTransducer[A](f)
 
@@ -78,7 +81,7 @@ private[transducers] trait TransducerOps {
   def slice[A](from: Long, until: Long): Transducer[A, A] = {
     val lower = scala.math.max(from, 0L)
     if (until <= lower) empty[A]
-    else drop[A](lower) >> take[A](until - lower)
+    else drop[A](lower).take(until - lower)
   }
 
   def distinct[A]: Transducer[A, A] =
