@@ -25,6 +25,13 @@ private[transducers] final class CombinedTransducer[A, B, C](left: Transducer[A,
   override def toString = s"$left.$right"
 }
 
+private[transducers] final class EmptyTransducer[A] extends Transducer[A, A] {
+  def apply[R](rf: Reducer[A, R]) =
+    new EmptyReducer[A, R](rf)
+
+  override def toString = "(empty)"
+}
+
 private[transducers] final class FilterTransducer[A](f: A ⇒ Boolean) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new FilterReducer[A, R](rf, f)

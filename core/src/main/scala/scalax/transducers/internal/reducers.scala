@@ -19,6 +19,11 @@ package internal
 import scala.language.higherKinds
 import scala.reflect.ClassTag
 
+private[internal] final class EmptyReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {
+  def apply(r: R, a: A, s: Reduced) =
+    s(r)
+}
+
 private[internal] final class FilterReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: Reduced) =
     if (f(a)) rf(r, a, s) else r

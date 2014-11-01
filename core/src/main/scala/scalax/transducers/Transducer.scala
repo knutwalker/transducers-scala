@@ -34,6 +34,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def >>[C](that: Transducer[B, C]): Transducer[A, C] =
     new CombinedTransducer(self, that)
 
+  def empty: Transducer[A, B] =
+    this >> transducers.empty[B]
+
   def filter(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filter[B](f)
 

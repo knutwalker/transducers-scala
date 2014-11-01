@@ -21,6 +21,9 @@ import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {
 
+  def empty[A]: Transducer[A, A] =
+    new EmptyTransducer[A]
+
   def filter[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FilterTransducer[A](f)
 
