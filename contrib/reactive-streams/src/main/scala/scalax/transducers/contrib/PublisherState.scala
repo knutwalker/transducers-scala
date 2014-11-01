@@ -22,21 +22,17 @@ import org.reactivestreams.{ Subscriber, Subscription }
 
 import scala.annotation.tailrec
 import scalax.transducers.Reducer
-import scalax.transducers.internal.Reduced
+import scalax.transducers.internal.{ Reduced, Reducers }
 
 class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 1024) {
 
+  val reducer: Reducer[B, Unit] =
+    Reducers[B, Unit]((r, b, s) ⇒ sendRightValue(b))
   private val upstreamSub = new AtomicSubscription
   private val reduced = new Reduced
   private val demand = new AtomicLong
   private val inputBuffer = new ArrayBlockingQueue[A](bufferSize)
   private val outputBuffer = new ArrayBlockingQueue[B](bufferSize)
-
-  val reducer: Reducer[B, Unit] = new Reducer[B, Unit] {
-    def apply(r: Unit, b: B, s: Reduced) = sendRightValue(b)
-
-    def apply(r: Unit) = ()
-  }
 
   def subscriber(reducer: Reducer[A, Unit]): Subscriber[A] = new Subscriber[A] {
     def onSubscribe(s: Subscription) =
@@ -50,6 +46,15 @@ class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 102
 
     def onNext(t: A) =
       safeSendLeftValue(t, reducer)
+  }
+
+  private def safeSendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
+    if (demand.get() > 0) {
+      sendLeftValue(a, reducer)
+    }
+    else {
+      inputBuffer.offer(a)
+    }
   }
 
   def subscription(reducer: Reducer[A, Unit]): Subscription = new Subscription {
@@ -69,6 +74,12 @@ class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 102
       reduced(())
       upstreamSub.cancel()
     }
+  }
+
+  private def drainBuffers(requested: Long, reducer: Reducer[A, Unit]): Long = {
+    val outstanding =
+      drainBuffer(requested, outputBuffer, sendRightValue)
+    drainBuffer(outstanding, inputBuffer, sendLeftValue((_: A), reducer))
   }
 
   private def sendRightValue(b: B): Unit = {
@@ -94,21 +105,6 @@ class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 102
     catch {
       case t: Throwable ⇒ downstream.onError(t)
     }
-  }
-
-  private def safeSendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
-    if (demand.get() > 0) {
-      sendLeftValue(a, reducer)
-    }
-    else {
-      inputBuffer.offer(a)
-    }
-  }
-
-  private def drainBuffers(requested: Long, reducer: Reducer[A, Unit]): Long = {
-    val outstanding =
-      drainBuffer(requested, outputBuffer, sendRightValue)
-    drainBuffer(outstanding, inputBuffer, sendLeftValue((_: A), reducer))
   }
 
   private def drainBuffer[X](requested: Long, queue: BlockingQueue[X], sending: X ⇒ Unit): Long = {

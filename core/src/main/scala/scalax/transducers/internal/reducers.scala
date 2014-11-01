@@ -85,8 +85,9 @@ private[internal] final class TakeNthReducer[A, R](rf: Reducer[A, R], n: Long) e
 private[internal] final class TakeRightReducer[A: ClassTag, R](rf: Reducer[A, R], n: Int) extends Reducer[A, R] {
   private val queue = new CappedEvictingQueue[A](n)
 
-  def apply(r: R, a: A, s: Reduced) =
-    { queue.add(a); r }
+  def apply(r: R, a: A, s: Reduced) = {
+    queue.add(a); r
+  }
 
   def apply(r: R) =
     Reducers.reduce(rf, r, queue.elements, new Reduced)

@@ -22,6 +22,14 @@ import scalax.transducers.Transducer
 
 trait ReactiveStreamsSupport {
 
+  implicit final def reactiveStreams[A](underlying: Publisher[A]): TransducerEnabledPublisher[A] =
+    new TransducerEnabledPublisher[A](underlying)
+
+  final class TransducerEnabledPublisher[A](upstream: Publisher[A]) {
+    def transduce[B](transducer: Transducer[A, B]): Publisher[B] =
+      new TransducedPublisher(upstream, transducer)
+  }
+
   private final class TransducedPublisher[A, B](upstream: Publisher[A], transducer: Transducer[A, B]) extends Publisher[B] {
     def subscribe(downstream: Subscriber[_ >: B]) = {
       val state = new PublisherState[A, B](downstream)
@@ -31,14 +39,6 @@ trait ReactiveStreamsSupport {
       downstream.onSubscribe(state.subscription(reducer))
     }
   }
-
-  final class TransducerEnabledPublisher[A](upstream: Publisher[A]) {
-    def transduce[B](transducer: Transducer[A, B]): Publisher[B] =
-      new TransducedPublisher(upstream, transducer)
-  }
-
-  implicit final def reactiveStreams[A](underlying: Publisher[A]): TransducerEnabledPublisher[A] =
-    new TransducerEnabledPublisher[A](underlying)
 
 }
 

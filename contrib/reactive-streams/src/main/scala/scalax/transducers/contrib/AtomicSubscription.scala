@@ -35,14 +35,14 @@ private[contrib] class AtomicSubscription extends Subscription {
   def request(n: Long): Unit =
     doOnUnderlying(_.request(n))
 
-  def cancel(): Unit =
-    doOnUnderlying(_.cancel())
-
   private def doOnUnderlying(f: Subscription ⇒ Unit): Unit =
     Option(underlying.get()) match {
       case Some(s) ⇒ f(s)
       case None    ⇒ stash = stash enqueue f
     }
+
+  def cancel(): Unit =
+    doOnUnderlying(_.cancel())
 
   @tailrec
   private def unstash(q: Queue[Subscription ⇒ Unit], s: Subscription): Unit =

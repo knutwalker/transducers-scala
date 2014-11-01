@@ -18,29 +18,18 @@ package scalax.transducers.internal
 import scala.reflect.ClassTag
 
 final class CappedEvictingQueue[A: ClassTag](private val capacity: Int) {
-  import CappedEvictingQueue.elementsIterator
+
+  import scalax.transducers.internal.CappedEvictingQueue.elementsIterator
 
   private val backing = new Array[A](capacity)
-  private var cursor = 0L
   private val max = capacity.toLong
+  private var cursor = 0L
 
   def add(elem: A): Option[A] =
     if (overCapacity)
       addEvictingly(elem)
     else
       addNormally(elem)
-
-  def elements: Iterator[A] =
-    if (overCapacity)
-      elementsIterator(this, (cursor % max).toInt, capacity)
-    else
-      elementsIterator(this, 0, cursor.toInt)
-
-  override def toString = {
-    val head = (cursor % max).toInt
-    val current = backing(head)
-    backing.map(String.valueOf).updated(head, s"($current)").mkString("[", ", ", "]")
-  }
 
   private def overCapacity: Boolean =
     cursor >= capacity
@@ -58,7 +47,20 @@ final class CappedEvictingQueue[A: ClassTag](private val capacity: Int) {
     cursor += 1L
     None
   }
+
+  def elements: Iterator[A] =
+    if (overCapacity)
+      elementsIterator(this, (cursor % max).toInt, capacity)
+    else
+      elementsIterator(this, 0, cursor.toInt)
+
+  override def toString = {
+    val head = (cursor % max).toInt
+    val current = backing(head)
+    backing.map(String.valueOf).updated(head, s"($current)").mkString("[", ", ", "]")
+  }
 }
+
 private object CappedEvictingQueue {
 
   def elementsIterator[A](q: CappedEvictingQueue[A], fromIndex: Int, nrElements: Int): Iterator[A] =
@@ -79,6 +81,8 @@ private object CappedEvictingQueue {
     }
 
     override def hasDefiniteSize = true
+
     override def size = nrElements - drained
   }
+
 }

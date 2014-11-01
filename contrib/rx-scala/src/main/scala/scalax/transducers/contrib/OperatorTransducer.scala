@@ -17,26 +17,18 @@ package scalax.transducers.contrib
 
 import rx.lang.scala.Subscriber
 
-import scalax.transducers.{ Reducer, Transducer }
-import scalax.transducers.internal.Reduced
 import scala.util.control.NonFatal
+import scalax.transducers.Transducer
+import scalax.transducers.internal.{ Reduced, Reducers }
 
 private[contrib] final class OperatorTransducer[A, B](transducer: Transducer[A, B]) extends (Subscriber[B] ⇒ Subscriber[A]) {
   def apply(downstream: Subscriber[B]): Subscriber[A] =
     new Subscriber[A] {
       private val reduced = new Reduced
-      private val downstreamReducer = new Reducer[B, Unit] {
-        def apply(r: Unit) = ()
-
-        def apply(r: Unit, a: B, s: Reduced) = {
-          if (downstream.isUnsubscribed) {
-            s(())
-          }
-          else {
-            downstream.onNext(a)
-          }
-        }
-      }
+      private val downstreamReducer = Reducers[B, Unit]((r, a, s) ⇒ {
+        if (downstream.isUnsubscribed) s(())
+        else downstream.onNext(a)
+      })
       private val reducer = transducer(downstreamReducer)
 
       override def onNext(value: A) =

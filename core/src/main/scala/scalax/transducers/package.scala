@@ -22,13 +22,10 @@ package object transducers extends TransducerOps {
   def run[A, B, F[_]](xf: Transducer[A, B])(xs: F[A])(implicit F: AsSource[F], x: AsTarget[F]): F[B] =
     into[F].run(xf)(xs)
 
-  def addto[A, F[_]: AsSource, B, G[_]: AsTarget](init: G[B])(xf: Transducer[A, B])(xs: F[A]): G[B] =
-    transduceInit(xf)(init, xs)
-
   def into[F[_]: AsTarget]: Into[F] = new Into[F]
 
-  private[transducers] def transduceEmpty[A, F[_]: AsSource, B, G[_]: AsTarget](xf: Transducer[A, B])(xs: F[A]): G[B] =
-    transduceInit(xf)(AsTarget[G].empty[B], xs)
+  def addto[A, F[_]: AsSource, B, G[_]: AsTarget](init: G[B])(xf: Transducer[A, B])(xs: F[A]): G[B] =
+    transduceInit(xf)(init, xs)
 
   private[transducers] def transduceInit[A, F[_]: AsSource, B, G[_]: AsTarget](xf: Transducer[A, B])(init: G[B], xs: F[A]): G[B] = {
     val G = AsTarget[G]
@@ -39,4 +36,7 @@ package object transducers extends TransducerOps {
     val xf1 = xf(rf)
     internal.Reducers.reduce(xf1, init, xs)
   }
+
+  private[transducers] def transduceEmpty[A, F[_]: AsSource, B, G[_]: AsTarget](xf: Transducer[A, B])(xs: F[A]): G[B] =
+    transduceInit(xf)(AsTarget[G].empty[B], xs)
 }

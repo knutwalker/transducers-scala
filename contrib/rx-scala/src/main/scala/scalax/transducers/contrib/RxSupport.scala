@@ -23,6 +23,12 @@ import scalax.transducers.Transducer
 
 trait RxSupport {
 
+  implicit final def rxJava[A](underlying: rx.Observable[A]): TransducerEnabledJavaObservable[A] =
+    new TransducerEnabledJavaObservable[A](underlying)
+
+  implicit final def rxScala[A](underlying: Observable[A]): TransducerEnabledObservable[A] =
+    new TransducerEnabledObservable[A](underlying)
+
   final class TransducerEnabledObservable[A](upstream: Observable[A]) {
     def transduce[B](transducer: Transducer[A, B]): Observable[B] = {
       upstream.lift(new OperatorTransducer(transducer))
@@ -34,11 +40,6 @@ trait RxSupport {
       upstream.lift(toJavaOperator(new OperatorTransducer(transducer)))
     }
   }
-
-  implicit final def rxJava[A](underlying: rx.Observable[A]): TransducerEnabledJavaObservable[A] =
-    new TransducerEnabledJavaObservable[A](underlying)
-
-  implicit final def rxScala[A](underlying: Observable[A]): TransducerEnabledObservable[A] =
-    new TransducerEnabledObservable[A](underlying)
 }
+
 object RxSupport extends RxSupport

@@ -15,8 +15,8 @@
  */
 package scalax.transducers
 
-import java.util.{ Iterator ⇒ JIterator }
 import java.util
+import java.util.{ Iterator ⇒ JIterator }
 
 import scala.language.{ higherKinds, implicitConversions }
 
@@ -81,7 +81,10 @@ trait AsTargetInstances {
   }
   implicit val javaList: AsTarget[util.List] = new AsTarget[util.List] {
     def empty[A] = new util.ArrayList[A]
-    def append[A](fa: util.List[A], a: A) = { fa.add(a); fa }
+
+    def append[A](fa: util.List[A], a: A) = {
+      fa.add(a); fa
+    }
   }
 }
 

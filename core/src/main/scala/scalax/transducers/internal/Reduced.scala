@@ -25,8 +25,6 @@ class Reduced {
     x
   }
 
-  def ? : Boolean = state.get()
-
   override def toString = s"Reduced(${state.get()}})"
 
   override def hashCode() = 31 * state.get().##
@@ -35,4 +33,6 @@ class Reduced {
     case r: Reduced ⇒ r.? == state.get()
     case _          ⇒ false
   }
+
+  def ? : Boolean = state.get()
 }

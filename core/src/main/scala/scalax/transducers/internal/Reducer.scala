@@ -43,12 +43,6 @@ private[transducers] object Reducers {
     g(acc)
   }
 
-  final class SimpleReducer[A, R](f: (R, A, Reduced) ⇒ R) extends Reducer[A, R] {
-    def apply(r: R) = r
-
-    def apply(r: R, a: A, s: Reduced) = f(r, a, s)
-  }
-
   abstract class Delegate[A, R](rf: Reducer[_, R]) extends Reducer[A, R] {
     final def apply(r: R) = rf(r)
   }
@@ -75,6 +69,12 @@ private[transducers] object Reducers {
       buffer = F.empty[A]
       ret
     }
+  }
+
+  private final class SimpleReducer[A, R](f: (R, A, Reduced) ⇒ R) extends Reducer[A, R] {
+    def apply(r: R) = r
+
+    def apply(r: R, a: A, s: Reduced) = f(r, a, s)
   }
 
 }

@@ -25,14 +25,14 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
 
   def apply[R](rf: Reducer[B, R]): Reducer[A, R]
 
-  def >>[C](that: Transducer[B, C]): Transducer[A, C] =
-    new CombinedTransducer(self, that)
-
   def andThen[C](that: Transducer[B, C]): Transducer[A, C] =
     >>[C](that)
 
   def compose[C](that: Transducer[C, A]): Transducer[C, B] =
     new CombinedTransducer(that, self)
+
+  def >>[C](that: Transducer[B, C]): Transducer[A, C] =
+    new CombinedTransducer(self, that)
 
   def filter(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filter[B](f)
@@ -49,7 +49,7 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
     this >> transducers.foreach[B](f)
 
-  def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
+  def flatMap[C, F[_] : AsSource](f: B ⇒ F[C]): Transducer[A, C] =
     this >> transducers.flatMap[B, C, F](f)
 
   def take(n: Long): Transducer[A, B] =
@@ -85,6 +85,6 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.grouped[B, F](n)
 
-  def partition[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+  def partition[F[_]](f: B ⇒ C forSome {type C <: AnyRef})(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.partition(f)
 }
