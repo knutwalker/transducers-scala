@@ -1,5 +1,4 @@
 import AssemblyKeys._
-import scalariform.formatter.preferences._
 
 assemblySettings
 

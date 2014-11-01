@@ -15,7 +15,6 @@
  */
 package scalax.transducers.internal
 
-import scala.collection.AbstractIterator
 import scala.reflect.ClassTag
 
 final class CappedEvictingQueue[A: ClassTag](private val capacity: Int) {
@@ -65,7 +64,7 @@ private object CappedEvictingQueue {
   def elementsIterator[A](q: CappedEvictingQueue[A], fromIndex: Int, nrElements: Int): Iterator[A] =
     new QueueElementsIterator[A](fromIndex, nrElements, q.capacity, q.backing)
 
-  class QueueElementsIterator[A](fromIndex: Int, nrElements: Int, capacity: Int, backing: Array[A]) extends AbstractIterator[A] {
+  class QueueElementsIterator[A](fromIndex: Int, nrElements: Int, capacity: Int, backing: Array[A]) extends Iterator[A] {
     private var drained = 0
     private var current = fromIndex
 

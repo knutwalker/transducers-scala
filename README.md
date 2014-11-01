@@ -8,12 +8,22 @@ in many contexts and carry only the simple processing logic.
 
 ## Getting it
 
-clone this repo and run
+There is no first release yet. A snapshot is available at sonatype:
+
+```scala
+resolvers += "sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.1.0-SNAPSHOT"
+```
+
+
+Alternatively, clone this repo and run
 
 ```bash
-./sbt publishLocal # for ivy-style repositories
-./sbt publishM2    # for maven-style repositories
+./sbt +publishLocal # for ivy-style repositories
+./sbt +publishM2    # for maven-style repositories
 ```
+
 
 ## Using it
 

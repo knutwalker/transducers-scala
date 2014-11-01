@@ -1,7 +1,3 @@
-name := """transducers-scala"""
-
-description := "Transducers for Scala"
-
 organization in ThisBuild := "de.knutwalker"
 
 scalaVersion in ThisBuild := "2.11.4"
