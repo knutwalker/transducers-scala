@@ -82,6 +82,13 @@ class TransducersSpec extends FunSuite {
     assert(transduce[Int, Boolean]() == List(true))
   }
 
+  test("the exists transducer") {
+    implicit val rx = transducers.exists[Int](_ % 2 == 0)
+    assert(transduce[Int, Boolean](1, 3, 4, 7, 9) == List(true))
+    assert(transduce[Int, Boolean](1, 3, 5, 7, 9) == List(false))
+    assert(transduce[Int, Boolean]() == List(false))
+  }
+
   test("the foreach transducer") {
     var effected = List.empty[String]
     implicit val tx = transducers.foreach((x: String) ⇒ effected = x :: effected)

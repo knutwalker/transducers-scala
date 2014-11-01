@@ -47,6 +47,11 @@ private[transducers] trait TransducerOps {
       case x if !f(x) ⇒ false
     }.orElse(true)
 
+  final def exists[A](f: A ⇒ Boolean): Transducer[A, Boolean] =
+    collectFirst[A, Boolean] {
+      case x if f(x) ⇒ true
+    }.orElse(false)
+
   final def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
     new ForeachTransducer[A](f)
 

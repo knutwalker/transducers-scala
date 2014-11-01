@@ -58,6 +58,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def forall(f: B ⇒ Boolean): Transducer[A, Boolean] =
     this >> transducers.forall[B](f)
 
+  final def exists(f: B ⇒ Boolean): Transducer[A, Boolean] =
+    this >> transducers.exists[B](f)
+
   final def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
     this >> transducers.foreach[B](f)
 
