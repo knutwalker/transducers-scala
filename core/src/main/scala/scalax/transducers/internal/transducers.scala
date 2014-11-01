@@ -20,7 +20,8 @@ import scala.language.higherKinds
 import scala.reflect.ClassTag
 
 private[transducers] final class CombinedTransducer[A, B, C](left: Transducer[A, B], right: Transducer[B, C]) extends Transducer[A, C] {
-  def apply[R](rf: Reducer[C, R]) = left(right(rf))
+  def apply[R](rf: Reducer[C, R]) =
+    left(right(rf))
 
   override def toString = s"$left.$right"
 }

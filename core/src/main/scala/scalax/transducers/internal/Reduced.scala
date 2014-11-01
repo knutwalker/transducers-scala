@@ -21,7 +21,9 @@ class Reduced {
   private[this] final val state = new AtomicBoolean()
 
   def apply[T](x: T): T = {
-    state.set(true)
+    if (!state.compareAndSet(false, true)) {
+      throw new IllegalStateException("ContractViolation: Reduced state signaled multiple times, check for bugs in code.")
+    }
     x
   }
 

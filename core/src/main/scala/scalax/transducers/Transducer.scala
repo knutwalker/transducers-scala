@@ -52,7 +52,7 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
     this >> transducers.foreach[B](f)
 
-  def flatMap[C, F[_] : AsSource](f: B ⇒ F[C]): Transducer[A, C] =
+  def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
     this >> transducers.flatMap[B, C, F](f)
 
   def take(n: Long): Transducer[A, B] =
@@ -91,6 +91,6 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.grouped[B, F](n)
 
-  def groupBy[F[_]](f: B ⇒ C forSome {type C <: AnyRef})(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+  def groupBy[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.groupBy(f)
 }
