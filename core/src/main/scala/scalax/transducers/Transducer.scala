@@ -79,6 +79,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def dropNth(n: Long): Transducer[A, B] =
     this >> transducers.dropNth[B](n)
 
+  def slice(from: Long, until: Long): Transducer[A, B] =
+    this >> transducers.slice[B](from, until)
+
   def distinct: Transducer[A, B] =
     this >> transducers.distinct[B]
 

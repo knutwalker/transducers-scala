@@ -66,6 +66,12 @@ private[transducers] trait TransducerOps {
   def dropNth[A](n: Long): Transducer[A, A] =
     new DropNthTransducer[A](n)
 
+  def slice[A](from: Long, until: Long): Transducer[A, A] = {
+    val lower = scala.math.max(from, 0L)
+    if (until <= lower) empty[A]
+    else drop[A](lower) >> take[A](until - lower)
+  }
+
   def distinct[A]: Transducer[A, A] =
     new DistinctTransducer[A]
 
