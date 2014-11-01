@@ -19,6 +19,20 @@ package internal
 import scala.language.higherKinds
 import scala.reflect.ClassTag
 
+private[internal] final class OrElseReducer[A, R](rf: Reducer[A, R], cont: ⇒ A) extends Reducer[A, R] {
+  private var hasValue = false
+
+  def apply(r: R, a: A, s: Reduced) = {
+    hasValue = true
+    rf(r, a, s)
+  }
+
+  def apply(r: R) = {
+    val ret = if (!hasValue) rf(r, cont, new Reduced) else r
+    rf(ret)
+  }
+}
+
 private[internal] final class EmptyReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: Reduced) =
     s(r)

@@ -21,6 +21,9 @@ import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {
 
+  final def orElse[A](cont: ⇒ A): Transducer[A, A] =
+    new OrElseTransducer[A](cont)
+
   final def empty[A]: Transducer[A, A] =
     new EmptyTransducer[A]
 
