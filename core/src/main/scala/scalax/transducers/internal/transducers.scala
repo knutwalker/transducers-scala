@@ -144,9 +144,9 @@ private[transducers] final class GroupedTransducer[A, F[_]](n: Int)(implicit F: 
   override def toString = s"(grouped $n)"
 }
 
-private[transducers] final class PartitionTransducer[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
+private[transducers] final class GroupByTransducer[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
   def apply[R](rf: Reducer[F[A], R]) =
-    new PartitionReducer[A, B, R, F](rf, f)
+    new GroupByReducer[A, B, R, F](rf, f)
 
-  override def toString = "(partition)"
+  override def toString = "(groupBy)"
 }

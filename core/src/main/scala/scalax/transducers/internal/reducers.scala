@@ -162,7 +162,7 @@ private[internal] final class GroupedReducer[A, R, F[_]](rf: Reducer[F[A], R], n
   }
 }
 
-private[internal] final class PartitionReducer[A, B <: AnyRef, R, F[_]](rf: Reducer[F[A], R], f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Reducers.Buffer[A, R, F](rf) {
+private[internal] final class GroupByReducer[A, B <: AnyRef, R, F[_]](rf: Reducer[F[A], R], f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Reducers.Buffer[A, R, F](rf) {
   private val mark = new AnyRef
   private var previous = mark
 

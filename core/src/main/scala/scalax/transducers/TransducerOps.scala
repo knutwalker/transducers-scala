@@ -72,6 +72,6 @@ private[transducers] trait TransducerOps {
   def grouped[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new GroupedTransducer[A, F](n)
 
-  def partition[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
-    new PartitionTransducer[A, B, F](f)
+  def groupBy[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
+    new GroupByTransducer[A, B, F](f)
 }

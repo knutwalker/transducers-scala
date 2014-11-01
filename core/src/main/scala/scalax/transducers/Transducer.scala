@@ -85,6 +85,6 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.grouped[B, F](n)
 
-  def partition[F[_]](f: B ⇒ C forSome {type C <: AnyRef})(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
-    this >> transducers.partition(f)
+  def groupBy[F[_]](f: B ⇒ C forSome {type C <: AnyRef})(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+    this >> transducers.groupBy(f)
 }

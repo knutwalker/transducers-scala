@@ -124,8 +124,8 @@ class TransducersSpec extends FunSuite {
       List(List("42", "42"), List("42", "1337"), List("1337", "1337")))
   }
 
-  test("the partition transducer") {
-    implicit val tx = transducers.partition[String, String, List]((_: String).length.toString)
+  test("the groupBy transducer") {
+    implicit val tx = transducers.groupBy[String, String, List]((_: String).length.toString)
     assert(transduce[String, List[String]]("42", "13", "37", "1337", "4242") ==
       List(List("42", "13", "37"), List("1337", "4242")))
   }
