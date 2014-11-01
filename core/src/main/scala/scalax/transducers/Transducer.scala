@@ -55,6 +55,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
     this >> transducers.flatMap[B, C, F](f)
 
+  def fold[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
+    this >> transducers.fold[B, C](z)(f)
+
   def take(n: Long): Transducer[A, B] =
     this >> transducers.take[B](n)
 

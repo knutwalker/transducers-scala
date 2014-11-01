@@ -56,6 +56,20 @@ private[internal] final class FlatMapReducer[A, B, R, F[_]: AsSource](rf: Reduce
     Reducers.reduceStep(rf, r, f(a), s)
 }
 
+private[internal] final class FoldReducer[A, B, R](rf: Reducer[B, R], z: B, f: (B, A) ⇒ B) extends Reducer[A, R] {
+  private[this] var result = z
+
+  def apply(r: R, a: A, s: Reduced) = {
+    result = f(result, a)
+    r
+  }
+
+  def apply(r: R) = {
+    val res = rf(r, result, new Reduced)
+    rf(res)
+  }
+}
+
 private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
   private var taken = 1L
 

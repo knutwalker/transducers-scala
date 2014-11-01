@@ -42,6 +42,9 @@ private[transducers] trait TransducerOps {
   def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[A, B] =
     new FlatMapTransducer[A, B, F](f)
 
+  def fold[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
+    new FoldTransducer[A, B](z, f)
+
   def take[A](n: Long): Transducer[A, A] =
     new TakeTransducer[A](n)
 
