@@ -47,7 +47,7 @@ object Common {
       commitNextVersion,
       pushChanges,
       publishArtifacts
-    ).map(_.copy(enableCrossBuild = false)),
+    ).map(_.copy(enableCrossBuild = true)),
     tagComment <<= (Keys.version in ThisBuild) map (v => s"Release version $v"),
     commitMessage <<= (Keys.version in ThisBuild) map (v => s"Set version to $v"),
     versionBump := sbtrelease.Version.Bump.Bugfix
