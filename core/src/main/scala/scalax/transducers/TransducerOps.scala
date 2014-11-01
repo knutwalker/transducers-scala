@@ -42,6 +42,11 @@ private[transducers] trait TransducerOps {
   final def collectFirst[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     collect[A, B](pf).take(1)
 
+  final def forall[A](f: A ⇒ Boolean): Transducer[A, Boolean] =
+    collectFirst[A, Boolean] {
+      case x if !f(x) ⇒ false
+    }.orElse(true)
+
   final def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
     new ForeachTransducer[A](f)
 

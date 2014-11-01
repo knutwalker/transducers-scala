@@ -55,6 +55,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def collectFirst[C](pf: PartialFunction[B, C]): Transducer[A, C] =
     this >> transducers.collectFirst[B, C](pf)
 
+  final def forall(f: B ⇒ Boolean): Transducer[A, Boolean] =
+    this >> transducers.forall[B](f)
+
   final def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
     this >> transducers.foreach[B](f)
 
