@@ -41,3 +41,4 @@ trait RxSupport {
   implicit final def rxScala[A](underlying: Observable[A]): TransducerEnabledObservable[A] =
     new TransducerEnabledObservable[A](underlying)
 }
+object RxSupport extends RxSupport

@@ -41,3 +41,5 @@ trait ReactiveStreamsSupport {
     new TransducerEnabledPublisher[A](underlying)
 
 }
+
+object ReactiveStreamsSupport extends ReactiveStreamsSupport
