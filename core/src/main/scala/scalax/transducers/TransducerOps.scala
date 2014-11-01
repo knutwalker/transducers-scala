@@ -21,78 +21,78 @@ import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {
 
-  def empty[A]: Transducer[A, A] =
+  final def empty[A]: Transducer[A, A] =
     new EmptyTransducer[A]
 
-  def filter[A](f: A ⇒ Boolean): Transducer[A, A] =
+  final def filter[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FilterTransducer[A](f)
 
-  def filterNot[A](f: A ⇒ Boolean): Transducer[A, A] =
+  final def filterNot[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FilterNotTransducer[A](f)
 
-  def map[A, B](f: A ⇒ B): Transducer[A, B] =
+  final def map[A, B](f: A ⇒ B): Transducer[A, B] =
     new MapTransducer[A, B](f)
 
-  def collect[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
+  final def collect[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     new CollectTransducer[A, B](pf)
 
-  def collectFirst[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
+  final def collectFirst[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     collect[A, B](pf).take(1)
 
-  def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
+  final def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
     new ForeachTransducer[A](f)
 
-  def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[A, B] =
+  final def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[A, B] =
     new FlatMapTransducer[A, B, F](f)
 
-  def fold[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
+  final def fold[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
     new FoldTransducer[A, B](z, f)
 
-  def scan[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
+  final def scan[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
     new ScanTransducer[A, B](z, f)
 
-  def find[A](f: A ⇒ Boolean): Transducer[A, A] =
+  final def find[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FindTransducer[A](f)
 
-  def take[A](n: Long): Transducer[A, A] =
+  final def take[A](n: Long): Transducer[A, A] =
     new TakeTransducer[A](n)
 
-  def takeWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
+  final def takeWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
     new TakeWhileTransducer[A](f)
 
-  def takeRight[A: ClassTag](n: Int): Transducer[A, A] =
+  final def takeRight[A: ClassTag](n: Int): Transducer[A, A] =
     new TakeRightTransducer[A](n)
 
-  def takeNth[A](n: Long): Transducer[A, A] =
+  final def takeNth[A](n: Long): Transducer[A, A] =
     new TakeNthTransducer(n)
 
-  def drop[A](n: Long): Transducer[A, A] =
+  final def drop[A](n: Long): Transducer[A, A] =
     new DropTransducer[A](n)
 
-  def dropWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
+  final def dropWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
     new DropWhileTransducer[A](f)
 
-  def dropRight[A: ClassTag](n: Int): Transducer[A, A] =
+  final def dropRight[A: ClassTag](n: Int): Transducer[A, A] =
     new DropRightTransducer[A](n)
 
-  def dropNth[A](n: Long): Transducer[A, A] =
+  final def dropNth[A](n: Long): Transducer[A, A] =
     new DropNthTransducer[A](n)
 
-  def slice[A](from: Long, until: Long): Transducer[A, A] = {
+  final def slice[A](from: Long, until: Long): Transducer[A, A] = {
     val lower = scala.math.max(from, 0L)
     if (until <= lower) empty[A]
     else drop[A](lower).take(until - lower)
   }
 
-  def distinct[A]: Transducer[A, A] =
+  final def distinct[A]: Transducer[A, A] =
     new DistinctTransducer[A]
 
-  def zipWithIndex[A]: Transducer[A, (A, Int)] =
+  final def zipWithIndex[A]: Transducer[A, (A, Int)] =
     new ZipWithIndexTransducer[A]
 
-  def grouped[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
+  final def grouped[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new GroupedTransducer[A, F](n)
 
-  def groupBy[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
+  final def groupBy[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
     new GroupByTransducer[A, B, F](f)
 }

@@ -25,84 +25,84 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
 
   def apply[R](rf: Reducer[B, R]): Reducer[A, R]
 
-  def andThen[C](that: Transducer[B, C]): Transducer[A, C] =
+  final def andThen[C](that: Transducer[B, C]): Transducer[A, C] =
     >>[C](that)
 
-  def compose[C](that: Transducer[C, A]): Transducer[C, B] =
+  final def compose[C](that: Transducer[C, A]): Transducer[C, B] =
     new CombinedTransducer(that, self)
 
-  def >>[C](that: Transducer[B, C]): Transducer[A, C] =
+  final def >>[C](that: Transducer[B, C]): Transducer[A, C] =
     new CombinedTransducer(self, that)
 
-  def empty: Transducer[A, B] =
+  final def empty: Transducer[A, B] =
     this >> transducers.empty[B]
 
-  def filter(f: B ⇒ Boolean): Transducer[A, B] =
+  final def filter(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filter[B](f)
 
-  def filterNot(f: B ⇒ Boolean): Transducer[A, B] =
+  final def filterNot(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filterNot[B](f)
 
-  def map[C](f: B ⇒ C): Transducer[A, C] =
+  final def map[C](f: B ⇒ C): Transducer[A, C] =
     this >> transducers.map[B, C](f)
 
-  def collect[C](pf: PartialFunction[B, C]): Transducer[A, C] =
+  final def collect[C](pf: PartialFunction[B, C]): Transducer[A, C] =
     this >> transducers.collect[B, C](pf)
 
-  def collectFirst[C](pf: PartialFunction[B, C]): Transducer[A, C] =
+  final def collectFirst[C](pf: PartialFunction[B, C]): Transducer[A, C] =
     this >> transducers.collectFirst[B, C](pf)
 
-  def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
+  final def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
     this >> transducers.foreach[B](f)
 
-  def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
+  final def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
     this >> transducers.flatMap[B, C, F](f)
 
-  def fold[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
+  final def fold[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
     this >> transducers.fold[B, C](z)(f)
 
-  def scan[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
+  final def scan[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
     this >> transducers.scan[B, C](z)(f)
 
-  def find(f: B ⇒ Boolean): Transducer[A, B] =
+  final def find(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.find[B](f)
 
-  def take(n: Long): Transducer[A, B] =
+  final def take(n: Long): Transducer[A, B] =
     this >> transducers.take[B](n)
 
-  def takeWhile(f: B ⇒ Boolean): Transducer[A, B] =
+  final def takeWhile(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.takeWhile[B](f)
 
-  def takeRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
+  final def takeRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
     this >> transducers.takeRight[B](n)
 
-  def takeNth(n: Long): Transducer[A, B] =
+  final def takeNth(n: Long): Transducer[A, B] =
     this >> transducers.takeNth[B](n)
 
-  def drop(n: Long): Transducer[A, B] =
+  final def drop(n: Long): Transducer[A, B] =
     this >> transducers.drop[B](n)
 
-  def dropWhile(f: B ⇒ Boolean): Transducer[A, B] =
+  final def dropWhile(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.dropWhile[B](f)
 
-  def dropRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
+  final def dropRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
     this >> transducers.dropRight[B](n)
 
-  def dropNth(n: Long): Transducer[A, B] =
+  final def dropNth(n: Long): Transducer[A, B] =
     this >> transducers.dropNth[B](n)
 
-  def slice(from: Long, until: Long): Transducer[A, B] =
+  final def slice(from: Long, until: Long): Transducer[A, B] =
     this >> transducers.slice[B](from, until)
 
-  def distinct: Transducer[A, B] =
+  final def distinct: Transducer[A, B] =
     this >> transducers.distinct[B]
 
-  def zipWithIndex: Transducer[A, (B, Int)] =
+  final def zipWithIndex: Transducer[A, (B, Int)] =
     this >> transducers.zipWithIndex[B]
 
-  def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+  final def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.grouped[B, F](n)
 
-  def groupBy[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+  final def groupBy[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
     this >> transducers.groupBy(f)
 }
