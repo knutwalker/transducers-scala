@@ -115,6 +115,7 @@ private[internal] final class FindReducer[A, R](rf: Reducer[A, R], f: A ⇒ Bool
 
   def apply(r: R, a: A, s: Reduced) =
     if (!found && f(a)) {
+      found = true
       s(rf(r, a, s))
     }
     else r
@@ -160,7 +161,7 @@ private[internal] final class TakeRightReducer[A: ClassTag, R](rf: Reducer[A, R]
   }
 
   def apply(r: R) =
-    Reducers.reduce(rf, r, queue.elements, new Reduced)
+    Reducers.reduce(rf, r, queue.elements)
 }
 
 private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
@@ -200,10 +201,7 @@ private[internal] final class DropRightReducer[A: ClassTag, R](rf: Reducer[A, R]
   private val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: Reduced) =
-    queue.add(a) match {
-      case Some(oldest) ⇒ rf(r, oldest, s)
-      case None         ⇒ r
-    }
+    queue.add(a).fold(r)(rf(r, _, s))
 }
 
 private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {

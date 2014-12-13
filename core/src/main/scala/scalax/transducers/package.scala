@@ -31,8 +31,7 @@ package object transducers extends TransducerOps {
     transduceInit(xf)(AsTarget[G].empty[B], xs)
 
   private[transducers] def transduceInit[A, F[_]: AsSource, B, G[_]: AsTarget](xf: Transducer[A, B])(init: G[B], xs: F[A]): G[B] = {
-    val G = AsTarget[G]
-    transduce(xf)(init)(xs, G.reducer[B])
+    transduce(xf)(init)(xs, AsTarget[G].reducer[B])
   }
 
   private def transduce[A, B, R, F[_]: AsSource](xf: Transducer[A, B])(init: R)(xs: F[A], rf: Reducer[B, R]): R = {

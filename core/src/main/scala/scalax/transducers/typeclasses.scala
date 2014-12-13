@@ -25,7 +25,7 @@ trait AsTarget[F[_]] {
 
   def append[A](fa: F[A], a: A): F[A]
 
-  def reducer[A]: Reducer[A, F[A]] =
+  final def reducer[A]: Reducer[A, F[A]] =
     internal.Reducers[A, F[A]]((as, a, _) ⇒ append(as, a))
 }
 
