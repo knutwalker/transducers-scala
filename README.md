@@ -8,12 +8,20 @@ in many contexts and carry only the simple processing logic.
 
 ## Getting it
 
-There is no first release yet. A snapshot is available at sonatype:
+`transducers-scala` is published to sonatype:
+
+```scala
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.2.0"
+```
+
+### Snapshot version
+
+A snapshot is available at sonatype:
 
 ```scala
 resolvers += "sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.1.0-SNAPSHOT"
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.2.1-SNAPSHOT"
 ```
 
 
@@ -42,7 +50,7 @@ val result = into[List].run(xform)(data)
 assert(result == List('1', '4', '1', '6', '1', '8', '2', '0', '2', '2'))
 ```
 
-For more examples and a better introduction, see the [ExampleSpec](src/test/scala/scalax/transducers/ExampleSpec.scala)
+For more examples and a better introduction, see the [ExampleSpec](core/src/test/scala/scalax/transducers/ExampleSpec.scala)
 
 
 ## Explanation
