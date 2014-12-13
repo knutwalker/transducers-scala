@@ -17,6 +17,8 @@ package scalax.transducers
 
 import org.scalatest.FunSpec
 
+import scala.collection.mutable.ListBuffer
+
 class ExampleSpec extends FunSpec {
   import scalax.transducers
 
@@ -86,8 +88,10 @@ class ExampleSpec extends FunSpec {
 
       // The early termination of e.g. `take` means,
       // that the process completes after three elements.
+      val b = ListBuffer.empty[Int]
       val t = transducers.map((x: Int) ⇒ {
-        println(s"side-effect in first map: x = $x")
+        // side-effect in first map
+        b += x
         x + 1
       }).map(_ + 1)
         .map(_ + 1)
@@ -95,6 +99,7 @@ class ExampleSpec extends FunSpec {
 
       val result = transducers.run(t)((1 to 100).toList)
       assert(result == List(4, 5, 6))
+      assert(b.result() == List(1, 2, 3))
     }
 
     it("supports laziness") {
@@ -102,8 +107,10 @@ class ExampleSpec extends FunSpec {
       // Together with early termination, laziness can achieve,
       // that transducers can be run on infinite collections and
       // complete within a finite time-frame.
+      val b = ListBuffer.empty[Int]
       val t = transducers.filter[Int](x ⇒ {
-        println(s"side-effect in filter: x = $x")
+        // side-effect in filter
+        b += x
         x % 2 == 0
       }).dropRight(5)
         .take(5)
@@ -116,6 +123,7 @@ class ExampleSpec extends FunSpec {
       //  the first 5 will be `take`n and the second 5 will be `drop`ped
       val result = transducers.run(t)(Stream.from(1))
       assert(result.toList == List(2, 4, 6, 8, 10))
+      assert(b.result() == (1 to 20).toList)
     }
 
     it("can change the shape if the output") {
