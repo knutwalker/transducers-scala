@@ -6,9 +6,7 @@ jarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.val
 
 outputPath in assembly := baseDirectory.value / (jarName in assembly).value
 
-assemblyOption in assembly ~= { o =>
-  o.copy(prependShellScript = Some(defaultShellScript))
-   .copy(includeScala = false) }
+assemblyOption in assembly ~= { _.copy(includeScala = false) }
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
   case x @ PathList("META-INF", xs @ _*) =>
