@@ -1,6 +1,6 @@
 package scalax.transducers
 
-import java.lang.{Iterable => JIterable}
+import java.lang.{ Iterable ⇒ JIterable }
 import java.util
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
@@ -19,7 +19,7 @@ import scala.collection.JavaConverters._
 @OutputTimeUnit(TimeUnit.SECONDS)
 class EarlyTerminationBenchmark {
 
-  import scalax.transducers.EarlyTerminationBenchmark.{IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala}
+  import scalax.transducers.EarlyTerminationBenchmark.{ IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala }
 
   @Benchmark
   def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
@@ -67,8 +67,8 @@ object EarlyTerminationBenchmark extends JTransducersConversions {
 
   @State(Scope.Benchmark)
   class JavaCollections {
-    val f: (util.List[Int]) => util.List[Int] =
-      xs => xs.stream()
+    val f: (util.List[Int]) ⇒ util.List[Int] =
+      xs ⇒ xs.stream()
         .map[Int]((_: Int) + 1)
         .map[Int]((_: Int) + 1)
         .map[Int]((_: Int) + 1)
@@ -78,26 +78,26 @@ object EarlyTerminationBenchmark extends JTransducersConversions {
 
   @State(Scope.Benchmark)
   class ScalaCollections {
-    val f: (List[Int]) => Vector[Int] =
-      xs => xs.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
-    val fAsVector: (List[Int]) => Vector[Int] =
-      xs => xs.toVector.map(_ + 1).map(_ + 1).map(_ + 1).take(3)
-    val fAsView: (List[Int]) => Vector[Int] =
-      xs => xs.view.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
-    val fAsStream: (List[Int]) => Vector[Int] =
-      xs => xs.toStream.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
+    val f: (List[Int]) ⇒ Vector[Int] =
+      xs ⇒ xs.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
+    val fAsVector: (List[Int]) ⇒ Vector[Int] =
+      xs ⇒ xs.toVector.map(_ + 1).map(_ + 1).map(_ + 1).take(3)
+    val fAsView: (List[Int]) ⇒ Vector[Int] =
+      xs ⇒ xs.view.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
+    val fAsStream: (List[Int]) ⇒ Vector[Int] =
+      xs ⇒ xs.toStream.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
   }
 
   @State(Scope.Benchmark)
   class TransducerScala {
-    val f: (List[Int]) => util.List[Int] =
+    val f: (List[Int]) ⇒ util.List[Int] =
       into[util.List].from[List].run(map((_: Int) + 1).map(_ + 1).map(_ + 1).take(3))
   }
 
   @State(Scope.Benchmark)
   class TransducerJava {
-    val f: (JIterable[Int]) => util.List[Int] =
-      xs => {
+    val f: (JIterable[Int]) ⇒ util.List[Int] =
+      xs ⇒ {
         val t = Fns.map((_: Int) + 1).comp(Fns.map((_: Int) + 1)).comp(Fns.map((_: Int) + 1)).comp(Fns.take(3))
         Fns.into(t, new util.ArrayList[Int], xs)
       }

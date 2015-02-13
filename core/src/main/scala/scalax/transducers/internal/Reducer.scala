@@ -61,7 +61,7 @@ private[transducers] object Reducers {
     protected final def append(a: A): Unit =
       buffer = F.append(buffer, a)
 
-    protected final def size: Long =
+    protected final def size: Int =
       S.size(buffer)
 
     protected final def flush(r: R, s: Reduced): R = {

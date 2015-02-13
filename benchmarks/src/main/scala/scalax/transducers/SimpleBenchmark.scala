@@ -1,6 +1,6 @@
 package scalax.transducers
 
-import java.lang.{Iterable => JIterable}
+import java.lang.{ Iterable ⇒ JIterable }
 import java.util
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
@@ -19,7 +19,7 @@ import scala.collection.JavaConverters._
 @OutputTimeUnit(TimeUnit.SECONDS)
 class SimpleBenchmark {
 
-  import scalax.transducers.SimpleBenchmark.{IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala}
+  import scalax.transducers.SimpleBenchmark.{ IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala }
 
   @Benchmark
   def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
@@ -47,7 +47,6 @@ class SimpleBenchmark {
   }
 }
 
-
 object SimpleBenchmark extends JTransducersConversions {
 
   @State(Scope.Benchmark)
@@ -58,26 +57,26 @@ object SimpleBenchmark extends JTransducersConversions {
 
   @State(Scope.Benchmark)
   class JavaCollections {
-    val f: (util.List[Int]) => util.List[Int] =
-      xs => xs.stream().map[Int]((_: Int) + 1).collect(Collectors.toList[Int])
+    val f: (util.List[Int]) ⇒ util.List[Int] =
+      xs ⇒ xs.stream().map[Int]((_: Int) + 1).collect(Collectors.toList[Int])
   }
 
   @State(Scope.Benchmark)
   class ScalaCollections {
-    val f: (List[Int]) => Vector[Int] = xs => xs.map(_ + 1).toVector
-    val fBreakout: (List[Int]) => Vector[Int] = xs => xs.map(_ + 1)(collection.breakOut)
+    val f: (List[Int]) ⇒ Vector[Int] = xs ⇒ xs.map(_ + 1).toVector
+    val fBreakout: (List[Int]) ⇒ Vector[Int] = xs ⇒ xs.map(_ + 1)(collection.breakOut)
   }
 
   @State(Scope.Benchmark)
   class TransducerScala {
-    val f: (List[Int]) => util.List[Int] =
+    val f: (List[Int]) ⇒ util.List[Int] =
       into[util.List].from[List].run(map((_: Int) + 1))
   }
 
   @State(Scope.Benchmark)
   class TransducerJava {
-    val f: (JIterable[Int]) => util.List[Int] =
-      xs => Fns.into(Fns.map((_: Int) + 1), new util.ArrayList[Int], xs)
+    val f: (JIterable[Int]) ⇒ util.List[Int] =
+      xs ⇒ Fns.into(Fns.map((_: Int) + 1), new util.ArrayList[Int], xs)
   }
 
 }
