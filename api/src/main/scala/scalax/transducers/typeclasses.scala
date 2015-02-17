@@ -18,9 +18,11 @@ package scalax.transducers
 import java.util
 import java.util.{ Iterator ⇒ JIterator }
 
+import scala.collection.TraversableOnce
 import scala.collection.immutable.{ Stream, List }
 import scala.collection.mutable.{ Builder, ListBuffer }
 import scala.language.{ reflectiveCalls, higherKinds, implicitConversions }
+import scalax.transducers.internal.Reduced
 
 trait AsTarget[R[_]] {
   type RB[_]
@@ -38,8 +40,10 @@ trait AsTarget[R[_]] {
   def isEmpty(fa: RB[_]): Boolean = size(fa) == 0
   @inline final def nonEmpty(fa: RB[_]): Boolean = !isEmpty(fa)
 
-  final def reducer[A]: Reducer[A, RB[A]] =
-    internal.Reducers[A, RB[A]]((as, a, _) ⇒ append(as, a))
+  final def reducer[A]: Reducer[A, RB[A]] = new Reducer[A, RB[A]] {
+    def apply(r: RB[A]): RB[A] = r
+    def apply(r: RB[A], a: A, s: Reduced): RB[A] = append(r, a)
+  }
 }
 
 trait AsSource[F[_]] {
@@ -49,6 +53,15 @@ trait AsSource[F[_]] {
 }
 
 trait AsTargetInstances {
+  trait FromBuilder[F[_] <: TraversableOnce[_]] extends AsTarget[F] {
+    final type RB[A] = Builder[A, F[A]]
+
+    final def from[A](as: F[A]): RB[A] = empty[A] ++= as.toTraversable.asInstanceOf[TraversableOnce[A]]
+    final def append[A](fa: RB[A], a: A): RB[A] = fa += a
+    final def finish[A](fa: RB[A]): F[A] = fa.result()
+    final def size(fa: RB[_]): Int = fa.result().size
+  }
+
   implicit val list: AsTarget[List] = new AsTarget[List] {
     type RB[A] = ListBuffer[A]
 
@@ -61,7 +74,7 @@ trait AsTargetInstances {
     def size(fa: RB[_]): Int = fa.size
   }
 
-  val slowList: AsTarget[List] = new AsTarget[List] {
+  val listAppend: AsTarget[List] = new AsTarget[List] {
     type RB[A] = List[A]
 
     def empty[A]: RB[A] = List.empty[A]
@@ -73,28 +86,20 @@ trait AsTargetInstances {
     def size(fa: RB[_]): Int = fa.size
   }
 
-  implicit val vector: AsTarget[Vector] = new AsTarget[Vector] {
-    type RB[A] = Builder[A, Vector[A]]
-
+  implicit val vector: AsTarget[Vector] = new FromBuilder[Vector] {
     def empty[A] = Vector.newBuilder[A]
-    def from[A](as: Vector[A]): RB[A] = empty[A] ++= as
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa += a
-    def finish[A](fa: RB[A]): Vector[A] = fa.result()
-
-    def size(fa: RB[_]): Int = fa.result().size
   }
-
-  implicit val stream: AsTarget[Stream] = new AsTarget[Stream] {
-    type RB[A] = Builder[A, Stream[A]]
-
+  implicit val stream: AsTarget[Stream] = new FromBuilder[Stream] {
     def empty[A] = Stream.newBuilder[A]
-    def from[A](as: Stream[A]): RB[A] = empty[A] ++= as
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa += a
-    def finish[A](fa: RB[A]): Stream[A] = fa.result()
-
-    def size(fa: RB[_]): Int = fa.result().size
+  }
+  implicit val set: AsTarget[Set] = new FromBuilder[Set] {
+    def empty[A] = Set.newBuilder[A]
+  }
+  implicit val iterator: AsTarget[Iterator] = new FromBuilder[Iterator] {
+    def empty[A] = Iterator.IteratorCanBuildFrom[A].apply()
+  }
+  implicit val iterable: AsTarget[Iterable] = new FromBuilder[Iterable] {
+    def empty[A] = Iterable.newBuilder[A]
   }
 
   implicit val firstOption: AsTarget[Option] = new AsTarget[Option] {
@@ -121,42 +126,6 @@ trait AsTargetInstances {
     def size(fa: RB[_]): Int = fa.fold(0)(_ ⇒ 1)
   }
 
-  implicit val set: AsTarget[Set] = new AsTarget[Set] {
-    type RB[A] = Builder[A, Set[A]]
-
-    def empty[A] = Set.newBuilder[A]
-    def from[A](as: Set[A]): RB[A] = empty[A] ++= as
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa += a
-    def finish[A](fa: RB[A]): Set[A] = fa.result()
-
-    def size(fa: RB[_]): Int = fa.result().size
-  }
-
-  implicit val iterator: AsTarget[Iterator] = new AsTarget[Iterator] {
-    type RB[A] = Builder[A, Iterator[A]]
-
-    def empty[A] = Iterator.IteratorCanBuildFrom[A].apply()
-    def from[A](as: Iterator[A]): RB[A] = Iterator.IteratorCanBuildFrom[A].apply(as)
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa += a
-    def finish[A](fa: RB[A]): Iterator[A] = fa.result()
-
-    def size(fa: RB[_]): Int = fa.result().size
-  }
-
-  implicit val iterable: AsTarget[Iterable] = new AsTarget[Iterable] {
-    type RB[A] = Builder[A, Iterable[A]]
-
-    def empty[A] = Iterable.newBuilder[A]
-    def from[A](as: Iterable[A]): RB[A] = empty[A] ++= as
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa += a
-    def finish[A](fa: RB[A]): Iterable[A] = fa.result()
-
-    def size(fa: RB[_]): Int = fa.result().size
-  }
-
   implicit val javaList: AsTarget[util.List] = new AsTarget[util.List] {
     type RB[A] = util.List[A]
 
@@ -173,42 +142,34 @@ trait AsTargetInstances {
 trait AsSourceInstances {
   implicit val list: AsSource[List] = new AsSource[List] {
     def hasNext[A](fa: List[A]) = fa.nonEmpty
-
     def produceNext[A](fa: List[A]) = (fa.head, fa.tail)
   }
   implicit val vector: AsSource[Vector] = new AsSource[Vector] {
     def hasNext[A](fa: Vector[A]) = fa.nonEmpty
-
     def produceNext[A](fa: Vector[A]) = (fa.head, fa.tail)
   }
   implicit val stream: AsSource[Stream] = new AsSource[Stream] {
     def hasNext[A](fa: Stream[A]) = fa.nonEmpty
-
     def produceNext[A](fa: Stream[A]) = (fa.head, fa.tail)
   }
   implicit val option: AsSource[Option] = new AsSource[Option] {
     def hasNext[A](fa: Option[A]) = fa.nonEmpty
-
     def produceNext[A](fa: Option[A]) = (fa.get, None)
   }
   implicit val set: AsSource[Set] = new AsSource[Set] {
     def hasNext[A](fa: Set[A]) = fa.nonEmpty
-
     def produceNext[A](fa: Set[A]) = (fa.head, fa.tail)
   }
   implicit val iterator: AsSource[Iterator] = new AsSource[Iterator] {
     def hasNext[A](fa: Iterator[A]) = fa.hasNext
-
     def produceNext[A](fa: Iterator[A]) = (fa.next(), fa)
   }
   implicit val iterable: AsSource[Iterable] = new AsSource[Iterable] {
     def hasNext[A](fa: Iterable[A]) = fa.nonEmpty
-
     def produceNext[A](fa: Iterable[A]) = (fa.head, fa.tail)
   }
   implicit val javaIterator: AsSource[JIterator] = new AsSource[JIterator] {
     def hasNext[A](fa: JIterator[A]) = fa.hasNext
-
     def produceNext[A](fa: JIterator[A]) = (fa.next(), fa)
   }
 }

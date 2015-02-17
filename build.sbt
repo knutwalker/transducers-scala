@@ -166,18 +166,23 @@ lazy val parent = project.in(file("."))
   .settings(name := "transducers-scala-parent")
   .settings(transducersSettings: _*)
   .settings(noPublishSettings: _*)
-  .dependsOn(core, reactiveStreams, rxScala, tests, examples, benchmarks)
-  .aggregate(core, reactiveStreams, rxScala, tests, examples, benchmarks)
+  .dependsOn(api, core, reactiveStreams, rxScala, tests, examples, benchmarks)
+  .aggregate(api, core, reactiveStreams, rxScala, tests, examples, benchmarks)
 
 lazy val all = project
   .settings(name := "transducers-scala-all")
   .settings(transducersSettings: _*)
-  .aggregate(core, reactiveStreams, rxScala)
-  .dependsOn(core, reactiveStreams, rxScala)
+  .aggregate(api, core, reactiveStreams, rxScala)
+  .dependsOn(api, core, reactiveStreams, rxScala)
+
+lazy val api = project
+  .settings(name := "transducers-scala-api")
+  .settings(transducersSettings: _*)
 
 lazy val core = project
   .settings(name := "transducers-scala")
   .settings(transducersSettings: _*)
+  .dependsOn(api)
 
 lazy val reactiveStreams = project.in(file("contrib") / "reactive-streams")
   .settings(name := "transducers-scala-reactivestreams")
@@ -204,7 +209,7 @@ lazy val examples = project
   .settings(noPublishSettings: _*)
   .dependsOn(core)
 
-lazy val benchmarks = project.dependsOn(core)
+lazy val benchmarks = project
   .settings(name := "transducers-scala-bechmarks")
   .settings(transducersSettings: _*)
   .settings(noPublishSettings: _*)
@@ -212,3 +217,4 @@ lazy val benchmarks = project.dependsOn(core)
   .settings(
     outputTarget in Jmh  := target.value / s"scala-${scalaBinaryVersion.value}",
     libraryDependencies ++= benchmarkDeps)
+  .dependsOn(core)

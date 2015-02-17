@@ -81,7 +81,7 @@ object ListBenchmark extends JTransducersConversions {
     private final val tx = map((_: Int) + 1)
       .filter(_ % 4 == 0).map(_ - 42).take(50)
     final val f: (List[Int]) ⇒ List[Int] =
-      into[List](AsTarget.slowList).from[List].run(tx)
+      into[List](AsTarget.listAppend).from[List].run(tx)
   }
 
   @State(Scope.Benchmark)
