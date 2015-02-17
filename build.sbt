@@ -151,6 +151,7 @@ lazy val rxScalaDeps = List(
 )
 
 lazy val benchmarkDeps = List(
+  "org.functionaljava"  % "functionaljava"           % "4.3",
   "com.cognitect"       % "transducers-java"         % "0.4.67")
 
 lazy val testDeps = List(

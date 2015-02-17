@@ -43,11 +43,6 @@ private[internal] final class FilterReducer[A, R](rf: Reducer[A, R], f: A ⇒ Bo
     if (f(a)) rf(r, a, s) else r
 }
 
-private[internal] final class FilterNotReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
-  def apply(r: R, a: A, s: Reduced) =
-    if (!f(a)) rf(r, a, s) else r
-}
-
 private[internal] final class MapReducer[B, A, R](rf: Reducer[B, R], f: A ⇒ B) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: Reduced) =
     rf(r, f(a), s)
@@ -161,7 +156,7 @@ private[internal] final class TakeRightReducer[A: ClassTag, R](rf: Reducer[A, R]
   }
 
   def apply(r: R) =
-    Reducers.reduce(rf, r, queue.elements)
+    Reducers.reduce(r, queue.elements)(rf)
 }
 
 private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducers.Delegate[A, R](rf) {
@@ -222,7 +217,7 @@ private[internal] final class ZipWithIndexReducer[A, R](rf: Reducer[(A, Int), R]
     rf(r, (a, ids.next()), s)
 }
 
-private[internal] final class GroupedReducer[A, R, F[_]](rf: Reducer[F[A], R], n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Reducers.Buffer[A, R, F](rf) {
+private[internal] final class GroupedReducer[A, R, F[_]: AsTarget](rf: Reducer[F[A], R], n: Int) extends Reducers.Buffer[A, R, F](rf) {
 
   def apply(r: R, a: A, s: Reduced) = {
     append(a)
@@ -230,7 +225,7 @@ private[internal] final class GroupedReducer[A, R, F[_]](rf: Reducer[F[A], R], n
   }
 }
 
-private[internal] final class GroupByReducer[A, B <: AnyRef, R, F[_]](rf: Reducer[F[A], R], f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Reducers.Buffer[A, R, F](rf) {
+private[internal] final class GroupByReducer[A, B <: AnyRef, R, F[_]: AsTarget](rf: Reducer[F[A], R], f: A ⇒ B) extends Reducers.Buffer[A, R, F](rf) {
   private val mark = new AnyRef
   private var previous = mark
 

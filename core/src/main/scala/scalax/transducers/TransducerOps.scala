@@ -31,7 +31,7 @@ private[transducers] trait TransducerOps {
     new FilterTransducer[A](f)
 
   final def filterNot[A](f: A ⇒ Boolean): Transducer[A, A] =
-    new FilterNotTransducer[A](f)
+    filter(x ⇒ !f(x))
 
   final def map[A, B](f: A ⇒ B): Transducer[A, B] =
     new MapTransducer[A, B](f)
@@ -103,9 +103,9 @@ private[transducers] trait TransducerOps {
   final def zipWithIndex[A]: Transducer[A, (A, Int)] =
     new ZipWithIndexTransducer[A]
 
-  final def grouped[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
+  final def grouped[A, F[_]: AsTarget](n: Int): Transducer[A, F[A]] =
     new GroupedTransducer[A, F](n)
 
-  final def groupBy[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[A]] =
+  final def groupBy[A, B <: AnyRef, F[_]: AsTarget](f: A ⇒ B): Transducer[A, F[A]] =
     new GroupByTransducer[A, B, F](f)
 }

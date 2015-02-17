@@ -24,7 +24,7 @@ class TransducersSpec extends FunSuite {
 
   def nil[A] = List.empty[A]
   def transduce[A, B](x: A*)(implicit tf: Transducer[A, B]): List[B] =
-    transducers.transduceInit(tf)(nil[B], x.toList)
+    transducers.transduceFromInit(tf)(nil[B], x.toList)
 
   test("the orElse transducer") {
     implicit val tx = transducers.orElse[Int](42)

@@ -8,6 +8,11 @@ import com.cognitect.transducers.IStepFunction
 import scala.language.implicitConversions
 
 trait JTransducersConversions {
+  implicit def fn2fjf[A, B](g: A ⇒ B): fj.F[A, B] =
+    new fj.F[A, B] {
+      def f(a: A): B = g(a)
+    }
+
   implicit def fn2cognFn[A, B](f: A ⇒ B): com.cognitect.transducers.Function[A, B] =
     new com.cognitect.transducers.Function[A, B] {
       def apply(t: A) = f(t)

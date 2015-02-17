@@ -23,10 +23,10 @@ private[transducers] object Reducers {
   def apply[A, R](f: (R, A, Reduced) ⇒ R): Reducer[A, R] =
     new SimpleReducer[A, R](f)
 
-  def reduce[A, R, F[_]: AsSource](f: Reducer[A, R], result: R, input: F[A]): R =
-    reduce(f, result, input, new Reduced)
+  def reduce[A, R, F[_]: AsSource](result: R, input: F[A])(f: Reducer[A, R]): R =
+    reduceFurther(f, result, input, new Reduced)
 
-  def reduce[A, R, F[_]: AsSource](f: Reducer[A, R], result: R, input: F[A], reduced: Reduced): R =
+  def reduceFurther[A, R, F[_]: AsSource](f: Reducer[A, R], result: R, input: F[A], reduced: Reduced): R =
     runReduce(f, f, result, input, reduced)
 
   def reduceStep[A, R, F[_]: AsSource](f: Reducer[A, R], result: R, input: F[A], reduced: Reduced): R =
@@ -47,12 +47,12 @@ private[transducers] object Reducers {
     final def apply(r: R) = rf(r)
   }
 
-  abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implicit F: AsTarget[F], S: Sized[F]) extends Reducer[A, R] {
+  abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implicit F: AsTarget[F]) extends Reducer[A, R] {
     private var buffer = F.empty[A]
 
     final def apply(r: R) =
-      rf(if (S.nonEmpty(buffer)) {
-        val r2 = rf(r, buffer, new Reduced)
+      rf(if (F.nonEmpty(buffer)) {
+        val r2 = rf(r, F.finish(buffer), new Reduced)
         buffer = F.empty[A]
         r2
       }
@@ -62,10 +62,10 @@ private[transducers] object Reducers {
       buffer = F.append(buffer, a)
 
     protected final def size: Int =
-      S.size(buffer)
+      F.size(buffer)
 
     protected final def flush(r: R, s: Reduced): R = {
-      val ret = rf(r, buffer, s)
+      val ret = rf(r, F.finish(buffer), s)
       buffer = F.empty[A]
       ret
     }

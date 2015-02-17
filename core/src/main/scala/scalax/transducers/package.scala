@@ -25,17 +25,17 @@ package object transducers extends TransducerOps {
   def into[F[_]: AsTarget]: Into[F] = new Into[F]
 
   def addto[A, F[_]: AsSource, B, G[_]: AsTarget](init: G[B])(xf: Transducer[A, B])(xs: F[A]): G[B] =
-    transduceInit(xf)(init, xs)
+    transduceFromInit(xf)(init, xs)
 
-  private[transducers] def transduceEmpty[A, F[_]: AsSource, B, G[_]: AsTarget](xf: Transducer[A, B])(xs: F[A]): G[B] =
-    transduceInit(xf)(AsTarget[G].empty[B], xs)
+  private[transducers] def transduceFromNaught[A, F[_], B, G[_]](xf: Transducer[A, B])(xs: F[A])(implicit F: AsSource[F], G: AsTarget[G]): G[B] =
+    transduceAnything[A, F, B, G](xf)(F, G)(G.empty[B], xs)
 
-  private[transducers] def transduceInit[A, F[_]: AsSource, B, G[_]: AsTarget](xf: Transducer[A, B])(init: G[B], xs: F[A]): G[B] = {
-    transduce(xf)(init)(xs, AsTarget[G].reducer[B])
-  }
+  private[transducers] def transduceFromInit[A, F[_], B, G[_]](xf: Transducer[A, B])(init: G[B], xs: F[A])(implicit F: AsSource[F], G: AsTarget[G]): G[B] =
+    transduceAnything[A, F, B, G](xf)(F, G)(G.from[B](init), xs)
 
-  private def transduce[A, B, R, F[_]: AsSource](xf: Transducer[A, B])(init: R)(xs: F[A], rf: Reducer[B, R]): R = {
-    val xf1 = xf(rf)
-    internal.Reducers.reduce(xf1, init, xs)
+  private def transduceAnything[A, F[_], B, G[_]](xf: Transducer[A, B])(F: AsSource[F], G: AsTarget[G])(builder: G.RB[B], xs: F[A]): G[B] = {
+    val xf1: Reducer[A, G.RB[B]] = xf(G.reducer[B])
+    val rb: G.RB[B] = internal.Reducers.reduce(builder, xs)(xf1)(F)
+    G.finish(rb)
   }
 }

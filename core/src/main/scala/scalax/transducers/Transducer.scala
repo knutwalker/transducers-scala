@@ -109,9 +109,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def zipWithIndex: Transducer[A, (B, Int)] =
     this >> transducers.zipWithIndex[B]
 
-  final def grouped[F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+  final def grouped[F[_]: AsTarget](n: Int): Transducer[A, F[B]] =
     this >> transducers.grouped[B, F](n)
 
-  final def groupBy[F[_]](f: B ⇒ C forSome { type C <: AnyRef })(implicit F: AsTarget[F], S: Sized[F]): Transducer[A, F[B]] =
+  final def groupBy[F[_]: AsTarget](f: B ⇒ C forSome { type C <: AnyRef }): Transducer[A, F[B]] =
     this >> transducers.groupBy(f)
 }

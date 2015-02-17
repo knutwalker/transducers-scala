@@ -47,13 +47,6 @@ private[transducers] final class FilterTransducer[A](f: A ⇒ Boolean) extends T
   override def toString = "(filter)"
 }
 
-private[transducers] final class FilterNotTransducer[A](f: A ⇒ Boolean) extends Transducer[A, A] {
-  def apply[R](rf: Reducer[A, R]) =
-    new FilterNotReducer[A, R](rf, f)
-
-  override def toString = "(filterNot)"
-}
-
 private[transducers] final class MapTransducer[A, B](f: A ⇒ B) extends Transducer[A, B] {
   def apply[R](rf: Reducer[B, R]) =
     new MapReducer[B, A, R](rf, f)
@@ -173,14 +166,14 @@ private[transducers] final class ZipWithIndexTransducer[A] extends Transducer[A,
   override def toString = "(zipWithIndex)"
 }
 
-private[transducers] final class GroupedTransducer[A, F[_]](n: Int)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
+private[transducers] final class GroupedTransducer[A, F[_]: AsTarget](n: Int) extends Transducer[A, F[A]] {
   def apply[R](rf: Reducer[F[A], R]) =
     new GroupedReducer[A, R, F](rf, n)
 
   override def toString = s"(grouped $n)"
 }
 
-private[transducers] final class GroupByTransducer[A, B <: AnyRef, F[_]](f: A ⇒ B)(implicit F: AsTarget[F], S: Sized[F]) extends Transducer[A, F[A]] {
+private[transducers] final class GroupByTransducer[A, B <: AnyRef, F[_]: AsTarget](f: A ⇒ B) extends Transducer[A, F[A]] {
   def apply[R](rf: Reducer[F[A], R]) =
     new GroupByReducer[A, B, R, F](rf, f)
 
