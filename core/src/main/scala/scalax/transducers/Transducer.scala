@@ -75,6 +75,18 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def find(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.find[B](f)
 
+  final def head: Transducer[A, B] =
+    this >> transducers.head
+
+  final def last: Transducer[A, B] =
+    this >> transducers.last
+
+  final def init: Transducer[A, B] =
+    this >> transducers.init
+
+  final def tail: Transducer[A, B] =
+    this >> transducers.tail
+
   final def take(n: Long): Transducer[A, B] =
     this >> transducers.take[B](n)
 

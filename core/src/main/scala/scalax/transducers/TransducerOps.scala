@@ -39,7 +39,7 @@ private[transducers] trait TransducerOps {
     new CollectTransducer[A, B](pf)
 
   final def collectFirst[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
-    collect[A, B](pf).take(1)
+    collect[A, B](pf).head
 
   final def forall[A](f: A ⇒ Boolean): Transducer[A, Boolean] =
     collectFirst[A, Boolean] {
@@ -65,6 +65,18 @@ private[transducers] trait TransducerOps {
 
   final def find[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FindTransducer[A](f)
+
+  final def head[A]: Transducer[A, A] =
+    take(1)
+
+  final def last[A]: Transducer[A, A] =
+    takeRight(1)
+
+  final def init[A]: Transducer[A, A] =
+    dropRight(1)
+
+  final def tail[A]: Transducer[A, A] =
+    drop(1)
 
   final def take[A](n: Long): Transducer[A, A] =
     new TakeTransducer[A](n)

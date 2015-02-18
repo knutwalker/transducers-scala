@@ -101,6 +101,26 @@ class TransducersSpec extends FunSuite {
     assert(transduce[String, String]("42", "1337") == List("42", "4242", "1337", "13371337"))
   }
 
+  test("the head transducer") {
+    implicit val tx = transducers.head[Int]
+    assert(transduce[Int, Int]((1 to 10): _*) == List(1))
+  }
+
+  test("the last transducer") {
+    implicit val tx = transducers.last[Int]
+    assert(transduce[Int, Int]((1 to 10): _*) == List(10))
+  }
+
+  test("the init transducer") {
+    implicit val tx = transducers.init[Int]
+    assert(transduce[Int, Int]((1 to 10): _*) == List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+  }
+
+  test("the tail transducer") {
+    implicit val tx = transducers.tail[Int]
+    assert(transduce[Int, Int]((1 to 10): _*) == List(2, 3, 4, 5, 6, 7, 8, 9, 10))
+  }
+
   test("the fold transducer") {
     implicit val tx = transducers.fold[Int, Int](0)(_ + _)
     assert(transduce[Int, Int]((1 to 10): _*) == List(55))
