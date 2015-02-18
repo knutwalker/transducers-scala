@@ -48,7 +48,7 @@ class ListBenchmark {
   }
 
   @Benchmark
-  def _04_oldTransducers(bh: Blackhole, ints: IntList, f: TransducersFast): Unit = {
+  def _04_newTransducers(bh: Blackhole, ints: IntList, f: TransducersFast): Unit = {
     bh.consume(f.f(ints.xs))
   }
 }
