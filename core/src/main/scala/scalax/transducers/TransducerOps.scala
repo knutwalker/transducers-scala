@@ -58,7 +58,7 @@ private[transducers] trait TransducerOps {
     new FlatMapTransducer[A, B, F](f)
 
   final def fold[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
-    new FoldTransducer[A, B](z, f)
+    scan(z)(f).takeRight(1)
 
   final def scan[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
     new ScanTransducer[A, B](z, f)

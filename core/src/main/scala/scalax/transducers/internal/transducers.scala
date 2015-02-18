@@ -74,13 +74,6 @@ private[transducers] final class FlatMapTransducer[A, B, F[_]: AsSource](f: A �
   override def toString = "(flatMap)"
 }
 
-private[transducers] final class FoldTransducer[A, B](z: B, f: (B, A) ⇒ B) extends Transducer[A, B] {
-  def apply[R](rf: Reducer[B, R]) =
-    new FoldReducer[A, B, R](rf, z, f)
-
-  override def toString = "(fold)"
-}
-
 private[transducers] final class ScanTransducer[A, B](z: B, f: (B, A) ⇒ B) extends Transducer[A, B] {
   def apply[R](rf: Reducer[B, R]) =
     new ScanReducer[A, B, R](rf, z, f)
