@@ -17,7 +17,6 @@ package scalax.transducers
 package internal
 
 import scala.language.higherKinds
-import scala.reflect.ClassTag
 
 private[internal] final class OrElseReducer[A, R](rf: Reducer[A, R], cont: ⇒ A) extends Reducer[A, R] {
   private var hasValue = false
@@ -147,7 +146,7 @@ private[internal] final class TakeNthReducer[A, R](rf: Reducer[A, R], n: Long) e
   }
 }
 
-private[internal] final class TakeRightReducer[A: ClassTag, R](rf: Reducer[A, R], n: Int) extends Reducer[A, R] {
+private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) extends Reducer[A, R] {
   private val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: Reduced) = {
@@ -192,7 +191,7 @@ private[internal] final class DropNthReducer[A, R](rf: Reducer[A, R], n: Long) e
   }
 }
 
-private[internal] final class DropRightReducer[A: ClassTag, R](rf: Reducer[A, R], n: Int) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class DropRightReducer[A, R](rf: Reducer[A, R], n: Int) extends Reducers.Delegate[A, R](rf) {
   private val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: Reduced) =

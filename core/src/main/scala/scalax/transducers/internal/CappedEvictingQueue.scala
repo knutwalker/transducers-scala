@@ -15,13 +15,11 @@
  */
 package scalax.transducers.internal
 
-import scala.reflect.ClassTag
-
-final class CappedEvictingQueue[A: ClassTag](private val capacity: Int) {
+final class CappedEvictingQueue[A](private val capacity: Int) {
 
   import scalax.transducers.internal.CappedEvictingQueue.elementsIterator
 
-  private val backing = new Array[A](capacity)
+  private val backing = new Array[Any](capacity)
   private val max = capacity.toLong
   private var cursor = 0L
 
@@ -39,7 +37,7 @@ final class CappedEvictingQueue[A: ClassTag](private val capacity: Int) {
     val oldest = backing(head)
     backing(head) = elem
     cursor += 1L
-    Some(oldest)
+    Some(oldest).asInstanceOf[Option[A]]
   }
 
   private def addNormally(elem: A): Option[A] = {
@@ -66,7 +64,7 @@ private object CappedEvictingQueue {
   def elementsIterator[A](q: CappedEvictingQueue[A], fromIndex: Int, nrElements: Int): Iterator[A] =
     new QueueElementsIterator[A](fromIndex, nrElements, q.capacity, q.backing)
 
-  class QueueElementsIterator[A](fromIndex: Int, nrElements: Int, capacity: Int, backing: Array[A]) extends Iterator[A] {
+  class QueueElementsIterator[A](fromIndex: Int, nrElements: Int, capacity: Int, backing: Array[Any]) extends Iterator[A] {
     private var drained = 0
     private var current = fromIndex
 
@@ -77,7 +75,7 @@ private object CappedEvictingQueue {
       val elem = backing(index)
       current += 1
       drained += 1
-      elem
+      elem.asInstanceOf[A]
     }
 
     override def hasDefiniteSize = true

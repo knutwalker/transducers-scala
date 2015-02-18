@@ -17,7 +17,6 @@ package scalax
 package transducers
 
 import scala.language.{ existentials, higherKinds }
-import scala.reflect.ClassTag
 import scalax.transducers.internal.CombinedTransducer
 
 trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(Int, Long, Double, Char, Boolean) B] {
@@ -82,7 +81,7 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def takeWhile(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.takeWhile[B](f)
 
-  final def takeRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
+  final def takeRight(n: Int): Transducer[A, B] =
     this >> transducers.takeRight[B](n)
 
   final def takeNth(n: Long): Transducer[A, B] =
@@ -94,7 +93,7 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def dropWhile(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.dropWhile[B](f)
 
-  final def dropRight(n: Int)(implicit ct: ClassTag[B]): Transducer[A, B] =
+  final def dropRight(n: Int): Transducer[A, B] =
     this >> transducers.dropRight[B](n)
 
   final def dropNth(n: Long): Transducer[A, B] =

@@ -16,7 +16,6 @@
 package scalax.transducers
 
 import scala.language.higherKinds
-import scala.reflect.ClassTag
 import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {
@@ -73,7 +72,7 @@ private[transducers] trait TransducerOps {
   final def takeWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
     new TakeWhileTransducer[A](f)
 
-  final def takeRight[A: ClassTag](n: Int): Transducer[A, A] =
+  final def takeRight[A](n: Int): Transducer[A, A] =
     new TakeRightTransducer[A](n)
 
   final def takeNth[A](n: Long): Transducer[A, A] =
@@ -85,7 +84,7 @@ private[transducers] trait TransducerOps {
   final def dropWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
     new DropWhileTransducer[A](f)
 
-  final def dropRight[A: ClassTag](n: Int): Transducer[A, A] =
+  final def dropRight[A](n: Int): Transducer[A, A] =
     new DropRightTransducer[A](n)
 
   final def dropNth[A](n: Long): Transducer[A, A] =

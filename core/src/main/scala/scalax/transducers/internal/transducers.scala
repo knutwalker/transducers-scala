@@ -17,7 +17,6 @@ package scalax.transducers
 package internal
 
 import scala.language.higherKinds
-import scala.reflect.ClassTag
 
 private[transducers] final class CombinedTransducer[A, B, C](left: Transducer[A, B], right: Transducer[B, C]) extends Transducer[A, C] {
   def apply[R](rf: Reducer[C, R]) =
@@ -110,7 +109,7 @@ private[transducers] final class TakeWhileTransducer[A](f: A ⇒ Boolean) extend
   override def toString = "(takeWhile)"
 }
 
-private[transducers] final class TakeRightTransducer[A: ClassTag](n: Int) extends Transducer[A, A] {
+private[transducers] final class TakeRightTransducer[A](n: Int) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new TakeRightReducer[A, R](rf, n)
 
@@ -138,7 +137,7 @@ private[transducers] final class DropWhileTransducer[A](f: A ⇒ Boolean) extend
   override def toString = "(dropWhile)"
 }
 
-private[transducers] final class DropRightTransducer[A: ClassTag](n: Int) extends Transducer[A, A] {
+private[transducers] final class DropRightTransducer[A](n: Int) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new DropRightReducer[A, R](rf, n)
 
