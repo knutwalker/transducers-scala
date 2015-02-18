@@ -81,13 +81,6 @@ private[transducers] final class ScanTransducer[A, B](z: B, f: (B, A) ⇒ B) ext
   override def toString = "(scan)"
 }
 
-private[transducers] final class FindTransducer[A](f: A ⇒ Boolean) extends Transducer[A, A] {
-  def apply[R](rf: Reducer[A, R]) =
-    new FindReducer[A, R](rf, f)
-
-  override def toString = "(find)"
-}
-
 private[transducers] final class TakeTransducer[A](n: Long) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new TakeReducer[A, R](rf, n)

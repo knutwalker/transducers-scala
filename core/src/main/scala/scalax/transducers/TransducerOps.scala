@@ -64,7 +64,7 @@ private[transducers] trait TransducerOps {
     new ScanTransducer[A, B](z, f)
 
   final def find[A](f: A ⇒ Boolean): Transducer[A, A] =
-    new FindTransducer[A](f)
+    filter(f).head
 
   final def head[A]: Transducer[A, A] =
     take(1)
