@@ -15,15 +15,17 @@
  */
 package scalax.transducers
 
-import java.util
-import java.util.{ Iterator ⇒ JIterator }
-
-import scala.collection.TraversableOnce
-import scala.collection.immutable.{ Stream, List }
-import scala.collection.mutable.{ Builder, ListBuffer }
-import scala.language.{ reflectiveCalls, higherKinds, implicitConversions }
 import scalax.transducers.internal.Reduced
 
+import scala.annotation.implicitNotFound
+import scala.collection.{TraversableOnce, mutable}
+import scala.collection.immutable.{List, Stream}
+import scala.collection.mutable.ListBuffer
+import scala.language.{higherKinds, implicitConversions, reflectiveCalls}
+import java.util
+import java.util.{Iterator ⇒ JIterator}
+
+@implicitNotFound("Don't know how to transduce into a ${R}. You need to provide an implicit instance of AsTarget[${R}].")
 trait AsTarget[R[_]] {
   type RB[_]
 
@@ -46,6 +48,7 @@ trait AsTarget[R[_]] {
   }
 }
 
+@implicitNotFound("Don't know how to transduce from a ${F}. You need to provide an implicit instance of AsSource[${F}].")
 trait AsSource[F[_]] {
   def hasNext[A](fa: F[A]): Boolean
 
@@ -54,7 +57,7 @@ trait AsSource[F[_]] {
 
 trait AsTargetInstances {
   trait FromBuilder[F[_] <: TraversableOnce[_]] extends AsTarget[F] {
-    final type RB[A] = Builder[A, F[A]]
+    final type RB[A] = mutable.Builder[A, F[A]]
 
     final def from[A](as: F[A]): RB[A] = empty[A] ++= as.toTraversable.asInstanceOf[TraversableOnce[A]]
     final def append[A](fa: RB[A], a: A): RB[A] = fa += a
