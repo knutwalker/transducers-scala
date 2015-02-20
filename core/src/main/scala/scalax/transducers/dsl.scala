@@ -21,6 +21,9 @@ final class Into[G[_]: AsTarget] {
   def run[A, F[_]: AsSource, B](xf: Transducer[A, B])(xs: F[A]): G[B] =
     transduceFromNaught(xf)(xs)
 
+  def run[A, F[_]: AsSource, B](xs: F[A])(xf: Transducer[A, B]): G[B] =
+    transduceFromNaught(xf)(xs)
+
   def from[F[_]: AsSource]: IntoFrom[F, G] = new IntoFrom[F, G]
 }
 
