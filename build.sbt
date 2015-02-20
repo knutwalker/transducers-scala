@@ -189,16 +189,6 @@ lazy val rxScala = project.in(file("contrib") / "rx-scala")
     "io.reactivex" %% "rxscala" % "0.23.1"))
   .dependsOn(core)
 
-lazy val tests = project
-  .settings(name := "transducers-scala-tests")
-  .settings(transducersSettings: _*)
-  .settings(doNotPublish: _*)
-  .settings(libraryDependencies ++= List(
-    "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1",
-    "org.scalatest"     %% "scalatest"                % "2.2.4"  )
-    .map(_ % "test"))
-  .dependsOn(core, reactiveStreams, rxScala)
-
 lazy val examples = project
   .settings(name := "transducers-scala-examples")
   .settings(transducersSettings: _*)
@@ -216,3 +206,15 @@ lazy val benchmarks = project
       "org.functionaljava" % "functionaljava"   % "4.3",
       "com.cognitect"      % "transducers-java" % "0.4.67"))
   .dependsOn(core)
+
+lazy val tests = project
+  .settings(name := "transducers-scala-tests")
+  .settings(transducersSettings: _*)
+  .settings(doNotPublish: _*)
+  .settings(libraryDependencies ++= List(
+    "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1",
+    "org.scalatest"     %% "scalatest"                % "2.2.4"  ,
+    "org.specs2"        %% "specs2-scalacheck"        % "2.4.16" ,
+    "org.scalacheck"    %% "scalacheck"               % "1.12.2" )
+    .map(_ % "test"))
+  .dependsOn(core, reactiveStreams, rxScala)

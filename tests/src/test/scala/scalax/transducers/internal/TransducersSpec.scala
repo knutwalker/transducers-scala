@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Paul Horn
+ * Copyright 2014 – 2015 Paul Horn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,199 +13,426 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package scalax
 package transducers.internal
 
-import org.scalatest.FunSuite
+import transducers.{Transducer, Arbitraries}
 
-import scalax.transducers.Transducer
+import org.scalacheck.Gen.Choose
+import org.scalacheck.{Arbitrary, Gen}
+import org.specs2._
+import org.specs2.mutable.Specification
 
-class TransducersSpec extends FunSuite {
+import scala.math.{max, min}
+import java.util.concurrent.atomic.AtomicInteger
 
-  def nil[A] = List.empty[A]
-  def transduce[A, B](x: A*)(implicit tf: Transducer[A, B]): List[B] =
-    transducers.transduceFromInit(tf)(nil[B], x.toList)
+final class TransducersSpec extends Specification with ScalaCheck with Arbitraries {
+  import TransducersSpec._
 
-  test("the orElse transducer") {
-    implicit val tx = transducers.orElse[Int](42)
-    assert(transduce[Int, Int]() == List(42))
-    assert(transduce[Int, Int](1337) == List(1337))
-  }
+  "empty" should {
+    val tx = transducers.empty[Int]
 
-  test("the empty transducer") {
-    implicit val tx = transducers.empty[Int]
-    assert(transduce[Int, Int](1, 2, 13, 42, 1337) == List.empty[Int])
-  }
-
-  test("the filter transducer") {
-    implicit val tx = transducers.filter((_: String) == "x")
-    assert(transduce[String, String]("x") == List("x"))
-    assert(transduce[String, String]("f") == List())
-  }
-
-  test("the filterNot transducer") {
-    implicit val tx = transducers.filterNot((_: String) == "x")
-    assert(transduce[String, String]("x") == List())
-    assert(transduce[String, String]("f") == List("f"))
-  }
-
-  test("the map transducer") {
-    implicit val tx = transducers.map((_: Int).toString)
-    assert(transduce[Int, String](42) == List("42"))
-    assert(transduce[Int, String](1337) == List("1337"))
-  }
-
-  test("the collect transducer") {
-    implicit val tx = transducers.collect[Int, String] {
-      case 42   ⇒ "42"
-      case 1337 ⇒ "1337"
+    "produce nothing" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx).length ==== 0
     }
-    assert(transduce[Int, String](42) == List("42"))
-    assert(transduce[Int, String](1337) == List("1337"))
-    assert(transduce[Int, String](13) == List())
-  }
 
-  test("the collectFirst transducer") {
-    implicit val tx = transducers.collectFirst[Int, String] {
-      case 42   ⇒ "42"
-      case 1337 ⇒ "1337"
+    "consume nothing" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== 0
     }
-    assert(transduce[Int, String](12, 42, 1337, 42) == List("42"))
-    assert(transduce[Int, String](1337) == List("1337"))
-    assert(transduce[Int, String](13) == List())
   }
 
-  test("the forall transducer") {
-    implicit val rx = transducers.forall[Int](_ % 2 == 0)
-    assert(transduce[Int, Boolean](2, 4, 5, 8, 10) == List(false))
-    assert(transduce[Int, Boolean](2, 4, 6, 8, 10) == List(true))
-    assert(transduce[Int, Boolean]() == List(true))
+  "orElse" should {
+    val tx = transducers.orElse(42)
+
+    "produce at least one item" ! prop { (xs: List[Int]) ⇒
+      val result = run(xs, tx)
+      result.length ==== max(xs.length, 1)
+        result.last ==== xs.lastOption.getOrElse(42)
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
   }
 
-  test("the exists transducer") {
-    implicit val rx = transducers.exists[Int](_ % 2 == 0)
-    assert(transduce[Int, Boolean](1, 3, 4, 7, 9) == List(true))
-    assert(transduce[Int, Boolean](1, 3, 5, 7, 9) == List(false))
-    assert(transduce[Int, Boolean]() == List(false))
+  "foreach" should {
+    val tx = transducers.foreach[Int](_ ⇒ ())
+
+    "produce nothing" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx).length ==== 0
+    }
+
+    "run a side-effect for each value" ! prop { (xs: List[Int]) ⇒
+      val sideEffects = new AtomicInteger
+      val tx_! = transducers.foreach[Int](_ ⇒ sideEffects.incrementAndGet())
+      run(xs, tx_!)
+      sideEffects.get ==== xs.length
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
   }
 
-  test("the foreach transducer") {
-    var effected = List.empty[String]
-    implicit val tx = transducers.foreach((x: String) ⇒ effected = x :: effected)
-    assert(transduce[String, Unit]("42", "1337") == List())
-    assert(effected == List("1337", "42"))
+  "map" should {
+    "produce the input mapped over" ! prop { (xs: List[Int], f: Int ⇒ Int) ⇒
+      run(xs, transducers.map(f)) ==== xs.map(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Int) ⇒
+      consume(xs, transducers.map(f)) ==== xs.length
+    }
   }
 
-  test("the flatMap transducer") {
-    implicit val tx = transducers.flatMap((x: String) ⇒ List(x, s"${x}${x}"))
-    assert(transduce[String, String]("42", "1337") == List("42", "4242", "1337", "13371337"))
+  "flatMap" should {
+    "produce the input flat-mapped over" ! prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
+      run(xs, transducers.flatMap(f)) ==== xs.flatMap(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
+      consume(xs, transducers.flatMap(f)) ==== xs.length
+    }
   }
 
-  test("the head transducer") {
-    implicit val tx = transducers.head[Int]
-    assert(transduce[Int, Int]((1 to 10): _*) == List(1))
+  "filter" should {
+    "produce the filtered input" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      run(xs, transducers.filter(f)) ==== xs.filter(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      consume(xs, transducers.filter(f)) ==== xs.length
+    }
   }
 
-  test("the last transducer") {
-    implicit val tx = transducers.last[Int]
-    assert(transduce[Int, Int]((1 to 10): _*) == List(10))
+  "filterNot" should {
+    "produce the filtered input" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      run(xs, transducers.filterNot(f)) ==== xs.filterNot(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      consume(xs, transducers.filterNot(f)) ==== xs.length
+    }
   }
 
-  test("the init transducer") {
-    implicit val tx = transducers.init[Int]
-    assert(transduce[Int, Int]((1 to 10): _*) == List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+  "collect" should {
+    "produce the collected input" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+      run(xs, transducers.collect(f)) ==== xs.collect(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+      consume(xs, transducers.collect(f)) ==== xs.length
+    }
   }
 
-  test("the tail transducer") {
-    implicit val tx = transducers.tail[Int]
-    assert(transduce[Int, Int]((1 to 10): _*) == List(2, 3, 4, 5, 6, 7, 8, 9, 10))
+  "collectFirst" should {
+    "produce only the first value of the collected input" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+      run(xs, transducers.collectFirst(f)) ==== xs.collect(f).take(1)
+    }
+
+    "consume only the items until the first match" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+      consume(xs, transducers.collectFirst(f)) ==== itemsUntilFound(xs, f.isDefinedAt)
+    }
   }
 
-  test("the fold transducer") {
-    implicit val tx = transducers.fold[Int, Int](0)(_ + _)
-    assert(transduce[Int, Int]((1 to 10): _*) == List(55))
+  "find" should {
+    "produce only the first value found" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      run(xs, transducers.find(f)) ==== xs.find(f).toList
+    }
+
+    "consume only the items until the first match" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      consume(xs, transducers.find(f)) ==== itemsUntilFound(xs, f)
+    }
   }
 
-  test("the scan transducer") {
-    implicit val tx = transducers.scan[Int, Int](0)(_ + _)
-    assert(transduce[Int, Int]((1 to 10): _*) == List(0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55))
+  "forall" should {
+    "produce only only one boolean value" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      run(xs, transducers.forall(f)) ==== List(xs.forall(f))
+    }
+
+    "consume only the items until the first short-cut can be found" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      consume(xs, transducers.forall(f)) ==== itemsUntilFound(xs, !f(_))
+    }
   }
 
-  test("the find transducer") {
-    implicit val tx = transducers.find[Int](_ == 1337)
-    assert(transduce[Int, Int](13, 42, 37, 1337, 1337) == List(1337))
-    assert(transduce[Int, Int](13, 42, 37) == List())
+  "exists" should {
+    "produce only only one boolean value" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      run(xs, transducers.exists(f)) ==== List(xs.exists(f))
+    }
+
+    "consume only the items until the first short-cut can be found" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      consume(xs, transducers.exists(f)) ==== itemsUntilFound(xs, f)
+    }
   }
 
-  test("the take transducer") {
-    implicit val tx = transducers.take[String](2)
-    assert(transduce[String, String]("42", "1337", "24", "7331") == List("42", "1337"))
+  "fold" should {
+    "produce only only one result value" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+      run(xs, transducers.fold(z)(f)) ==== List(xs.foldLeft(z)(f))
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+      consume(xs, transducers.fold(z)(f)) ==== xs.length
+    }
   }
 
-  test("the takeWhile transducer") {
-    implicit val tx = transducers.takeWhile((_: String) == "42")
-    assert(transduce[String, String]("42", "42", "1337") == List("42", "42"))
+  "scan" should {
+    "produce all the result values" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+      run(xs, transducers.scan(z)(f)) ==== xs.scanLeft(z)(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+      consume(xs, transducers.fold(z)(f)) ==== xs.length
+    }
   }
 
-  test("the takeNth transducer") {
-    implicit val tx = transducers.takeNth[String](2)
-    assert(transduce[String, String]("142", "242", "342", "442") == List("142", "342"))
+  "head" should {
+    val tx = transducers.head[Int]
+
+    "produce the first value only" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx) ==== xs.headOption.toList
+    }
+
+    "consume the first item only" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.take(1).length
+    }
   }
 
-  test("the takeRight transducer") {
-    implicit val tx = transducers.takeRight[String](2)
-    assert(transduce[String, String]("142", "242", "342", "442") == List("342", "442"))
+  "last" should {
+    val tx = transducers.last[Int]
+
+    "produce the last value only" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx) ==== xs.lastOption.toList
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
   }
 
-  test("the drop transducer") {
-    implicit val tx = transducers.drop[String](2)
-    assert(transduce[String, String]("24", "7331", "42", "1337") == List("42", "1337"))
+  "init" should {
+    val tx = transducers.init[Int]
+
+    "produce all but the last value" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx) ==== (if (xs.isEmpty) List() else xs.init)
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
   }
 
-  test("the dropWhile transducer") {
-    implicit val tx = transducers.dropWhile((_: String) == "42")
-    assert(transduce[String, String]("42", "42", "1337") == List("1337"))
+  "tail" should {
+    val tx = transducers.tail[Int]
+
+    "produce all but the first value" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx) ==== (if (xs.isEmpty) List() else xs.tail)
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
   }
 
-  test("the dropNth transducer") {
-    implicit val tx = transducers.dropNth[String](2)
-    assert(transduce[String, String]("142", "242", "342", "442") == List("242", "442"))
+  "take" should {
+    "produce the first n items" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.take[Int](n.toLong)
+      run(xs, tx) ==== xs.take(n)
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume only the first n items" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.take[Int](n.toLong)
+      consume(xs, tx) ==== min(n, xs.length)
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
-  test("the dropRight transducer") {
-    implicit val tx = transducers.dropRight[String](2)
-    assert(transduce[String, String]("142", "242", "342", "442") == List("142", "242"))
+  "takeWhile" should {
+    "produce the first items until the predicate fails" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      val tx = transducers.takeWhile[Int](f)
+      run(xs, tx) ==== xs.takeWhile(f)
+    }
+
+    "consume only the first items" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      val tx = transducers.takeWhile[Int](f)
+      consume(xs, tx) ==== itemsUntilFound(xs, !f(_))
+    }
   }
 
-  test("the slice transducer") {
-    val tx1 = transducers.slice[Int](2, 5)
-    val tx2 = transducers.slice[Int](5, 2)
-    assert(transduce[Int, Int]((1 to 10): _*)(tx1) == List(3, 4, 5))
-    assert(transduce[Int, Int]((1 to 10): _*)(tx2) == List.empty[Int])
+  "takeRight" should {
+    "produce the last n items" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.takeRight[Int](n)
+      run(xs, tx) ==== xs.takeRight(n)
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.takeRight[Int](n)
+      consume(xs, tx) ==== xs.length
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
-  test("the distinct transducer") {
-    implicit val tx = transducers.distinct[String]
-    assert(transduce[String, String]("42", "42", "1337", "1337") == List("42", "1337"))
-    assert(transduce[String, String]("42", "42", "1337", "42", "1337") == List("42", "1337", "42", "1337"))
+  "takeNth" should {
+    "produce every n-th item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.takeNth[Int](n.toLong)
+      run(xs, tx) ==== xs.grouped(n).flatMap(_.take(1)).toList
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.takeNth[Int](n.toLong)
+      consume(xs, tx) ==== xs.length
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
-  test("the zipWithIndex transducer") {
-    implicit val tx = transducers.zipWithIndex[String]
-    assert(transduce[String, (String, Int)]("42", "1337", "421337") ==
-      List(("42", 0), ("1337", 1), ("421337", 2)))
+  "drop" should {
+    "produce the all but the first n items" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.drop[Int](n.toLong)
+      run(xs, tx) ==== xs.drop(n)
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.drop[Int](n.toLong)
+      consume(xs, tx) ==== xs.length
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
-  test("the grouped transducer") {
-    implicit val tx = transducers.grouped[String, List](2)
-    assert(transduce[String, List[String]]("42", "42", "42", "1337", "1337", "1337") ==
-      List(List("42", "42"), List("42", "1337"), List("1337", "1337")))
+  "dropWhile" should {
+    "produce the all but the first items until the predicate fails" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      val tx = transducers.dropWhile[Int](f)
+      run(xs, tx) ==== xs.dropWhile(f)
+    }
+
+    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+      val tx = transducers.dropWhile[Int](f)
+      consume(xs, tx) ==== xs.length
+    }
   }
 
-  test("the groupBy transducer") {
-    implicit val tx = transducers.groupBy[String, String, List]((_: String).length.toString)
-    assert(transduce[String, List[String]]("42", "13", "37", "1337", "4242") ==
-      List(List("42", "13", "37"), List("1337", "4242")))
+  "dropRight" should {
+    "produce the all but the last n items" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.dropRight[Int](n)
+      run(xs, tx) ==== xs.dropRight(n)
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.dropRight[Int](n)
+      consume(xs, tx) ==== xs.length
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+  }
+
+  "dropNth" should {
+    "produce all items but every n-th" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.dropNth[Int](n.toLong)
+      run(xs, tx) ==== xs.grouped(n).flatMap(_.drop(1)).toList
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.dropNth[Int](n.toLong)
+      consume(xs, tx) ==== xs.length
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+  }
+
+  "slice" should {
+    "produce a slice of the items" ! prop { (xs: List[Int], x: Int, y: Int) ⇒
+      val (n, m) = if (x > y) (y, x) else (x, y)
+      val tx = transducers.slice[Int](n.toLong, m.toLong)
+      run(xs, tx) ==== xs.slice(n, m)
+    }(implicitly, implicitly, implicitly, posNum, implicitly, posNum, implicitly, implicitly)
+
+    "consume only the items till the end of the slice" ! prop { (xs: List[Int], x: Int, y: Int) ⇒
+      val (n, m) = if (x > y) (y, x) else (x, y)
+      val toConsume = if (n >= m) 0 else min(m, xs.length)
+      val tx = transducers.slice[Int](n.toLong, m.toLong)
+      consume(xs, tx) ==== toConsume
+    }(implicitly, implicitly, implicitly, posNum, implicitly, posNum, implicitly, implicitly)
+  }
+
+  "distinct" should {
+    val tx = transducers.distinct[Int]
+
+    "produce only the distinct set of items" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx) ==== xs.foldLeft(Vector.empty[Int]) { (ys, x) ⇒
+        if (ys.lastOption.contains(x)) ys else ys :+ x
+      }.toList
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
+  }
+
+  "zipWithIndex" should {
+    val tx = transducers.zipWithIndex[Int]
+
+    "produce zipped pairs of items and their index" ! prop { (xs: List[Int]) ⇒
+      run(xs, tx) ==== xs.zipWithIndex
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
+  }
+
+  "grouped" should {
+    "produce groups of fixed size" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.grouped[Int, List](n)
+      run(xs, tx) ==== xs.grouped(n).toList
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+
+    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+      val tx = transducers.grouped[Int, List](n)
+      consume(xs, tx) ==== xs.length
+    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+  }
+
+  "groupBy" should {
+    "produce groups of items by a key" ! prop { (xs: List[Int]) ⇒
+      val f: Int ⇒ String = x ⇒ (x / 10).toString
+      val tx = transducers.groupBy[Int, String, Vector](f)
+      run(xs, tx) ==== xs.foldLeft(Vector.empty[(String, Vector[Int])]) { (ys, x) ⇒
+        val key = f(x)
+        if (ys.isEmpty)
+          Vector((key, Vector(x)))
+        else if (ys.last._1 == key)
+          ys.init :+ (key → (ys.last._2 :+ x))
+        else
+          ys :+ (key → Vector(x))
+      }.map(_._2).toList
+    }
+
+    "consume every item" ! prop { (xs: List[Int]) ⇒
+      val f: Int ⇒ String = x ⇒ (x / 10).toString
+      val tx = transducers.groupBy[Int, String, Vector](f)
+      consume(xs, tx) ==== xs.length
+    }
+  }
+
+  private val posNum =
+    Arbitrary(Gen.sized(max ⇒ Choose.chooseInt.choose(0, max * 2)))
+
+  private val posNonZeroNum =
+    Arbitrary(Gen.sized(max ⇒ Choose.chooseInt.choose(1, max * 2)))
+
+  private def run[A](xs: List[Int], tx: Transducer[Int, A]) =
+    transducers.run(tx)(xs)
+
+  private def consume(xs: List[Int], tx: Transducer[Int, _]) = {
+    val it = new CountingIterator(xs)
+    transducers.run(tx)(it)
+    it.consumed
+  }
+
+  private def itemsUntilFound(xs: List[Int], f: Int ⇒ Boolean): Int = {
+    val (dropped, rest) = xs.span(!f(_))
+    dropped.length + rest.take(1).length
   }
 }
-
+object TransducersSpec {
+  class CountingIterator(xs: List[Int]) extends Iterator[Int] {
+    private[this] final val iter = xs.iterator
+    private[this] final var _consumed = 0
+    def hasNext: Boolean = iter.hasNext
+    def next(): Int = {
+      _consumed += 1
+      iter.next()
+    }
+    def consumed: Int = _consumed
+  }
+}
