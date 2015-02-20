@@ -22,4 +22,6 @@ trait Reducer[@specialized(Int, Long, Double, Char, Boolean) A, R] extends ((R, 
   def apply(r: R, a: A, s: Reduced): R
 
   def apply(r: R): R
+
+  def prepare(r: R, s: Reduced): R = r
 }
