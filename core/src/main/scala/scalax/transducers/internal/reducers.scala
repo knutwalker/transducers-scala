@@ -70,27 +70,13 @@ private[internal] final class CollectReducer[A, B, R](rf: Reducer[B, R], pf: Par
 
 private[internal] final class ScanReducer[A, B, R](rf: Reducer[B, R], z: B, f: (B, A) ⇒ B) extends Reducers.Delegate[A, R](rf) {
   private[this] var result = z
-  private var initValueSend = false
 
-  def apply(r: R, a: A, s: Reduced) =
-    if (!initValueSend) {
-      initValueSend = true
-      sendFirstValue(r, a, s)
-    }
-    else {
-      result = f(result, a)
-      rf(r, result, s)
-    }
+  override def prepare(r: R, s: Reduced): R =
+    rf(r, result, s)
 
-  private def sendFirstValue(r: R, a: A, s: Reduced): R = {
-    val res = rf(r, z, s)
-    if (!s.?) {
-      result = f(result, a)
-      rf(res, result, s)
-    }
-    else {
-      res
-    }
+  def apply(r: R, a: A, s: Reduced) = {
+    result = f(result, a)
+    rf(r, result, s)
   }
 }
 
