@@ -25,13 +25,6 @@ private[transducers] final class CombinedTransducer[A, B, C](left: Transducer[A,
   override def toString = s"$left.$right"
 }
 
-private[transducers] final class OrElseTransducer[A](cont: ⇒ A) extends Transducer[A, A] {
-  def apply[R](rf: Reducer[A, R]) =
-    new OrElseReducer[A, R](rf, cont)
-
-  override def toString = s"(orElse)"
-}
-
 private[transducers] final class EmptyTransducer[A] extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new EmptyReducer[A, R](rf)
@@ -39,25 +32,11 @@ private[transducers] final class EmptyTransducer[A] extends Transducer[A, A] {
   override def toString = "(empty)"
 }
 
-private[transducers] final class FilterTransducer[A](f: A ⇒ Boolean) extends Transducer[A, A] {
+private[transducers] final class OrElseTransducer[A](cont: ⇒ A) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
-    new FilterReducer[A, R](rf, f)
+    new OrElseReducer[A, R](rf, cont)
 
-  override def toString = "(filter)"
-}
-
-private[transducers] final class MapTransducer[A, B](f: A ⇒ B) extends Transducer[A, B] {
-  def apply[R](rf: Reducer[B, R]) =
-    new MapReducer[B, A, R](rf, f)
-
-  override def toString = "(map)"
-}
-
-private[transducers] final class CollectTransducer[A, B](pf: PartialFunction[A, B]) extends Transducer[A, B] {
-  def apply[R](rf: Reducer[B, R]) =
-    new CollectReducer[A, B, R](rf, pf)
-
-  override def toString = "(collect)"
+  override def toString = s"(orElse)"
 }
 
 private[transducers] final class ForeachTransducer[A](f: A ⇒ Unit) extends Transducer[A, Unit] {
@@ -67,11 +46,32 @@ private[transducers] final class ForeachTransducer[A](f: A ⇒ Unit) extends Tra
   override def toString = "(foreach)"
 }
 
+private[transducers] final class MapTransducer[A, B](f: A ⇒ B) extends Transducer[A, B] {
+  def apply[R](rf: Reducer[B, R]) =
+    new MapReducer[B, A, R](rf, f)
+
+  override def toString = "(map)"
+}
+
 private[transducers] final class FlatMapTransducer[A, B, F[_]: AsSource](f: A ⇒ F[B]) extends Transducer[A, B] {
   def apply[R](rf: Reducer[B, R]) =
     new FlatMapReducer[A, B, R, F](rf, f)
 
   override def toString = "(flatMap)"
+}
+
+private[transducers] final class FilterTransducer[A](f: A ⇒ Boolean) extends Transducer[A, A] {
+  def apply[R](rf: Reducer[A, R]) =
+    new FilterReducer[A, R](rf, f)
+
+  override def toString = "(filter)"
+}
+
+private[transducers] final class CollectTransducer[A, B](pf: PartialFunction[A, B]) extends Transducer[A, B] {
+  def apply[R](rf: Reducer[B, R]) =
+    new CollectReducer[A, B, R](rf, pf)
+
+  override def toString = "(collect)"
 }
 
 private[transducers] final class ScanTransducer[A, B](z: B, f: (B, A) ⇒ B) extends Transducer[A, B] {

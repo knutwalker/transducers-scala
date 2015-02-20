@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Paul Horn
+ * Copyright 2014 – 2015 Paul Horn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package scalax.transducers
 package internal
 
 import scala.language.higherKinds
+
+private[internal] final class EmptyReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {
+  override def prepare(r: R, s: Reduced): R =
+    s(r)
+
+  def apply(r: R, a: A, s: Reduced) =
+    s(r)
+}
 
 private[internal] final class OrElseReducer[A, R](rf: Reducer[A, R], cont: ⇒ A) extends Reducer[A, R] {
   private var hasValue = false
@@ -32,26 +41,6 @@ private[internal] final class OrElseReducer[A, R](rf: Reducer[A, R], cont: ⇒ A
   }
 }
 
-private[internal] final class EmptyReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {
-  def apply(r: R, a: A, s: Reduced) =
-    s(r)
-}
-
-private[internal] final class FilterReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
-  def apply(r: R, a: A, s: Reduced) =
-    if (f(a)) rf(r, a, s) else r
-}
-
-private[internal] final class MapReducer[B, A, R](rf: Reducer[B, R], f: A ⇒ B) extends Reducers.Delegate[A, R](rf) {
-  def apply(r: R, a: A, s: Reduced) =
-    rf(r, f(a), s)
-}
-
-private[internal] final class CollectReducer[A, B, R](rf: Reducer[B, R], pf: PartialFunction[A, B]) extends Reducers.Delegate[A, R](rf) {
-  def apply(r: R, a: A, s: Reduced) =
-    if (pf.isDefinedAt(a)) rf(r, pf(a), s) else r
-}
-
 private[internal] final class ForeachReducer[A, R](rf: Reducer[Unit, R], f: A ⇒ Unit) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: Reduced) = {
     f(a)
@@ -59,9 +48,24 @@ private[internal] final class ForeachReducer[A, R](rf: Reducer[Unit, R], f: A �
   }
 }
 
+private[internal] final class MapReducer[B, A, R](rf: Reducer[B, R], f: A ⇒ B) extends Reducers.Delegate[A, R](rf) {
+  def apply(r: R, a: A, s: Reduced) =
+    rf(r, f(a), s)
+}
+
 private[internal] final class FlatMapReducer[A, B, R, F[_]: AsSource](rf: Reducer[B, R], f: A ⇒ F[B]) extends Reducers.Delegate[A, R](rf) {
   def apply(r: R, a: A, s: Reduced) =
     Reducers.reduceStep(rf, r, f(a), s)
+}
+
+private[internal] final class FilterReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
+  def apply(r: R, a: A, s: Reduced) =
+    if (f(a)) rf(r, a, s) else r
+}
+
+private[internal] final class CollectReducer[A, B, R](rf: Reducer[B, R], pf: PartialFunction[A, B]) extends Reducers.Delegate[A, R](rf) {
+  def apply(r: R, a: A, s: Reduced) =
+    if (pf.isDefinedAt(a)) rf(r, pf(a), s) else r
 }
 
 private[internal] final class ScanReducer[A, B, R](rf: Reducer[B, R], z: B, f: (B, A) ⇒ B) extends Reducers.Delegate[A, R](rf) {

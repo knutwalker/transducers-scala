@@ -33,11 +33,20 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def >>[C](that: Transducer[B, C]): Transducer[A, C] =
     new CombinedTransducer(self, that)
 
+  final def empty: Transducer[A, B] =
+    this >> transducers.empty[B]
+
   final def orElse(cont: ⇒ B): Transducer[A, B] =
     this >> transducers.orElse[B](cont)
 
-  final def empty: Transducer[A, B] =
-    this >> transducers.empty[B]
+  final def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
+    this >> transducers.foreach[B](f)
+
+  final def map[C](f: B ⇒ C): Transducer[A, C] =
+    this >> transducers.map[B, C](f)
+
+  final def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
+    this >> transducers.flatMap[B, C, F](f)
 
   final def filter(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filter[B](f)
@@ -45,14 +54,14 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def filterNot(f: B ⇒ Boolean): Transducer[A, B] =
     this >> transducers.filterNot[B](f)
 
-  final def map[C](f: B ⇒ C): Transducer[A, C] =
-    this >> transducers.map[B, C](f)
-
   final def collect[C](pf: PartialFunction[B, C]): Transducer[A, C] =
     this >> transducers.collect[B, C](pf)
 
   final def collectFirst[C](pf: PartialFunction[B, C]): Transducer[A, C] =
     this >> transducers.collectFirst[B, C](pf)
+
+  final def find(f: B ⇒ Boolean): Transducer[A, B] =
+    this >> transducers.find[B](f)
 
   final def forall(f: B ⇒ Boolean): Transducer[A, Boolean] =
     this >> transducers.forall[B](f)
@@ -60,20 +69,11 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def exists(f: B ⇒ Boolean): Transducer[A, Boolean] =
     this >> transducers.exists[B](f)
 
-  final def foreach(f: B ⇒ Unit): Transducer[A, Unit] =
-    this >> transducers.foreach[B](f)
-
-  final def flatMap[C, F[_]: AsSource](f: B ⇒ F[C]): Transducer[A, C] =
-    this >> transducers.flatMap[B, C, F](f)
-
   final def fold[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
     this >> transducers.fold[B, C](z)(f)
 
   final def scan[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
     this >> transducers.scan[B, C](z)(f)
-
-  final def find(f: B ⇒ Boolean): Transducer[A, B] =
-    this >> transducers.find[B](f)
 
   final def head: Transducer[A, B] =
     this >> transducers.head

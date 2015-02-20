@@ -20,26 +20,35 @@ import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {
 
+  final def empty[A]: Transducer[A, A] =
+    new EmptyTransducer[A]
+
   final def orElse[A](cont: ⇒ A): Transducer[A, A] =
     new OrElseTransducer[A](cont)
 
-  final def empty[A]: Transducer[A, A] =
-    new EmptyTransducer[A]
+  final def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
+    new ForeachTransducer[A](f)
+
+  final def map[A, B](f: A ⇒ B): Transducer[A, B] =
+    new MapTransducer[A, B](f)
+
+  final def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[A, B] =
+    new FlatMapTransducer[A, B, F](f)
 
   final def filter[A](f: A ⇒ Boolean): Transducer[A, A] =
     new FilterTransducer[A](f)
 
   final def filterNot[A](f: A ⇒ Boolean): Transducer[A, A] =
-    filter(x ⇒ !f(x))
-
-  final def map[A, B](f: A ⇒ B): Transducer[A, B] =
-    new MapTransducer[A, B](f)
+    filter[A](x ⇒ !f(x))
 
   final def collect[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     new CollectTransducer[A, B](pf)
 
   final def collectFirst[A, B](pf: PartialFunction[A, B]): Transducer[A, B] =
     collect[A, B](pf).head
+
+  final def find[A](f: A ⇒ Boolean): Transducer[A, A] =
+    filter[A](f).head
 
   final def forall[A](f: A ⇒ Boolean): Transducer[A, Boolean] =
     collectFirst[A, Boolean] {
@@ -51,32 +60,23 @@ private[transducers] trait TransducerOps {
       case x if f(x) ⇒ true
     }.orElse(false)
 
-  final def foreach[A](f: A ⇒ Unit): Transducer[A, Unit] =
-    new ForeachTransducer[A](f)
-
-  final def flatMap[A, B, F[_]: AsSource](f: A ⇒ F[B]): Transducer[A, B] =
-    new FlatMapTransducer[A, B, F](f)
-
   final def fold[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
-    scan(z)(f).takeRight(1)
+    scan[A, B](z)(f).last
 
   final def scan[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
     new ScanTransducer[A, B](z, f)
 
-  final def find[A](f: A ⇒ Boolean): Transducer[A, A] =
-    filter(f).head
-
   final def head[A]: Transducer[A, A] =
-    take(1)
+    take[A](1)
 
   final def last[A]: Transducer[A, A] =
-    takeRight(1)
+    takeRight[A](1)
 
   final def init[A]: Transducer[A, A] =
-    dropRight(1)
+    dropRight[A](1)
 
   final def tail[A]: Transducer[A, A] =
-    drop(1)
+    drop[A](1)
 
   final def take[A](n: Long): Transducer[A, A] =
     new TakeTransducer[A](n)
