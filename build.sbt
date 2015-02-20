@@ -40,10 +40,16 @@ lazy val commonSettings = List(
     Some("scm:git:ssh://git@github.com:knutwalker/transducers-scala.git")))
 )
 
+lazy val projectInformation = Map(
+  "maintainer" -> "Paul Horn",
+   "startYear" -> "2014",
+       "years" -> List(2014, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)).distinct.mkString(" – ")
+)
+
 lazy val publishSettings = List(
                   homepage := Some(url("https://github.com/knutwalker/transducers-scala")),
                   licenses := List("Apache License, Verison 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-                 startYear := Some(2014),
+                 startYear := Some(projectInformation("startYear").toInt),
          publishMavenStyle := true,
    publishArtifact in Test := false,
       pomIncludeRepository := { _ => false },
@@ -63,7 +69,7 @@ lazy val publishSettings = List(
     <developers>
       <developer>
         <id>knutwalker</id>
-        <name>Paul Horn</name>
+        <name>${projectInformation("maintainer")}</name>
         <url>http://knutwalker.de/</url>
       </developer>
     </developers>
@@ -109,7 +115,31 @@ lazy val doNotPublish = List(
   publishArtifact := false
 )
 
-)
+lazy val headerSettings =
+  List(headers := Map(
+    "scala" -> (
+      HeaderPattern.cStyleBlockComment,
+      s"""|/*
+          | * Copyright ${projectInformation("years")} ${projectInformation("maintainer")}
+          | *
+          | * Licensed under the Apache License, Version 2.0 (the "License");
+          | * you may not use this file except in compliance with the License.
+          | * You may obtain a copy of the License at
+          | *
+          | *     http://www.apache.org/licenses/LICENSE-2.0
+          | *
+          | * Unless required by applicable law or agreed to in writing, software
+          | * distributed under the License is distributed on an "AS IS" BASIS,
+          | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+          | * See the License for the specific language governing permissions and
+          | * limitations under the License.
+          | */
+          |
+          |""".stripMargin
+    )
+  )) ++
+  inConfig(Compile)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile))) ++
+  inConfig(Test)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile)))
 
 lazy val buildsUberJar = List(
         assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
@@ -118,7 +148,7 @@ lazy val buildsUberJar = List(
 )
 
 lazy val transducersSettings =
-  buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
+  buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings ++ headerSettings
 
 // =========================================
 
