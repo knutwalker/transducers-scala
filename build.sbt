@@ -1,11 +1,9 @@
 import com.typesafe.sbt.pgp.PgpKeys._
 import JmhKeys._
-import sbtassembly.AssemblyPlugin.defaultShellScript
 import sbtrelease._
 import sbtrelease.ReleasePlugin._
 import sbtrelease.ReleasePlugin.ReleaseKeys._
 import sbtrelease.ReleaseStateTransformations._
-import scalariform.formatter.preferences._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
 lazy val buildSettings = List(
@@ -105,73 +103,36 @@ lazy val releaseToCentral = ReleaseStep(
   enableCrossBuild = true
 )
 
-lazy val noPublishSettings = List(
+lazy val doNotPublish = List(
           publish := (),
      publishLocal := (),
   publishArtifact := false
 )
 
-lazy val formatterSettings = scalariformSettings ++ List(
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value.
-    setPreference(AlignParameters, true).
-    setPreference(AlignSingleLineCaseStatements, true).
-    setPreference(CompactControlReadability, true).
-    setPreference(DoubleIndentClassDeclaration, true).
-    setPreference(PreserveDanglingCloseParenthesis, true).
-    setPreference(RewriteArrowSymbols, true)
 )
 
-lazy val assembleSettings = List(
+lazy val buildsUberJar = List(
         assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
      assemblyOutputPath in assembly := baseDirectory.value / (assemblyJarName in assembly).value,
-         assemblyOption in assembly ~= { _.copy(includeScala = false) },
-  assemblyMergeStrategy in assembly := {
-    // case PathList("META-INF", "CHANGES.txt") => MergeStrategy.rename
-    // case PathList("META-INF", "LICENSE.txt") => MergeStrategy.rename
-    // case "CHANGES.txt" | "LICENSE.txt"   => MergeStrategy.rename
-    case x =>
-      val oldStrategy = (assemblyMergeStrategy in assembly).value
-      oldStrategy(x)
-  }
+         assemblyOption in assembly ~= { _.copy(includeScala = false) }
 )
 
 lazy val transducersSettings =
-  buildSettings     ++ commonSettings   ++
-  publishSettings   ++ releaseSettings  ++
-  formatterSettings ++ assembleSettings
-
-// =========================================
-
-lazy val rxStreamsDeps = List(
-  "org.reactivestreams" % "reactive-streams"         % "0.4.0"
-)
-
-lazy val rxScalaDeps = List(
-  "io.reactivex"       %% "rxscala"                  % "0.23.1"
-)
-
-lazy val benchmarkDeps = List(
-  "org.functionaljava"  % "functionaljava"           % "4.3",
-  "com.cognitect"       % "transducers-java"         % "0.4.67")
-
-lazy val testDeps = List(
-  "org.scalatest"      %% "scalatest"                % "2.2.4"   % "test",
-  "com.typesafe.akka"  %% "akka-stream-experimental" % "0.10-M1" % "test" exclude("org.reactivestreams", "reactive-streams") exclude("com.typesafe.akka", "akka-persistence-experimental_2.10") exclude("com.typesafe.akka", "akka-persistence-experimental_2.11")
-  // "com.typesafe.akka"  %% "akka-stream-experimental" % "1.0-M3"  % "test" exclude("org.reactivestreams", "reactive-streams") exclude("com.typesafe.akka", "akka-persistence-experimental_2.10") exclude("com.typesafe.akka", "akka-persistence-experimental_2.11")
-)
+  buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings
 
 // =========================================
 
 lazy val parent = project.in(file("."))
   .settings(name := "transducers-scala-parent")
   .settings(transducersSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(doNotPublish: _*)
   .dependsOn(api, core, reactiveStreams, rxScala, tests, examples, benchmarks)
   .aggregate(api, core, reactiveStreams, rxScala, tests, examples, benchmarks)
 
 lazy val all = project
   .settings(name := "transducers-scala-all")
   .settings(transducersSettings: _*)
+  .settings(buildsUberJar: _*)
   .aggregate(api, core, reactiveStreams, rxScala)
   .dependsOn(api, core, reactiveStreams, rxScala)
 
@@ -187,34 +148,41 @@ lazy val core = project
 lazy val reactiveStreams = project.in(file("contrib") / "reactive-streams")
   .settings(name := "transducers-scala-reactivestreams")
   .settings(transducersSettings: _*)
-  .settings(libraryDependencies ++= rxStreamsDeps)
+  .settings(libraryDependencies ++= List(
+    "org.reactivestreams" % "reactive-streams" % "0.4.0"))
   .dependsOn(core)
 
 lazy val rxScala = project.in(file("contrib") / "rx-scala")
   .settings(name := "transducers-scala-rxscala")
   .settings(transducersSettings: _*)
-  .settings(libraryDependencies ++= rxScalaDeps)
+  .settings(libraryDependencies ++= List(
+    "io.reactivex" %% "rxscala" % "0.23.1"))
   .dependsOn(core)
 
 lazy val tests = project
   .settings(name := "transducers-scala-tests")
   .settings(transducersSettings: _*)
-  .settings(noPublishSettings: _*)
-  .settings(libraryDependencies ++= testDeps)
+  .settings(doNotPublish: _*)
+  .settings(libraryDependencies ++= List(
+    "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1",
+    "org.scalatest"     %% "scalatest"                % "2.2.4"  )
+    .map(_ % "test"))
   .dependsOn(core, reactiveStreams, rxScala)
 
 lazy val examples = project
   .settings(name := "transducers-scala-examples")
   .settings(transducersSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(doNotPublish: _*)
   .dependsOn(core)
 
 lazy val benchmarks = project
   .settings(name := "transducers-scala-bechmarks")
   .settings(transducersSettings: _*)
-  .settings(noPublishSettings: _*)
+  .settings(doNotPublish: _*)
   .settings(jmhSettings: _*)
   .settings(
     outputTarget in Jmh  := target.value / s"scala-${scalaBinaryVersion.value}",
-    libraryDependencies ++= benchmarkDeps)
+    libraryDependencies ++= List(
+      "org.functionaljava" % "functionaljava"   % "4.3",
+      "com.cognitect"      % "transducers-java" % "0.4.67"))
   .dependsOn(core)
