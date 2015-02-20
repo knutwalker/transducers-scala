@@ -33,11 +33,19 @@ private[transducers] final class EmptyTransducer[A] extends Transducer[A, A] {
   override def toString = "(empty)"
 }
 
+private[transducers] final class NoOpTransducer[A] extends Transducer[A, A] {
+  def apply[R](rf: Reducer[A, R]): Reducer[A, R] =
+    new NoOpReducer[A, R](rf)
+
+  override def toString = "(noop)"
+}
+
+
 private[transducers] final class OrElseTransducer[A](cont: ⇒ A) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]) =
     new OrElseReducer[A, R](rf, cont)
 
-  override def toString = s"(orElse)"
+  override def toString = "(orElse)"
 }
 
 private[transducers] final class ForeachTransducer[A](f: A ⇒ Unit) extends Transducer[A, Unit] {

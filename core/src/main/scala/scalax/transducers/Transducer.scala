@@ -29,7 +29,7 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
     >>[C](that)
 
   final def compose[C](that: Transducer[C, A]): Transducer[C, B] =
-    new CombinedTransducer(that, self)
+    that >> self
 
   final def >>[C](that: Transducer[B, C]): Transducer[A, C] =
     new CombinedTransducer(self, that)

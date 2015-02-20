@@ -265,7 +265,7 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
 
     "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeRight[Int](n)
-      consume(xs, tx) ==== xs.length
+      consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
@@ -273,11 +273,11 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
     "produce every n-th item" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
       run(xs, tx) ==== xs.grouped(n).flatMap(_.take(1)).toList
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
 
     "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
-      consume(xs, tx) ==== xs.length
+      consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
@@ -321,11 +321,11 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
     "produce all items but every n-th" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
       run(xs, tx) ==== xs.grouped(n).flatMap(_.drop(1)).toList
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
 
     "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
-      consume(xs, tx) ==== xs.length
+      consume(xs, tx) ==== (if (n == 0 || n == 1) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
@@ -374,7 +374,7 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
     "produce groups of fixed size" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.grouped[Int, List](n)
       run(xs, tx) ==== xs.grouped(n).toList
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
 
     "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.grouped[Int, List](n)
