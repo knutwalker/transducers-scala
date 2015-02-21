@@ -16,50 +16,53 @@
 
 package scalax.transducers.internal
 
-import org.scalatest.FunSpec
+import scalax.transducers.Arbitraries
 
-class CappedEvictingQueueSpec extends FunSpec {
+import org.scalacheck.Arbitrary
+import org.scalacheck.Arbitrary._
+import org.specs2.ScalaCheck
+import org.specs2.mutable.Specification
 
-  describe("Adding to a 5-sized evicting queue") {
-    def newQueue = new CappedEvictingQueue[String](5)
+final class CappedEvictingQueueSpec extends Specification with ScalaCheck with Arbitraries {
 
-    it("should consume 5 elements") {
-      val queue = newQueue
-      for (i ← 1 to 5)
-        assert(queue.add(i.toString) == None)
+  implicit val nonEmptyList = Arbitrary(arbitrary[List[String]] suchThat (_.nonEmpty))
+
+  "The capped evicting queue" should {
+
+    "consume all elements" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      val added = xs map queue.add
+      added must contain(beNone).forall
     }
 
-    it("should evict the oldest elements") {
-      val queue = newQueue
-      for (i ← 1 to 5) queue.add(i.toString)
+    "evict the oldest elements" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+      val evicted = xs map queue.add
+      xs.map(Option(_)) ==== evicted
+    }
 
-      for (i ← 1 to 5) assert(queue.add((i + 10).toString) == Some(i.toString))
+    "iterator all elements from old to young" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+      queue.elements.toList ==== xs
+    }
+
+    "iterator only the live elements" in prop { (xs: List[String], ys: List[String]) ⇒
+      val newXs = Iterator.continually(ys).flatMap(identity).take(xs.size).toList
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+      newXs foreach queue.add
+      queue.elements.toList ==== newXs
+    }
+
+    "iterator only added elements" in prop { (xs: List[String]) ⇒
+      val size = xs.size
+      val max = size / 2
+      val subset = xs.take(max)
+      val queue = new CappedEvictingQueue[String](size)
+      subset foreach queue.add
+      queue.elements.toList ==== subset
     }
   }
-
-  describe("Iterating over a 5-sized evicting queue") {
-
-    it("should iterator all elements from old to young") {
-      val queue = new CappedEvictingQueue[String](5)
-      for (i ← 1 to 7) queue.add(i.toString)
-
-      val strings = Iterator.from(3).map(_.toString).take(5)
-      queue.elements.zip(strings) foreach {
-        case (actual, expected) ⇒ assert(actual == expected)
-      }
-      assert(!strings.hasNext)
-    }
-
-    it("should iterate only elements that were added") {
-      val queue = new CappedEvictingQueue[String](5)
-      for (i ← 1 to 3) queue.add(i.toString)
-
-      val strings = Iterator.from(1).map(_.toString).take(3)
-      queue.elements.zip(strings) foreach {
-        case (actual, expected) ⇒ assert(actual == expected)
-      }
-      assert(!strings.hasNext)
-    }
-  }
-
 }

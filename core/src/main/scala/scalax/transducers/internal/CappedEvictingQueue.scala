@@ -17,6 +17,7 @@
 package scalax.transducers.internal
 
 final class CappedEvictingQueue[A](private val capacity: Int) {
+  require(capacity > 0, "capacity must be at least 1")
 
   import scalax.transducers.internal.CappedEvictingQueue.elementsIterator
 
