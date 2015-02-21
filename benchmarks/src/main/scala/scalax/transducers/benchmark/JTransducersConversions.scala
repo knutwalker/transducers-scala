@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package scalax.transducers
-
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function
+package scalax.transducers.benchmark
 
 import com.cognitect.transducers.IStepFunction
 
-import scala.language.implicitConversions
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.function
 
 trait JTransducersConversions {
   implicit def fn2fjf[A, B](g: A ⇒ B): fj.F[A, B] =

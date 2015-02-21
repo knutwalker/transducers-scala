@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package scalax.transducers
+package scalax
+package transducers.benchmark
 
-import java.util.concurrent.TimeUnit
+import scalax.transducers.AsTarget
 
-import fj.data.{ List ⇒ FJList }
-
+import fj.data.{List ⇒ FJList}
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
+
+import java.util.concurrent.TimeUnit
 
 @Threads(value = 1)
 @Fork(value = 1)
@@ -30,8 +32,7 @@ import org.openjdk.jmh.infra.Blackhole
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class ListBenchmark {
-
-  import ListBenchmark.{ IntList, ScalaCollections, FunctionalJavaList, TransducersFast, TransducersSlow }
+  import ListBenchmark._
 
   @Benchmark
   def _01_scalaCollections(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
@@ -79,17 +80,17 @@ object ListBenchmark extends JTransducersConversions {
 
   @State(Scope.Benchmark)
   class TransducersSlow {
-    private final val tx = map((_: Int) + 1)
+    private final val tx = transducers.map((_: Int) + 1)
       .filter(_ % 4 == 0).map(_ - 42).take(50)
     final val f: (List[Int]) ⇒ List[Int] =
-      into[List](AsTarget.listAppend).from[List].run(tx)
+      transducers.into[List](AsTarget.listAppend).from[List].run(tx)
   }
 
   @State(Scope.Benchmark)
   class TransducersFast {
-    private final val tx = map((_: Int) + 1)
+    private final val tx = transducers.map((_: Int) + 1)
       .filter(_ % 4 == 0).map(_ - 42).take(50)
     final val f: (List[Int]) ⇒ List[Int] =
-      into[List](AsTarget.list).from[List].run(tx)
+      transducers.into[List](AsTarget.list).from[List].run(tx)
   }
 }

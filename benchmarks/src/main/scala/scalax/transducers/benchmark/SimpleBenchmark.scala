@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package scalax.transducers
-
-import java.lang.{ Iterable ⇒ JIterable }
-import java.util
-import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
+package scalax
+package transducers.benchmark
 
 import com.cognitect.transducers.Fns
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 
 import scala.collection.JavaConverters._
+import java.lang.{Iterable ⇒ JIterable}
+import java.util
+import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 @Threads(value = 1)
 @Fork(value = 1)
@@ -33,9 +33,8 @@ import scala.collection.JavaConverters._
 @Measurement(iterations = 10)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class EarlyTerminationBenchmark {
-
-  import scalax.transducers.EarlyTerminationBenchmark.{ IntList, JavaCollections, ScalaCollections, TransducerJava, TransducerScala }
+class SimpleBenchmark {
+  import SimpleBenchmark._
 
   @Benchmark
   def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
@@ -48,18 +47,8 @@ class EarlyTerminationBenchmark {
   }
 
   @Benchmark
-  def scalaListAsVector(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
-    bh.consume(f.fAsVector(ints.xs))
-  }
-
-  @Benchmark
-  def scalaListAsView(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
-    bh.consume(f.fAsView(ints.xs))
-  }
-
-  @Benchmark
-  def scalaListAsStream(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
-    bh.consume(f.fAsStream(ints.xs))
+  def scalaListWithBreakout(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
+    bh.consume(f.fBreakout(ints.xs))
   }
 
   @Benchmark
@@ -73,7 +62,7 @@ class EarlyTerminationBenchmark {
   }
 }
 
-object EarlyTerminationBenchmark extends JTransducersConversions {
+object SimpleBenchmark extends JTransducersConversions {
 
   @State(Scope.Benchmark)
   class IntList {
@@ -84,39 +73,25 @@ object EarlyTerminationBenchmark extends JTransducersConversions {
   @State(Scope.Benchmark)
   class JavaCollections {
     val f: (util.List[Int]) ⇒ util.List[Int] =
-      xs ⇒ xs.stream()
-        .map[Int]((_: Int) + 1)
-        .map[Int]((_: Int) + 1)
-        .map[Int]((_: Int) + 1)
-        .limit(3)
-        .collect(Collectors.toList[Int])
+      xs ⇒ xs.stream().map[Int]((_: Int) + 1).collect(Collectors.toList[Int])
   }
 
   @State(Scope.Benchmark)
   class ScalaCollections {
-    val f: (List[Int]) ⇒ Vector[Int] =
-      xs ⇒ xs.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
-    val fAsVector: (List[Int]) ⇒ Vector[Int] =
-      xs ⇒ xs.toVector.map(_ + 1).map(_ + 1).map(_ + 1).take(3)
-    val fAsView: (List[Int]) ⇒ Vector[Int] =
-      xs ⇒ xs.view.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
-    val fAsStream: (List[Int]) ⇒ Vector[Int] =
-      xs ⇒ xs.toStream.map(_ + 1).map(_ + 1).map(_ + 1).take(3).toVector
+    val f: (List[Int]) ⇒ Vector[Int] = xs ⇒ xs.map(_ + 1).toVector
+    val fBreakout: (List[Int]) ⇒ Vector[Int] = xs ⇒ xs.map(_ + 1)(scala.collection.breakOut)
   }
 
   @State(Scope.Benchmark)
   class TransducerScala {
     val f: (List[Int]) ⇒ util.List[Int] =
-      into[util.List].from[List].run(map((_: Int) + 1).map(_ + 1).map(_ + 1).take(3))
+      transducers.into[util.List].from[List].run(transducers.map((_: Int) + 1))
   }
 
   @State(Scope.Benchmark)
   class TransducerJava {
     val f: (JIterable[Int]) ⇒ util.List[Int] =
-      xs ⇒ {
-        val t = Fns.map((_: Int) + 1).comp(Fns.map((_: Int) + 1)).comp(Fns.map((_: Int) + 1)).comp(Fns.take(3))
-        Fns.into(t, new util.ArrayList[Int], xs)
-      }
+      xs ⇒ Fns.into(Fns.map((_: Int) + 1), new util.ArrayList[Int], xs)
   }
 
 }
