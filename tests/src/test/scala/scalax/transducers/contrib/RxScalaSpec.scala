@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package org.example
-
-import org.scalatest.FunSuite
-import rx.lang.scala.Observable
+package scalax.transducers.contrib
 
 import scalax.transducers.ContribTransducer
-import scalax.transducers.contrib.RxSupport
 
-class RxSpec extends FunSuite with RxSupport with ContribTransducer {
+import org.specs2.mutable.Specification
+import rx.lang.scala.Observable
+import rx.lang.scala.JavaConversions._
 
-  test("transducing on an rx observable") {
+final class RxScalaSpec extends Specification with RxSupport with ContribTransducer {
 
-    val observable: Observable[(Char, Int)] = Observable.from(new Iterable[Int] {
-      def iterator = Iterator.from(0)
-    }).transduce(testTx)
+  "The RxScala support" should {
+    "transduce on an RxObservable" in {
+      val ints: Observable[Integer] = rx.Observable.range(0, Int.MaxValue)
+      val observable = ints.map(Integer2int).transduce(testTx)
+      val result = observable.toBlocking.toList
 
-    val result = observable.toBlocking.toList
-
-    assert(result == expectedResult)
+      result ==== expectedResult
+    }
   }
+
 }
