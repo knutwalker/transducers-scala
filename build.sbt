@@ -213,7 +213,6 @@ lazy val tests = project
   .settings(doNotPublish: _*)
   .settings(libraryDependencies ++= List(
     "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1",
-    "org.scalatest"     %% "scalatest"                % "2.2.4"  ,
     "org.specs2"        %% "specs2-scalacheck"        % "2.4.16" ,
     "org.scalacheck"    %% "scalacheck"               % "1.12.2" )
     .map(_ % "test"))
