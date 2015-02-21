@@ -33,11 +33,11 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "empty" should {
     val tx = transducers.empty[Int]
 
-    "produce nothing" ! prop { (xs: List[Int]) ⇒
+    "produce nothing" in prop { (xs: List[Int]) ⇒
       run(xs, tx).length ==== 0
     }
 
-    "consume nothing" ! prop { (xs: List[Int]) ⇒
+    "consume nothing" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== 0
     }
   }
@@ -45,13 +45,13 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "orElse" should {
     val tx = transducers.orElse(42)
 
-    "produce at least one item" ! prop { (xs: List[Int]) ⇒
+    "produce at least one item" in prop { (xs: List[Int]) ⇒
       val result = run(xs, tx)
       result.length ==== max(xs.length, 1)
         result.last ==== xs.lastOption.getOrElse(42)
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
@@ -59,128 +59,128 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "foreach" should {
     val tx = transducers.foreach[Int](_ ⇒ ())
 
-    "produce nothing" ! prop { (xs: List[Int]) ⇒
+    "produce nothing" in prop { (xs: List[Int]) ⇒
       run(xs, tx).length ==== 0
     }
 
-    "run a side-effect for each value" ! prop { (xs: List[Int]) ⇒
+    "run a side-effect for each value" in prop { (xs: List[Int]) ⇒
       val sideEffects = new AtomicInteger
       val tx_! = transducers.foreach[Int](_ ⇒ sideEffects.incrementAndGet())
       run(xs, tx_!)
       sideEffects.get ==== xs.length
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
 
   "map" should {
-    "produce the input mapped over" ! prop { (xs: List[Int], f: Int ⇒ Int) ⇒
+    "produce the input mapped over" in prop { (xs: List[Int], f: Int ⇒ Int) ⇒
       run(xs, transducers.map(f)) ==== xs.map(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Int) ⇒
+    "consume every item" in prop { (xs: List[Int], f: Int ⇒ Int) ⇒
       consume(xs, transducers.map(f)) ==== xs.length
     }
   }
 
   "flatMap" should {
-    "produce the input flat-mapped over" ! prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
+    "produce the input flat-mapped over" in prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
       run(xs, transducers.flatMap(f)) ==== xs.flatMap(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
       consume(xs, transducers.flatMap(f)) ==== xs.length
     }
   }
 
   "filter" should {
-    "produce the filtered input" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce the filtered input" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       run(xs, transducers.filter(f)) ==== xs.filter(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume every item" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.filter(f)) ==== xs.length
     }
   }
 
   "filterNot" should {
-    "produce the filtered input" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce the filtered input" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       run(xs, transducers.filterNot(f)) ==== xs.filterNot(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume every item" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.filterNot(f)) ==== xs.length
     }
   }
 
   "collect" should {
-    "produce the collected input" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+    "produce the collected input" in prop { (xs: List[Int], f: Int =?> Int) ⇒
       run(xs, transducers.collect(f)) ==== xs.collect(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+    "consume every item" in prop { (xs: List[Int], f: Int =?> Int) ⇒
       consume(xs, transducers.collect(f)) ==== xs.length
     }
   }
 
   "collectFirst" should {
-    "produce only the first value of the collected input" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+    "produce only the first value of the collected input" in prop { (xs: List[Int], f: Int =?> Int) ⇒
       run(xs, transducers.collectFirst(f)) ==== xs.collect(f).take(1)
     }
 
-    "consume only the items until the first match" ! prop { (xs: List[Int], f: Int =?> Int) ⇒
+    "consume only the items until the first match" in prop { (xs: List[Int], f: Int =?> Int) ⇒
       consume(xs, transducers.collectFirst(f)) ==== itemsUntilFound(xs, f.isDefinedAt)
     }
   }
 
   "find" should {
-    "produce only the first value found" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce only the first value found" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       run(xs, transducers.find(f)) ==== xs.find(f).toList
     }
 
-    "consume only the items until the first match" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume only the items until the first match" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.find(f)) ==== itemsUntilFound(xs, f)
     }
   }
 
   "forall" should {
-    "produce only only one boolean value" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce only only one boolean value" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       run(xs, transducers.forall(f)) ==== List(xs.forall(f))
     }
 
-    "consume only the items until the first short-cut can be found" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume only the items until the first short-cut can be found" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.forall(f)) ==== itemsUntilFound(xs, !f(_))
     }
   }
 
   "exists" should {
-    "produce only only one boolean value" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce only only one boolean value" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       run(xs, transducers.exists(f)) ==== List(xs.exists(f))
     }
 
-    "consume only the items until the first short-cut can be found" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume only the items until the first short-cut can be found" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.exists(f)) ==== itemsUntilFound(xs, f)
     }
   }
 
   "fold" should {
-    "produce only only one result value" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+    "produce only only one result value" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
       run(xs, transducers.fold(z)(f)) ==== List(xs.foldLeft(z)(f))
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
       consume(xs, transducers.fold(z)(f)) ==== xs.length
     }
   }
 
   "scan" should {
-    "produce all the result values" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+    "produce all the result values" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
       run(xs, transducers.scan(z)(f)) ==== xs.scanLeft(z)(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
       consume(xs, transducers.fold(z)(f)) ==== xs.length
     }
   }
@@ -188,11 +188,11 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "head" should {
     val tx = transducers.head[Int]
 
-    "produce the first value only" ! prop { (xs: List[Int]) ⇒
+    "produce the first value only" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== xs.headOption.toList
     }
 
-    "consume the first item only" ! prop { (xs: List[Int]) ⇒
+    "consume the first item only" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.take(1).length
     }
   }
@@ -200,11 +200,11 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "last" should {
     val tx = transducers.last[Int]
 
-    "produce the last value only" ! prop { (xs: List[Int]) ⇒
+    "produce the last value only" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== xs.lastOption.toList
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
@@ -212,11 +212,11 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "init" should {
     val tx = transducers.init[Int]
 
-    "produce all but the last value" ! prop { (xs: List[Int]) ⇒
+    "produce all but the last value" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== (if (xs.isEmpty) List() else xs.init)
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
@@ -224,119 +224,119 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "tail" should {
     val tx = transducers.tail[Int]
 
-    "produce all but the first value" ! prop { (xs: List[Int]) ⇒
+    "produce all but the first value" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== (if (xs.isEmpty) List() else xs.tail)
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
 
   "take" should {
-    "produce the first n items" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce the first n items" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.take[Int](n.toLong)
       run(xs, tx) ==== xs.take(n)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
 
-    "consume only the first n items" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume only the first n items" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.take[Int](n.toLong)
       consume(xs, tx) ==== min(n, xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "takeWhile" should {
-    "produce the first items until the predicate fails" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce the first items until the predicate fails" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       val tx = transducers.takeWhile[Int](f)
       run(xs, tx) ==== xs.takeWhile(f)
     }
 
-    "consume only the first items" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume only the first items" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       val tx = transducers.takeWhile[Int](f)
       consume(xs, tx) ==== itemsUntilFound(xs, !f(_))
     }
   }
 
   "takeRight" should {
-    "produce the last n items" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce the last n items" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeRight[Int](n)
       run(xs, tx) ==== xs.takeRight(n)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
 
-    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeRight[Int](n)
       consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "takeNth" should {
-    "produce every n-th item" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce every n-th item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
       run(xs, tx) ==== xs.grouped(n).flatMap(_.take(1)).toList
     }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
 
-    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
       consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "drop" should {
-    "produce the all but the first n items" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce the all but the first n items" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.drop[Int](n.toLong)
       run(xs, tx) ==== xs.drop(n)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
 
-    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.drop[Int](n.toLong)
       consume(xs, tx) ==== xs.length
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "dropWhile" should {
-    "produce the all but the first items until the predicate fails" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "produce the all but the first items until the predicate fails" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       val tx = transducers.dropWhile[Int](f)
       run(xs, tx) ==== xs.dropWhile(f)
     }
 
-    "consume every item" ! prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
+    "consume every item" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       val tx = transducers.dropWhile[Int](f)
       consume(xs, tx) ==== xs.length
     }
   }
 
   "dropRight" should {
-    "produce the all but the last n items" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce the all but the last n items" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.dropRight[Int](n)
       run(xs, tx) ==== xs.dropRight(n)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
 
-    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.dropRight[Int](n)
       consume(xs, tx) ==== xs.length
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "dropNth" should {
-    "produce all items but every n-th" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce all items but every n-th" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
       run(xs, tx) ==== xs.grouped(n).flatMap(_.drop(1)).toList
     }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
 
-    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
       consume(xs, tx) ==== (if (n == 0 || n == 1) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "slice" should {
-    "produce a slice of the items" ! prop { (xs: List[Int], x: Int, y: Int) ⇒
+    "produce a slice of the items" in prop { (xs: List[Int], x: Int, y: Int) ⇒
       val (n, m) = if (x > y) (y, x) else (x, y)
       val tx = transducers.slice[Int](n.toLong, m.toLong)
       run(xs, tx) ==== xs.slice(n, m)
     }(implicitly, implicitly, implicitly, posNum, implicitly, posNum, implicitly, implicitly)
 
-    "consume only the items till the end of the slice" ! prop { (xs: List[Int], x: Int, y: Int) ⇒
+    "consume only the items till the end of the slice" in prop { (xs: List[Int], x: Int, y: Int) ⇒
       val (n, m) = if (x > y) (y, x) else (x, y)
       val toConsume = if (n >= m) 0 else min(m, xs.length)
       val tx = transducers.slice[Int](n.toLong, m.toLong)
@@ -347,13 +347,13 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "distinct" should {
     val tx = transducers.distinct[Int]
 
-    "produce only the distinct set of items" ! prop { (xs: List[Int]) ⇒
+    "produce only the distinct set of items" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== xs.foldLeft(Vector.empty[Int]) { (ys, x) ⇒
         if (ys.lastOption.contains(x)) ys else ys :+ x
       }.toList
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
@@ -361,29 +361,29 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   "zipWithIndex" should {
     val tx = transducers.zipWithIndex[Int]
 
-    "produce zipped pairs of items and their index" ! prop { (xs: List[Int]) ⇒
+    "produce zipped pairs of items and their index" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== xs.zipWithIndex
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
   }
 
   "grouped" should {
-    "produce groups of fixed size" ! prop { (xs: List[Int], n: Int) ⇒
+    "produce groups of fixed size" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.grouped[Int, List](n)
       run(xs, tx) ==== xs.grouped(n).toList
     }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
 
-    "consume every item" ! prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.grouped[Int, List](n)
       consume(xs, tx) ==== xs.length
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "groupBy" should {
-    "produce groups of items by a key" ! prop { (xs: List[Int]) ⇒
+    "produce groups of items by a key" in prop { (xs: List[Int]) ⇒
       val f: Int ⇒ String = x ⇒ (x / 10).toString
       val tx = transducers.groupBy[Int, String, Vector](f)
       run(xs, tx) ==== xs.foldLeft(Vector.empty[(String, Vector[Int])]) { (ys, x) ⇒
@@ -397,7 +397,7 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
       }.map(_._2).toList
     }
 
-    "consume every item" ! prop { (xs: List[Int]) ⇒
+    "consume every item" in prop { (xs: List[Int]) ⇒
       val f: Int ⇒ String = x ⇒ (x / 10).toString
       val tx = transducers.groupBy[Int, String, Vector](f)
       consume(xs, tx) ==== xs.length
