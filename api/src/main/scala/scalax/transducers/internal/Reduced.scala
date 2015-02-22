@@ -28,7 +28,7 @@ class Reduced {
     x
   }
 
-  override def toString = s"Reduced(${state.get()}})"
+  override def toString = s"Reduced(${state.get()})"
 
   override def hashCode() = 31 * state.get().##
 
