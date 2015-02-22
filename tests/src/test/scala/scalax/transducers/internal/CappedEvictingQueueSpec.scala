@@ -18,6 +18,8 @@ package scalax.transducers.internal
 
 import scalax.transducers.Arbitraries
 
+import scalaz.@@
+
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
 import org.specs2.ScalaCheck
@@ -63,6 +65,35 @@ object CappedEvictingQueueSpec extends Specification with ScalaCheck with Arbitr
       val queue = new CappedEvictingQueue[String](size)
       subset foreach queue.add
       queue.elements.toList ==== subset
+    }
+
+    "iterator knows its size" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+      val iter = queue.elements
+
+      iter.hasDefiniteSize ==== true
+      iter.size ==== xs.size
+    }
+
+    "decline non-positive capacities" in prop { (n: Int @@ Negative) ⇒
+      new CappedEvictingQueue[String](n) must throwA[IllegalArgumentException].like {
+        case e ⇒ e.getMessage must startWith("requirement failed")
+      }
+    }
+
+    "show current elements in toString" in prop { (xs: List[String], n: Int @@ NonZeroPositive) ⇒
+      val capacity = xs.size max n
+      val overCapacity = n - xs.size
+      val items = if (overCapacity <= 0)
+        xs.take(1).map(x ⇒ s"($x)") ::: xs.drop(1)
+      else
+        xs ::: "(null)" :: List.fill(overCapacity - 1)("null")
+
+      val queue = new CappedEvictingQueue[String](capacity)
+      xs foreach queue.add
+
+      queue.toString ==== items.mkString("[", ", ", "]")
     }
   }
 }
