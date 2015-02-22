@@ -19,7 +19,7 @@ package internal
 
 import scala.language.higherKinds
 
-private[internal] final class EmptyReducer[A, R](rf: Reducer[A, R]) extends Reducers.Delegate[A, R](rf) {
+private[internal] final class EmptyReducer[A, R](rf: Reducer[_, R]) extends Reducers.Delegate[A, R](rf) {
   override def prepare(r: R, s: Reduced): R =
     s(r)
 

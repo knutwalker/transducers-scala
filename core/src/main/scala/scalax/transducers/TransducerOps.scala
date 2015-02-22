@@ -21,8 +21,8 @@ import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {
 
-  final def empty[A]: Transducer[A, A] =
-    new EmptyTransducer[A]
+  final def empty[A, B]: Transducer[A, B] =
+    new EmptyTransducer[A, B]
 
   final def noop[A]: Transducer[A, A] =
     new NoOpTransducer[A]
@@ -83,18 +83,18 @@ private[transducers] trait TransducerOps {
     drop[A](1)
 
   final def take[A](n: Long): Transducer[A, A] =
-    if (n <= 0) empty[A]
+    if (n <= 0) empty[A, A]
     else new TakeTransducer[A](n)
 
   final def takeWhile[A](f: A ⇒ Boolean): Transducer[A, A] =
     new TakeWhileTransducer[A](f)
 
   final def takeRight[A](n: Int): Transducer[A, A] =
-    if (n <= 0) empty[A]
+    if (n <= 0) empty[A, A]
     else new TakeRightTransducer[A](n)
 
   final def takeNth[A](n: Long): Transducer[A, A] =
-    if (n <= 0) empty[A]
+    if (n <= 0) empty[A, A]
     else if (n == 1) noop[A]
     else new TakeNthTransducer[A](n)
 
@@ -110,12 +110,12 @@ private[transducers] trait TransducerOps {
     else new DropRightTransducer[A](n)
 
   final def dropNth[A](n: Long): Transducer[A, A] =
-    if (n <= 1) empty[A]
+    if (n <= 1) empty[A, A]
     else new DropNthTransducer[A](n)
 
   final def slice[A](from: Long, until: Long): Transducer[A, A] = {
     val lower = scala.math.max(from, 0L)
-    if (until <= lower) empty[A]
+    if (until <= lower) empty[A, A]
     else drop[A](lower).take(until - lower)
   }
 

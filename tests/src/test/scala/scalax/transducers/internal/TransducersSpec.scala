@@ -31,7 +31,7 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
   import TransducersSpec._
 
   "empty" should {
-    val tx = transducers.empty[Int]
+    val tx = transducers.empty[Int, Int]
 
     "produce nothing" in prop { (xs: List[Int]) ⇒
       run(xs, tx).length ==== 0
