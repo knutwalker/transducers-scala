@@ -4,6 +4,7 @@ import sbtrelease._
 import sbtrelease.ReleasePlugin._
 import sbtrelease.ReleasePlugin.ReleaseKeys._
 import sbtrelease.ReleaseStateTransformations._
+import ScoverageSbtPlugin.ScoverageKeys._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
 lazy val buildSettings = List(
@@ -41,7 +42,8 @@ lazy val commonSettings = List(
   shellPrompt := { state ⇒
     val name = Project.extract(state).currentRef.project
     (if (name == "parent") "" else name + " ") + "> "
-  }
+  },
+  coverageExcludedPackages := "scalax.transducers.benchmark.*"
 )
 
 lazy val projectInformation = Map(
