@@ -162,8 +162,8 @@ lazy val parent = project.in(file("."))
   .settings(name := "transducers-scala-parent")
   .settings(transducersSettings: _*)
   .settings(doNotPublish: _*)
-  .dependsOn(api, core, reactiveStreams, rxScala, tests, examples, benchmarks)
-  .aggregate(api, core, reactiveStreams, rxScala, tests, examples, benchmarks)
+  .dependsOn(api, core, reactiveStreams, rxScala, tests, guide, examples, benchmarks)
+  .aggregate(api, core, reactiveStreams, rxScala, tests, guide, examples, benchmarks)
 
 lazy val all = project
   .settings(name := "transducers-scala-all")
@@ -212,6 +212,16 @@ lazy val benchmarks = project
       "org.functionaljava" % "functionaljava"   % "4.3",
       "com.cognitect"      % "transducers-java" % "0.4.67"))
   .dependsOn(core)
+
+lazy val guide = project
+  .settings(name := "transducers-scala-guide")
+  .settings(transducersSettings: _*)
+  .settings(doNotPublish: _*)
+  .settings(
+    resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+    libraryDependencies ++= List(
+      "org.specs2" %% "specs2-html" % "2.4.16" % "test"))
+  .dependsOn(tests % "test->test")
 
 lazy val tests = project
   .settings(name := "transducers-scala-tests")
