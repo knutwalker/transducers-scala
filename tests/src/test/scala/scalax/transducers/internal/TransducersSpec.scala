@@ -19,6 +19,8 @@ package transducers.internal
 
 import transducers.{Transducer, Arbitraries}
 
+import scalaz.{Tag, @@}
+
 import org.scalacheck.Gen.Choose
 import org.scalacheck.{Arbitrary, Gen}
 import org.specs2._
@@ -28,7 +30,6 @@ import scala.math.{max, min}
 import java.util.concurrent.atomic.AtomicInteger
 
 object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
-  import TransducersSpec._
 
   "empty" should {
     val tx = transducers.empty[Int, Int]
@@ -234,15 +235,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
   }
 
   "take" should {
-    "produce the first n items" in prop { (xs: List[Int], n: Int) ⇒
+    "produce the first n items" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.take[Int](n.toLong)
       run(xs, tx) ==== xs.take(n)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }
 
-    "consume only the first n items" in prop { (xs: List[Int], n: Int) ⇒
+    "consume only the first n items" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.take[Int](n.toLong)
       consume(xs, tx) ==== min(n, xs.length)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 
   "takeWhile" should {
@@ -258,39 +258,39 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
   }
 
   "takeRight" should {
-    "produce the last n items" in prop { (xs: List[Int], n: Int) ⇒
+    "produce the last n items" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.takeRight[Int](n)
       run(xs, tx) ==== xs.takeRight(n)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }
 
-    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.takeRight[Int](n)
-      consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+      consume(xs, tx) ==== (if ((n: Int) == 0) 0 else xs.length)
+    }
   }
 
   "takeNth" should {
-    "produce every n-th item" in prop { (xs: List[Int], n: Int) ⇒
+    "produce every n-th item" in prop { (xs: List[Int], n: Int @@ NonZeroPositive) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
       run(xs, tx) ==== xs.grouped(n).flatMap(_.take(1)).toList
-    }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
+    }
 
-    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
-      consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+      consume(xs, tx) ==== (if ((n: Int) == 0) 0 else xs.length)
+    }
   }
 
   "drop" should {
-    "produce the all but the first n items" in prop { (xs: List[Int], n: Int) ⇒
+    "produce the all but the first n items" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.drop[Int](n.toLong)
       run(xs, tx) ==== xs.drop(n)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }
 
-    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.drop[Int](n.toLong)
       consume(xs, tx) ==== xs.length
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }
   }
 
   "dropWhile" should {
@@ -306,42 +306,42 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
   }
 
   "dropRight" should {
-    "produce the all but the last n items" in prop { (xs: List[Int], n: Int) ⇒
+    "produce the all but the last n items" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.dropRight[Int](n)
       run(xs, tx) ==== xs.dropRight(n)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }
 
-    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.dropRight[Int](n)
       consume(xs, tx) ==== xs.length
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+    }
   }
 
   "dropNth" should {
-    "produce all items but every n-th" in prop { (xs: List[Int], n: Int) ⇒
+    "produce all items but every n-th" in prop { (xs: List[Int], n: Int @@ NonZeroPositive) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
       run(xs, tx) ==== xs.grouped(n).flatMap(_.drop(1)).toList
-    }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
+    }
 
-    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
-      consume(xs, tx) ==== (if (n == 0 || n == 1) 0 else xs.length)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+      consume(xs, tx) ==== (if ((n: Int) == 0 || (n: Int) == 1) 0 else xs.length)
+    }
   }
 
   "slice" should {
-    "produce a slice of the items" in prop { (xs: List[Int], x: Int, y: Int) ⇒
-      val (n, m) = if (x > y) (y, x) else (x, y)
+    "produce a slice of the items" in prop { (xs: List[Int], xy: (Int, Int)) ⇒
+      val (n, m) = xy
       val tx = transducers.slice[Int](n.toLong, m.toLong)
       run(xs, tx) ==== xs.slice(n, m)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, posNum, implicitly, implicitly)
+    }
 
-    "consume only the items till the end of the slice" in prop { (xs: List[Int], x: Int, y: Int) ⇒
-      val (n, m) = if (x > y) (y, x) else (x, y)
+    "consume only the items till the end of the slice" in prop { (xs: List[Int], xy: (Int, Int)) ⇒
+      val (n, m) = xy
       val toConsume = if (n >= m) 0 else min(m, xs.length)
       val tx = transducers.slice[Int](n.toLong, m.toLong)
       consume(xs, tx) ==== toConsume
-    }(implicitly, implicitly, implicitly, posNum, implicitly, posNum, implicitly, implicitly)
+    }
   }
 
   "distinct" should {
@@ -371,21 +371,22 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
   }
 
   "grouped" should {
-    "produce groups of fixed size" in prop { (xs: List[Int], n: Int) ⇒
+    "produce groups of fixed size" in prop { (xs: List[Int], n: Int @@ NonZeroPositive) ⇒
       val tx = transducers.grouped[Int, List](n)
       run(xs, tx) ==== xs.grouped(n).toList
-    }(implicitly, implicitly, implicitly, posNonZeroNum, implicitly, implicitly)
+    }
 
-    "consume every item" in prop { (xs: List[Int], n: Int) ⇒
+    "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.grouped[Int, List](n)
-      consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
-    }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
+      consume(xs, tx) ==== (if ((n: Int) == 0) 0 else xs.length)
+    }
   }
 
   "groupBy" should {
+    val f: Int ⇒ String = x ⇒ (x / 10).toString
+    val tx = transducers.groupBy[Int, String, Vector](f)
+
     "produce groups of items by a key" in prop { (xs: List[Int]) ⇒
-      val f: Int ⇒ String = x ⇒ (x / 10).toString
-      val tx = transducers.groupBy[Int, String, Vector](f)
       run(xs, tx) ==== xs.foldLeft(Vector.empty[(String, Vector[Int])]) { (ys, x) ⇒
         val key = f(x)
         if (ys.isEmpty)
@@ -398,17 +399,25 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     }
 
     "consume every item" in prop { (xs: List[Int]) ⇒
-      val f: Int ⇒ String = x ⇒ (x / 10).toString
-      val tx = transducers.groupBy[Int, String, Vector](f)
       consume(xs, tx) ==== xs.length
     }
   }
 
-  private val posNum =
-    Arbitrary(Gen.sized(max ⇒ Choose.chooseInt.choose(0, max * 2)))
+  private val posNumGen: Gen[Int @@ Positive] =
+    Gen.sized(max ⇒ Choose.chooseInt.choose(0, max * 2).map(Tag(_)))
+  implicit val posNum = Arbitrary(posNumGen)
 
-  private val posNonZeroNum =
-    Arbitrary(Gen.sized(max ⇒ Choose.chooseInt.choose(1, max * 2)))
+  private val posNonZeroNumGen: Gen[Int @@ NonZeroPositive] =
+    Gen.sized(max ⇒ Choose.chooseInt.choose(1, max * 2).map(Tag(_)))
+  implicit val posNonZeroNum = Arbitrary(posNonZeroNumGen)
+
+  private val slicePairGen: Gen[(Int, Int)] = for (x ← Tag.unsubst(posNumGen); y ← Tag.unsubst(posNumGen)) yield {
+    if (x > y) (y, x) else (x, y)
+  }
+  implicit val slicePair = Arbitrary(slicePairGen)
+
+  implicit def unwrapPositive(pi: Int @@ Positive): Int = Tag.unwrap(pi)
+  implicit def unwrapNonZeroPositive(pi: Int @@ NonZeroPositive): Int = Tag.unwrap(pi)
 
   private def run[A](xs: List[Int], tx: Transducer[Int, A]) =
     transducers.run(tx)(xs)
@@ -434,4 +443,8 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     }
     def consumed: Int = _consumed
   }
+
+  sealed trait Negative
+  sealed trait Positive
+  sealed trait NonZeroPositive
 }
