@@ -17,13 +17,12 @@
 package scalax
 package transducers
 
-import scala.language.{ existentials, higherKinds }
-import scalax.transducers.internal.CombinedTransducer
+import internal.CombinedTransducer
 
-trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(Int, Long, Double, Char, Boolean) B] {
+import scala.language.{existentials, higherKinds}
+
+trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(Int, Long, Double, Char, Boolean) B] extends TransducerCore[A, B] {
   self ⇒
-
-  def apply[R](rf: Reducer[B, R]): Reducer[A, R]
 
   final def andThen[C](that: Transducer[B, C]): Transducer[A, C] =
     >>[C](that)
