@@ -43,6 +43,19 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     }
   }
 
+  "noop" should {
+    val tx = transducers.noop[Int]
+
+    "produce the input items" in prop { (xs: List[Int]) ⇒
+      val result = run(xs, tx)
+      result ==== xs
+    }
+
+    "consume every item" in prop { (xs: List[Int]) ⇒
+      consume(xs, tx) ==== xs.length
+    }
+  }
+
   "orElse" should {
     val tx = transducers.orElse(42)
 
