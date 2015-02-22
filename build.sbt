@@ -37,7 +37,11 @@ lazy val commonSettings = List(
   scmInfo := Some(ScmInfo(
     url("https://github.com/knutwalker/transducers-scala"),
     "scm:git:https://github.com/knutwalker/transducers-scala.git",
-    Some("scm:git:ssh://git@github.com:knutwalker/transducers-scala.git")))
+    Some("scm:git:ssh://git@github.com:knutwalker/transducers-scala.git"))),
+  shellPrompt := { state ⇒
+    val name = Project.extract(state).currentRef.project
+    (if (name == "parent") "" else name + " ") + "> "
+  }
 )
 
 lazy val projectInformation = Map(
