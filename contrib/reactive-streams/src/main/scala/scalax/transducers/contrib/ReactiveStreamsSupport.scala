@@ -16,10 +16,11 @@
 
 package scalax.transducers.contrib
 
-import org.reactivestreams.{ Publisher, Subscriber }
+import scalax.transducers.TransducerCore
+
+import org.reactivestreams.{Publisher, Subscriber}
 
 import scala.language.implicitConversions
-import scalax.transducers.Transducer
 
 trait ReactiveStreamsSupport {
 
@@ -27,11 +28,11 @@ trait ReactiveStreamsSupport {
     new TransducerEnabledPublisher[A](underlying)
 
   final class TransducerEnabledPublisher[A](upstream: Publisher[A]) {
-    def transduce[B](transducer: Transducer[A, B]): Publisher[B] =
+    def transduce[B](transducer: TransducerCore[A, B]): Publisher[B] =
       new TransducedPublisher(upstream, transducer)
   }
 
-  private final class TransducedPublisher[A, B](upstream: Publisher[A], transducer: Transducer[A, B]) extends Publisher[B] {
+  private final class TransducedPublisher[A, B](upstream: Publisher[A], transducer: TransducerCore[A, B]) extends Publisher[B] {
     def subscribe(downstream: Subscriber[_ >: B]) = {
       val state = new PublisherState[A, B](downstream)
       val reducer = transducer(state.reducer)

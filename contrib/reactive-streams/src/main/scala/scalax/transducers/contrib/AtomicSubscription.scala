@@ -16,12 +16,11 @@
 
 package scalax.transducers.contrib
 
-import java.util.concurrent.atomic.AtomicReference
-
 import org.reactivestreams.Subscription
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
+import java.util.concurrent.atomic.AtomicReference
 
 private[contrib] class AtomicSubscription extends Subscription {
   private val underlying = new AtomicReference[Subscription]

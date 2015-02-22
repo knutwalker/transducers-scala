@@ -16,19 +16,21 @@
 
 package scalax.transducers.contrib
 
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{ ArrayBlockingQueue, BlockingQueue }
+import scalax.transducers.Reducer
+import scalax.transducers.internal.Reduced
 
-import org.reactivestreams.{ Subscriber, Subscription }
+import org.reactivestreams.{Subscriber, Subscription}
 
 import scala.annotation.tailrec
-import scalax.transducers.Reducer
-import scalax.transducers.internal.{ Reduced, Reducers }
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue}
 
-class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 1024) {
+final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 1024) {
 
-  val reducer: Reducer[B, Unit] =
-    Reducers[B, Unit]((r, b, s) ⇒ sendRightValue(b))
+  private[contrib] val reducer: Reducer[B, Unit] = new Reducer[B, Unit] {
+    def apply(r: Unit, a: B, s: Reduced): Unit = sendRightValue(a)
+    def apply(r: Unit): Unit = ()
+  }
   private val upstreamSub = new AtomicSubscription
   private val reduced = new Reduced
   private val demand = new AtomicLong
@@ -80,11 +82,11 @@ class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 102
   private def drainBuffers(requested: Long, reducer: Reducer[A, Unit]): Long = {
     val outstanding =
       drainBuffer(requested, outputBuffer, sendRightValue)
-    drainBuffer(outstanding, inputBuffer, sendLeftValue((_: A), reducer))
+    drainBuffer(outstanding, inputBuffer, sendLeftValue(_: A, reducer))
   }
 
   private def sendRightValue(b: B): Unit = {
-    if (demand.getAndDecrement() > 0) {
+    if (demand.getAndDecrement > 0) {
       downstream.onNext(b)
     }
     else {

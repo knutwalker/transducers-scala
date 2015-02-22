@@ -16,11 +16,12 @@
 
 package scalax.transducers.contrib
 
+import scalax.transducers.TransducerCore
+
 import rx.lang.scala.JavaConversions.toJavaOperator
 import rx.lang.scala.Observable
 
 import scala.language.implicitConversions
-import scalax.transducers.Transducer
 
 trait RxSupport {
 
@@ -31,13 +32,13 @@ trait RxSupport {
     new TransducerEnabledObservable[A](underlying)
 
   final class TransducerEnabledObservable[A](upstream: Observable[A]) {
-    def transduce[B](transducer: Transducer[A, B]): Observable[B] = {
+    def transduce[B](transducer: TransducerCore[A, B]): Observable[B] = {
       upstream.lift(new OperatorTransducer(transducer))
     }
   }
 
   final class TransducerEnabledJavaObservable[A](upstream: rx.Observable[A]) {
-    def transduce[B](transducer: Transducer[A, B]): rx.Observable[B] = {
+    def transduce[B](transducer: TransducerCore[A, B]): rx.Observable[B] = {
       upstream.lift(toJavaOperator(new OperatorTransducer(transducer)))
     }
   }

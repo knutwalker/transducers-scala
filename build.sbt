@@ -184,14 +184,14 @@ lazy val reactiveStreams = project.in(file("contrib") / "reactive-streams")
   .settings(transducersSettings: _*)
   .settings(libraryDependencies ++= List(
     "org.reactivestreams" % "reactive-streams" % "0.4.0"))
-  .dependsOn(core)
+  .dependsOn(api)
 
 lazy val rxScala = project.in(file("contrib") / "rx-scala")
   .settings(name := "transducers-scala-rxscala")
   .settings(transducersSettings: _*)
   .settings(libraryDependencies ++= List(
     "io.reactivex" %% "rxscala" % "0.23.1"))
-  .dependsOn(core)
+  .dependsOn(api)
 
 lazy val examples = project
   .settings(name := "transducers-scala-examples")
