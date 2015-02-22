@@ -27,12 +27,7 @@ private[internal] abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implic
   private var buffer = F.empty[A]
 
   final def apply(r: R) =
-    rf(if (F.nonEmpty(buffer)) {
-      val r2 = rf(r, F.finish(buffer), new Reduced)
-      buffer = F.empty[A]
-      r2
-    }
-    else r)
+    rf(if (F.nonEmpty(buffer)) rf(r, F.finish(buffer), new Reduced) else r)
 
   protected final def append(a: A): Unit =
     buffer = F.append(buffer, a)
@@ -228,18 +223,17 @@ private[internal] final class GroupByReducer[A, B <: AnyRef, R, F[_]: AsTarget](
 
   def apply(r: R, a: A, s: Reduced) = {
     val key = f(a)
-    val ret = if ((previous eq mark) || (previous == key)) {
-      append(a)
-      r
-    }
-    else {
-      val r2 = flush(r, s)
+    val shouldAppend = previous == key || (previous eq mark)
+    previous = key
+    if (!shouldAppend) {
+      val result = flush(r, s)
       if (!s.?) {
         append(a)
       }
-      r2
+      result
+    } else {
+      append(a)
+      r
     }
-    previous = key
-    ret
   }
 }

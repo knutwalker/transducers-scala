@@ -605,6 +605,11 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
       consume(xs, tx) ==== xs.length
     }
 
+    "stop buffering when downstream cancels the transducing" in {
+      val tx2 = tx.take(1L)
+      consume((1 to 20).toList, tx2) ==== 10
+    }
+
     "show itself in toString" in {
       tx.toString ==== s"(groupBy)"
     }
