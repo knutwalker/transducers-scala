@@ -378,7 +378,7 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
 
     "consume every item" in prop { (xs: List[Int], n: Int) ⇒
       val tx = transducers.grouped[Int, List](n)
-      consume(xs, tx) ==== xs.length
+      consume(xs, tx) ==== (if (n == 0) 0 else xs.length)
     }(implicitly, implicitly, implicitly, posNum, implicitly, implicitly)
   }
 

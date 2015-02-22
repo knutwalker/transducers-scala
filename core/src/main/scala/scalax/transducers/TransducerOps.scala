@@ -126,7 +126,8 @@ private[transducers] trait TransducerOps {
     new ZipWithIndexTransducer[A]
 
   final def grouped[A, F[_]: AsTarget](n: Int): Transducer[A, F[A]] =
-    new GroupedTransducer[A, F](n)
+    if (n <= 0) empty[A, F[A]]
+    else new GroupedTransducer[A, F](n)
 
   final def groupBy[A, B <: AnyRef, F[_]: AsTarget](f: A ⇒ B): Transducer[A, F[A]] =
     new GroupByTransducer[A, B, F](f)
