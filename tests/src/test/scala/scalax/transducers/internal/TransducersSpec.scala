@@ -41,6 +41,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume nothing" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== 0
     }
+
+    "show itself in toString" in {
+      tx.toString ==== "(empty)"
+    }
   }
 
   "noop" should {
@@ -53,6 +57,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
+    }
+
+    "show itself in toString" in {
+      tx.toString ==== "(noop)"
     }
   }
 
@@ -67,6 +75,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
+    }
+
+    "show itself in toString" in {
+      tx.toString ==== "(orElse)"
     }
   }
 
@@ -87,6 +99,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
+
+    "show itself in toString" in {
+      tx.toString ==== "(foreach)"
+    }
   }
 
   "map" should {
@@ -96,6 +112,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int], f: Int ⇒ Int) ⇒
       consume(xs, transducers.map(f)) ==== xs.length
+    }
+
+    "show itself in toString" in prop { (f: Int ⇒ Int) ⇒
+      transducers.map(f).toString ==== "(map)"
     }
   }
 
@@ -107,6 +127,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], f: Int ⇒ List[Int]) ⇒
       consume(xs, transducers.flatMap(f)) ==== xs.length
     }
+
+    "show itself in toString" in prop { (f: Int ⇒ List[Int]) ⇒
+      transducers.flatMap(f).toString ==== "(flatMap)"
+    }
   }
 
   "filter" should {
@@ -116,6 +140,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.filter(f)) ==== xs.length
+    }
+
+    "show itself in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.filter(f).toString ==== "(filter)"
     }
   }
 
@@ -127,6 +155,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.filterNot(f)) ==== xs.length
     }
+
+    "show itself in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.filterNot(f).toString ==== "(filter)"
+    }
   }
 
   "collect" should {
@@ -136,6 +168,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int], f: Int =?> Int) ⇒
       consume(xs, transducers.collect(f)) ==== xs.length
+    }
+
+    "show itself in toString" in prop { (f: Int =?> Int) ⇒
+      transducers.collect(f).toString ==== "(collect)"
     }
   }
 
@@ -147,6 +183,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume only the items until the first match" in prop { (xs: List[Int], f: Int =?> Int) ⇒
       consume(xs, transducers.collectFirst(f)) ==== itemsUntilFound(xs, f.isDefinedAt)
     }
+
+    "show its composition in toString" in prop { (f: Int =?> Int) ⇒
+      transducers.collectFirst(f).toString ==== "(collect).(take 1)"
+    }
   }
 
   "find" should {
@@ -156,6 +196,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume only the items until the first match" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.find(f)) ==== itemsUntilFound(xs, f)
+    }
+
+    "show its composition in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.find(f).toString ==== "(filter).(take 1)"
     }
   }
 
@@ -167,6 +211,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume only the items until the first short-cut can be found" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.forall(f)) ==== itemsUntilFound(xs, !f(_))
     }
+
+    "show its composition in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.forall(f).toString ==== "(collect).(take 1).(orElse)"
+    }
   }
 
   "exists" should {
@@ -176,6 +224,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume only the items until the first short-cut can be found" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       consume(xs, transducers.exists(f)) ==== itemsUntilFound(xs, f)
+    }
+
+    "show its composition in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.exists(f).toString ==== "(collect).(take 1).(orElse)"
     }
   }
 
@@ -187,6 +239,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
       consume(xs, transducers.fold(z)(f)) ==== xs.length
     }
+
+    "show its composition in toString" in prop { (f: (Int, Int) ⇒ Int, z: Int) ⇒
+      transducers.fold(z)(f).toString ==== "(scan).(takeRight 1)"
+    }
   }
 
   "scan" should {
@@ -196,6 +252,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
       consume(xs, transducers.fold(z)(f)) ==== xs.length
+    }
+
+    "show itself in toString" in prop { (f: (Int, Int) ⇒ Int, z: Int) ⇒
+      transducers.scan(z)(f).toString ==== "(scan)"
     }
   }
 
@@ -209,6 +269,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume the first item only" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.take(1).length
     }
+
+    "show its composition in toString" in {
+      tx.toString ==== "(take 1)"
+    }
   }
 
   "last" should {
@@ -220,6 +284,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
+    }
+
+    "show its composition in toString" in {
+      tx.toString ==== "(takeRight 1)"
     }
   }
 
@@ -233,6 +301,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
+
+    "show its composition in toString" in {
+      tx.toString ==== "(dropRight 1)"
+    }
   }
 
   "tail" should {
@@ -245,6 +317,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
+
+    "show its composition in toString" in {
+      tx.toString ==== "(drop 1)"
+    }
   }
 
   "take" should {
@@ -256,6 +332,15 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume only the first n items" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.take[Int](n.toLong)
       consume(xs, tx) ==== min(n, xs.length)
+    }
+
+    "show itself in toString" in prop { (n: Int @@ NonZeroPositive) ⇒
+      transducers.take(n.toLong).toString ==== s"(take $n)"
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ Negative) ⇒
+      transducers.take(n.toLong).toString ==== "(empty)"
+    }
   }
 
   "takeWhile" should {
@@ -267,6 +352,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume only the first items" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       val tx = transducers.takeWhile[Int](f)
       consume(xs, tx) ==== itemsUntilFound(xs, !f(_))
+    }
+
+    "show itself in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.takeWhile(f).toString ==== "(takeWhile)"
     }
   }
 
@@ -280,6 +369,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
       val tx = transducers.takeRight[Int](n)
       consume(xs, tx) ==== (if ((n: Int) == 0) 0 else xs.length)
     }
+
+    "show itself in toString" in prop { (n: Int @@ NonZeroPositive) ⇒
+      transducers.takeRight(n).toString ==== s"(takeRight $n)"
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ Negative) ⇒
+      transducers.takeRight(n).toString ==== "(empty)"
+    }
   }
 
   "takeNth" should {
@@ -291,6 +388,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.takeNth[Int](n.toLong)
       consume(xs, tx) ==== (if ((n: Int) == 0) 0 else xs.length)
+    }
+
+    "show itself in toString" in prop { (n: Int @@ AtLeastTwo) ⇒
+      transducers.takeNth(n.toLong).toString ==== (if ((n: Int) == 1) "(noop)" else s"(takeNth $n)")
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ OneOrLess) ⇒
+      transducers.takeNth(n.toLong).toString ==== (if ((n: Int) == 1) "(noop)" else "(empty)")
     }
   }
 
@@ -304,6 +409,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
       val tx = transducers.drop[Int](n.toLong)
       consume(xs, tx) ==== xs.length
     }
+
+    "show itself in toString" in prop { (n: Int @@ NonZeroPositive) ⇒
+      transducers.drop(n.toLong).toString ==== s"(drop $n)"
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ Negative) ⇒
+      transducers.drop(n.toLong).toString ==== "(noop)"
+    }
   }
 
   "dropWhile" should {
@@ -315,6 +428,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], f: Int ⇒ Boolean) ⇒
       val tx = transducers.dropWhile[Int](f)
       consume(xs, tx) ==== xs.length
+    }
+
+    "show itself in toString" in prop { (f: Int ⇒ Boolean) ⇒
+      transducers.dropWhile(f).toString ==== "(dropWhile)"
     }
   }
 
@@ -328,6 +445,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
       val tx = transducers.dropRight[Int](n)
       consume(xs, tx) ==== xs.length
     }
+
+    "show itself in toString" in prop { (n: Int @@ NonZeroPositive) ⇒
+      transducers.dropRight(n).toString ==== s"(dropRight $n)"
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ Negative) ⇒
+      transducers.dropRight(n).toString ==== "(noop)"
+    }
   }
 
   "dropNth" should {
@@ -339,6 +464,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.dropNth[Int](n.toLong)
       consume(xs, tx) ==== (if ((n: Int) == 0 || (n: Int) == 1) 0 else xs.length)
+    }
+
+    "show itself in toString" in prop { (n: Int @@ AtLeastTwo) ⇒
+      transducers.dropNth(n.toLong).toString ==== s"(dropNth $n)"
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ OneOrLess) ⇒
+      transducers.dropNth(n.toLong).toString ==== "(empty)"
     }
   }
 
@@ -355,6 +488,15 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
       val tx = transducers.slice[Int](n.toLong, m.toLong)
       consume(xs, tx) ==== toConsume
     }
+
+    "show its composition in toString" in prop { (xy: (Int, Int)) ⇒
+      val (n, m) = xy
+      val expected =
+        if (m <= n) "(empty)"
+        else if (n == 0) s"(noop).(take $m)"
+        else s"(drop $n).(take ${m - n})"
+      transducers.slice(n.toLong, m.toLong).toString ==== expected
+    }
   }
 
   "distinct" should {
@@ -369,6 +511,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
+
+    "show itself in toString" in {
+      tx.toString ==== "(distinct)"
+    }
   }
 
   "zipWithIndex" should {
@@ -381,6 +527,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
+
+    "show itself in toString" in {
+      tx.toString ==== "(zipWithIndex)"
+    }
   }
 
   "grouped" should {
@@ -392,6 +542,14 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int], n: Int @@ Positive) ⇒
       val tx = transducers.grouped[Int, List](n)
       consume(xs, tx) ==== (if ((n: Int) == 0) 0 else xs.length)
+    }
+
+    "show itself in toString" in prop { (n: Int @@ NonZeroPositive) ⇒
+      transducers.grouped[Int, List](n).toString ==== s"(grouped $n)"
+    }
+
+    "show its composition in toString" in prop { (n: Int @@ Negative) ⇒
+      transducers.grouped[Int, List](n).toString ==== s"(empty)"
     }
   }
 
@@ -414,15 +572,31 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "consume every item" in prop { (xs: List[Int]) ⇒
       consume(xs, tx) ==== xs.length
     }
+
+    "show itself in toString" in {
+      tx.toString ==== s"(groupBy)"
+    }
   }
 
   private val posNumGen: Gen[Int @@ Positive] =
-    Gen.sized(max ⇒ Choose.chooseInt.choose(0, max * 2).map(Tag(_)))
+    Gen.sized(m ⇒ Choose.chooseInt.choose(0, m * 2).map(Tag(_)))
   implicit val posNum = Arbitrary(posNumGen)
 
+  private val negNumGen: Gen[Int @@ Negative] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 0).map(Tag(_)))
+  implicit val negNum = Arbitrary(negNumGen)
+
   private val posNonZeroNumGen: Gen[Int @@ NonZeroPositive] =
-    Gen.sized(max ⇒ Choose.chooseInt.choose(1, max * 2).map(Tag(_)))
+    Gen.sized(m ⇒ Choose.chooseInt.choose(1, max(1, m * 2)).map(Tag(_)))
   implicit val posNonZeroNum = Arbitrary(posNonZeroNumGen)
+
+  private val atLeastTwoGen: Gen[Int @@ AtLeastTwo] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(2, max(2, m * 2)).map(Tag(_)))
+  implicit val atLeastTwo = Arbitrary(atLeastTwoGen)
+
+  private val oneOrLessGen: Gen[Int @@ OneOrLess] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 1).map(Tag(_)))
+  implicit val oneOrLess = Arbitrary(oneOrLessGen)
 
   private val slicePairGen: Gen[(Int, Int)] = for (x ← Tag.unsubst(posNumGen); y ← Tag.unsubst(posNumGen)) yield {
     if (x > y) (y, x) else (x, y)
@@ -431,6 +605,9 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
   implicit def unwrapPositive(pi: Int @@ Positive): Int = Tag.unwrap(pi)
   implicit def unwrapNonZeroPositive(pi: Int @@ NonZeroPositive): Int = Tag.unwrap(pi)
+  implicit def unwrapAtLeastTwo(pi: Int @@ AtLeastTwo): Int = Tag.unwrap(pi)
+  implicit def unwrapOneOrLess(pi: Int @@ OneOrLess): Int = Tag.unwrap(pi)
+  implicit def unwrapNegative(pi: Int @@ Negative): Int = Tag.unwrap(pi)
 
   private def run[A](xs: List[Int], tx: Transducer[Int, A]) =
     transducers.run(tx)(xs)
@@ -460,4 +637,6 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
   sealed trait Negative
   sealed trait Positive
   sealed trait NonZeroPositive
+  sealed trait AtLeastTwo
+  sealed trait OneOrLess
 }
