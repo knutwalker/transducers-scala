@@ -93,11 +93,9 @@ private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) exte
       taken += 1
       rf(r, a, s)
     }
-    else if (taken == n) {
-      taken += 1
+    else {
       s(rf(r, a, s))
     }
-    else r
 }
 
 private[internal] final class TakeWhileReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Reducers.Delegate[A, R](rf) {
