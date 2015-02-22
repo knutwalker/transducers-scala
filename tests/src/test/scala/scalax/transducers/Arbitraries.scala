@@ -16,8 +16,13 @@
 
 package scalax.transducers
 
-import org.scalacheck.{Gen, Arbitrary}
+import scalaz.{@@, Tag}
+
 import org.scalacheck.Arbitrary._
+import org.scalacheck.Gen._
+import org.scalacheck.{Arbitrary, Gen}
+
+import scala.math.max
 
 trait Arbitraries {
 
@@ -130,5 +135,42 @@ trait Arbitraries {
       }
       pf
     })
+
+  private val posNumGen: Gen[Int @@ Positive] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(0, m * 2).map(Tag(_)))
+  implicit val posNum = Arbitrary(posNumGen)
+
+  private val negNumGen: Gen[Int @@ Negative] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 0).map(Tag(_)))
+  implicit val negNum = Arbitrary(negNumGen)
+
+  private val posNonZeroNumGen: Gen[Int @@ NonZeroPositive] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(1, max(1, m * 2)).map(Tag(_)))
+  implicit val posNonZeroNum = Arbitrary(posNonZeroNumGen)
+
+  private val atLeastTwoGen: Gen[Int @@ AtLeastTwo] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(2, max(2, m * 2)).map(Tag(_)))
+  implicit val atLeastTwo = Arbitrary(atLeastTwoGen)
+
+  private val oneOrLessGen: Gen[Int @@ OneOrLess] =
+    Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 1).map(Tag(_)))
+  implicit val oneOrLess = Arbitrary(oneOrLessGen)
+
+  private val slicePairGen: Gen[(Int, Int)] = for (x ← Tag.unsubst(posNumGen); y ← Tag.unsubst(posNumGen)) yield {
+    if (x > y) (y, x) else (x, y)
+  }
+  implicit val slicePair = Arbitrary(slicePairGen)
+
+  implicit def unwrapPositive(pi: Int @@ Positive): Int = Tag.unwrap(pi)
+  implicit def unwrapNonZeroPositive(pi: Int @@ NonZeroPositive): Int = Tag.unwrap(pi)
+  implicit def unwrapAtLeastTwo(pi: Int @@ AtLeastTwo): Int = Tag.unwrap(pi)
+  implicit def unwrapOneOrLess(pi: Int @@ OneOrLess): Int = Tag.unwrap(pi)
+  implicit def unwrapNegative(pi: Int @@ Negative): Int = Tag.unwrap(pi)
+
+  sealed trait Negative
+  sealed trait Positive
+  sealed trait NonZeroPositive
+  sealed trait AtLeastTwo
+  sealed trait OneOrLess
 }
 object Arbitraries extends Arbitraries

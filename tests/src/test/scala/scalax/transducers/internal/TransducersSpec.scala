@@ -17,12 +17,10 @@
 package scalax
 package transducers.internal
 
-import transducers.{Transducer, Arbitraries}
+import scalaz.@@
 
-import scalaz.{Tag, @@}
+import transducers.{AsTarget, Transducer, Arbitraries}
 
-import org.scalacheck.Gen.Choose
-import org.scalacheck.{Arbitrary, Gen}
 import org.specs2._
 import org.specs2.mutable.Specification
 
@@ -44,6 +42,40 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
 
     "show itself in toString" in {
       tx.toString ==== "(empty)"
+    }
+
+    "set the reduced state before reducing" in {
+      val list = AsTarget[List]
+      val reducer = list.reducer[Int]
+      val reduced = new Reduced
+      val empty = new EmptyReducer[Int, list.RB[Int]](reducer)
+      val result = empty.prepare(list.empty[Int], reduced)
+
+      list.finish(result) ==== List()
+      reduced.? ==== true
+    }
+
+    "set the reduced state while reducing" in {
+      val list = AsTarget[List]
+      val reducer = list.reducer[Int]
+      val reduced = new Reduced
+      val empty = new EmptyReducer[Int, list.RB[Int]](reducer)
+      val result = empty(list.empty[Int], 0, reduced)
+
+      list.finish(result) ==== List()
+      reduced.? ==== true
+    }
+
+    "fail when wrongly called in a reduce step" in {
+      val list = AsTarget[List]
+      val reducer = list.reducer[Int]
+      val reduced = new Reduced
+      val empty = new EmptyReducer[Int, list.RB[Int]](reducer)
+      val result = empty.prepare(list.empty[Int], reduced)
+
+      empty(result, 0, reduced) must throwA[IllegalStateException].like {
+        case e ⇒ e.getMessage must startWith("ContractViolation")
+      }
     }
   }
 
@@ -578,37 +610,6 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     }
   }
 
-  private val posNumGen: Gen[Int @@ Positive] =
-    Gen.sized(m ⇒ Choose.chooseInt.choose(0, m * 2).map(Tag(_)))
-  implicit val posNum = Arbitrary(posNumGen)
-
-  private val negNumGen: Gen[Int @@ Negative] =
-    Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 0).map(Tag(_)))
-  implicit val negNum = Arbitrary(negNumGen)
-
-  private val posNonZeroNumGen: Gen[Int @@ NonZeroPositive] =
-    Gen.sized(m ⇒ Choose.chooseInt.choose(1, max(1, m * 2)).map(Tag(_)))
-  implicit val posNonZeroNum = Arbitrary(posNonZeroNumGen)
-
-  private val atLeastTwoGen: Gen[Int @@ AtLeastTwo] =
-    Gen.sized(m ⇒ Choose.chooseInt.choose(2, max(2, m * 2)).map(Tag(_)))
-  implicit val atLeastTwo = Arbitrary(atLeastTwoGen)
-
-  private val oneOrLessGen: Gen[Int @@ OneOrLess] =
-    Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 1).map(Tag(_)))
-  implicit val oneOrLess = Arbitrary(oneOrLessGen)
-
-  private val slicePairGen: Gen[(Int, Int)] = for (x ← Tag.unsubst(posNumGen); y ← Tag.unsubst(posNumGen)) yield {
-    if (x > y) (y, x) else (x, y)
-  }
-  implicit val slicePair = Arbitrary(slicePairGen)
-
-  implicit def unwrapPositive(pi: Int @@ Positive): Int = Tag.unwrap(pi)
-  implicit def unwrapNonZeroPositive(pi: Int @@ NonZeroPositive): Int = Tag.unwrap(pi)
-  implicit def unwrapAtLeastTwo(pi: Int @@ AtLeastTwo): Int = Tag.unwrap(pi)
-  implicit def unwrapOneOrLess(pi: Int @@ OneOrLess): Int = Tag.unwrap(pi)
-  implicit def unwrapNegative(pi: Int @@ Negative): Int = Tag.unwrap(pi)
-
   private def run[A](xs: List[Int], tx: Transducer[Int, A]) =
     transducers.run(tx)(xs)
 
@@ -633,10 +634,4 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     }
     def consumed: Int = _consumed
   }
-
-  sealed trait Negative
-  sealed trait Positive
-  sealed trait NonZeroPositive
-  sealed trait AtLeastTwo
-  sealed trait OneOrLess
 }
