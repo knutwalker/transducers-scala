@@ -27,7 +27,7 @@ import org.specs2.mutable.Specification
 import scala.math.{max, min}
 import java.util.concurrent.atomic.AtomicInteger
 
-final class TransducersSpec extends Specification with ScalaCheck with Arbitraries {
+object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
   import TransducersSpec._
 
   "empty" should {
@@ -423,8 +423,7 @@ final class TransducersSpec extends Specification with ScalaCheck with Arbitrari
     val (dropped, rest) = xs.span(!f(_))
     dropped.length + rest.take(1).length
   }
-}
-object TransducersSpec {
+
   class CountingIterator(xs: List[Int]) extends Iterator[Int] {
     private[this] final val iter = xs.iterator
     private[this] final var _consumed = 0

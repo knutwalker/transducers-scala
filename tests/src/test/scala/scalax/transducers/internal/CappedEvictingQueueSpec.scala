@@ -23,7 +23,7 @@ import org.scalacheck.Arbitrary._
 import org.specs2.ScalaCheck
 import org.specs2.mutable.Specification
 
-final class CappedEvictingQueueSpec extends Specification with ScalaCheck with Arbitraries {
+object CappedEvictingQueueSpec extends Specification with ScalaCheck with Arbitraries {
 
   implicit val nonEmptyList = Arbitrary(arbitrary[List[String]] suchThat (_.nonEmpty))
 

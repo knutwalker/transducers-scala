@@ -21,7 +21,7 @@ import org.specs2._
 
 import scala.collection.mutable.ListBuffer
 
-final class ExampleSpec extends Specification { def is = s2"""
+object ExampleSpec extends Specification { def is = s2"""
 
    This is the specification for transducers
 
