@@ -22,6 +22,7 @@ lazy val commonSettings = List(
     "-language:existentials" ::
     "-language:higherKinds" ::
     "-language:implicitConversions" ::
+    "-language:postfixOps" ::
     "-unchecked" ::
     "-Xcheckinit" ::
     "-Xfatal-warnings" ::
