@@ -28,7 +28,22 @@ final class Into[G[_]: AsTarget] {
   def from[F[_]: AsSource]: IntoFrom[F, G] = new IntoFrom[F, G]
 }
 
+final class Addto[B, G[_]: AsTarget](init: G[B]) {
+  def run[A, F[_]: AsSource](xf: Transducer[A, B])(xs: F[A]): G[B] =
+    transduceFromInit(xf)(init, xs)
+
+  def run[A, F[_]: AsSource](xs: F[A])(xf: Transducer[A, B]): G[B] =
+    transduceFromInit(xf)(init, xs)
+
+  def from[F[_]: AsSource]: AddtoFrom[B, F, G] = new AddtoFrom[B, F, G](init)
+}
+
 final class IntoFrom[F[_]: AsSource, G[_]: AsTarget] {
   def run[A, B](xf: Transducer[A, B]): F[A] ⇒ G[B] =
     xs ⇒ transduceFromNaught(xf)(xs)
+}
+
+final class AddtoFrom[B, F[_]: AsSource, G[_]: AsTarget](init: G[B]) {
+  def run[A](xf: Transducer[A, B]): F[A] ⇒ G[B] =
+    xs ⇒ transduceFromInit(xf)(init, xs)
 }

@@ -21,18 +21,14 @@ import scala.language.higherKinds
 package object transducers extends TransducerOps {
 
   def run[A, B, F[_]](xf: Transducer[A, B])(xs: F[A])(implicit F: AsSource[F], x: AsTarget[F]): F[B] =
-    into[F].run(xf)(xs)
+    transduceFromNaught(xf)(xs)
 
   def run[A, B, F[_]](xs: F[A])(xf: Transducer[A, B])(implicit F: AsSource[F], x: AsTarget[F]): F[B] =
-    into[F].run(xf)(xs)
+    transduceFromNaught(xf)(xs)
 
   def into[F[_]: AsTarget]: Into[F] = new Into[F]
 
-  def addto[A, F[_]: AsSource, B, G[_]: AsTarget](init: G[B])(xf: Transducer[A, B])(xs: F[A]): G[B] =
-    transduceFromInit(xf)(init, xs)
-
-  def addto[A, F[_]: AsSource, B, G[_]: AsTarget](init: G[B], xs: F[A])(xf: Transducer[A, B]): G[B] =
-    transduceFromInit(xf)(init, xs)
+  def addto[B, F[_]: AsTarget](init: F[B]): Addto[B, F] = new Addto[B, F](init)
 
   private[transducers] def transduceFromNaught[A, F[_], B, G[_]](xf: Transducer[A, B])(xs: F[A])(implicit F: AsSource[F], G: AsTarget[G]): G[B] =
     transduceAnything[A, F, B, G](xf)(F, G)(G.empty[B], xs)

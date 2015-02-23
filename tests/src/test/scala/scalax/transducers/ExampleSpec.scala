@@ -157,7 +157,7 @@ object ExampleSpec extends Specification { def is = s2"""
     // which does not have to have the same shape.
     // The same rules from `into` apply as well, only that there's
     // no need to create an empty collection first
-    val result = transducers.addto(Vector(0, 1))(t)((1 to 10).iterator)
+    val result = transducers.addto(Vector(0, 1)).run(t)((1 to 10).iterator)
     result ==== Vector(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
   }
 
