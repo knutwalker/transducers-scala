@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package scalax
-package transducers.guide
+import scalax.transducers
 
-import transducers.AsTarget
-import transducers.internal.TransducersSpec.CountingIterator
+import scalax.transducers.AsTarget
+import scalax.transducers.internal.TransducersSpec.CountingIterator
 
 import org.specs2.Specification
 import org.specs2.execute.SnippetParams
 import org.specs2.specification.Snippets
 
-final class Guide extends Specification with Snippets { def is = s2"""
+object guide extends Specification with Snippets { def is = s2"""
   ${"Transducer Usage Guide".title}
 
   Transducers are a way to build reusable transformations.
@@ -230,7 +229,7 @@ final class Guide extends Specification with Snippets { def is = s2"""
   }}
 
   20 Items are consumed, 10 of which pass the filter condition; 5 are buffered
-  in case they need to be dropped and 5 will be taken until the process 
+  in case they need to be dropped and 5 will be taken until the process
   terminates.                                                                """
 
   def e1 = {

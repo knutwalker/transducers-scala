@@ -148,6 +148,23 @@ lazy val headerSettings =
   inConfig(Compile)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile))) ++
   inConfig(Test)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile)))
 
+lazy val buildInfos = buildInfoSettings ++ List(
+  sourceGenerators in Test <+= buildInfo,
+  buildInfoPackage := "buildinfo",
+     buildInfoKeys := List[BuildInfoKey](
+       organization,
+       name in core,
+            version,
+       scalaVersion,
+  BuildInfoKey.map(libraryDependencies in core)                 { case (k, v) ⇒ "deps_core" -> v },
+  BuildInfoKey.map(libraryDependencies in api)                  { case (k, v) ⇒  "deps_api" -> v },
+  BuildInfoKey.map(name in reactiveStreams)                { case (k, v) ⇒  "name_reactive" -> v },
+  BuildInfoKey.map(name in rxScala)                              { case (k, v) ⇒  "name_rx" -> v },
+  BuildInfoKey.map(libraryDependencies in reactiveStreams) { case (k, v) ⇒  "deps_reactive" -> v },
+  BuildInfoKey.map(libraryDependencies in rxScala)               { case (k, v) ⇒  "deps_rx" -> v }
+  )
+)
+
 lazy val buildsUberJar = List(
         assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
      assemblyOutputPath in assembly := baseDirectory.value / (assemblyJarName in assembly).value,
@@ -218,6 +235,7 @@ lazy val guide = project
   .settings(name := "transducers-scala-guide")
   .settings(transducersSettings: _*)
   .settings(doNotPublish: _*)
+  .settings(buildInfos: _*)
   .settings(
     resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
     libraryDependencies ++= List(
