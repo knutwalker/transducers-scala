@@ -1,0 +1,149 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <style type="text/css" media="all">
+        @import url('./css/maven-base.css');
+        @import url('./css/maven-theme.css');
+      </style>
+      <link href="./css/prettify.css" type="text/css" rel="stylesheet" />
+      <script type="text/javascript" src="./css/prettify.js"></script>
+      <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+      <link href="./css/tooltip.css" rel="stylesheet" type="text/css" />
+      <link href="./css/specs2-user.css" type="text/css" rel="stylesheet" />
+
+      <script type="text/javascript" src="./css/jquery.js"></script>
+      <script type="text/javascript" src="./css/jquery.cookie.js"></script>
+      <script type="text/javascript" src="./css/jquery.hotkeys.js"></script>
+      <script type="text/javascript" src="./css/jquery.jstree.js"></script>
+      <script type="text/javascript" src="./css/tooltip.js"></script>
+      <script type="text/javascript" src="./js/specs2-user.js"></script>
+      <script language="javascript">$.getScript("./js/specs2-user.js", initUserScript(document));</script>
+      <script language="javascript">
+      function init() {  prettyPrint(); };
+      /* found on : http://www.tek-tips.com/faqs.cfm?fid=6620 */
+      String.prototype.endsWith = function(str) { return (this.match(str+'$') == str) };
+      function changeWidth(id,width) {  document.getElementById(id).style.width = width; };
+      function changeMarginLeft(id, margin) { document.getElementById(id).style.marginLeft = margin; };
+      function toggleImage(image) {
+        if (image.src.endsWith('images/expanded.gif')) 
+          image.src = image.src.replace('expanded', 'collapsed');
+        else 
+          image.src = image.src.replace('collapsed', 'expanded');
+      };
+      function showHide(id) {
+        element = document.getElementById(id);
+        element.style.display = (element.style.display == 'block')? 'none' : 'block';
+      };
+      function showHideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = (elements[i].style.display == 'none') ? elements[i].style.display = '': 'none';
+        }
+      };
+      function showByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'block';
+        }
+      };
+      function hideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'none';
+        }
+      };
+      function showById(id) {
+        document.getElementById(id).style.display = ''
+      };
+      function hideById(id) {
+        document.getElementById(id).style.display = 'none'
+      };
+    </script>
+      <script language="javascript">window.onload=init;</script>
+      <!-- the tabber.js file must be loaded after the onload function has been set, in order to run the
+           tabber code, then the init code -->
+      <script type="text/javascript" src="./css/tabber.js"></script>
+      <link rel="stylesheet" href="./css/tabber.css" type="text/css" media="screen" />
+      <title>Transducer Usage Guide</title>
+    </head><body><div id="breadcrumbs"><a href="index.html">index</a><t> / </t><a href="guide.html">guide</a></div><div class="colmask threecol">
+            <div class="colmid">
+              <div class="colleft">
+                <div class="col1"><div id="central"><html><title>Transducer Usage Guide</title><a name="Transducer+Usage+Guide"><h2 specId="1308049982">Transducer Usage Guide</h2></a><status class="ok"><div style="display: show; text-indent:10px;"><p>Transducers are a way to build reusable transformations.</p><p>Let's start with some input data <code class="prettyprint">xs</code>, that will be used for further examples:</p></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">(1 to 10).toList
+</code></pre><p><code class="prettyprint">&gt; List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)</code></p><p>And we will use this simple transducer <code class="prettyprint">tx</code>, that will filter out odd numbers:</p></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">transducers.filter((x: Int) ⇒ x % 2 == 0)
+</code></pre><p><code class="prettyprint">&gt; (filter)</code></p><p><a name="Decoupling+from+in-+and+output"><h3>Decoupling from in- and output</h3></a></p><p>A transducer is independent from its source or target. Notice how the<br />   definition of the transducer did not involve anything from the source<br />   or the target.</p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> If you <code class="prettyprint">run</code> the transducer, it will use the input shape for the output.<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">transducers.run(tx)(xs)
+</code></pre><p><code class="prettyprint">&gt; List(2, 4, 6, 8, 10)</code></p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> You can also change the output shape using <code class="prettyprint">into</code>:<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">transducers.into[Vector].run(tx)(xs)
+</code></pre><p><code class="prettyprint">&gt; Vector(2, 4, 6, 8, 10)</code></p><p>The shape has to be a first-order kinded type, i.e. <code class="prettyprint">F[_]</code> or <code class="prettyprint">* -&gt; *</code>.<br />   There must be an instance of <code class="prettyprint">AsTarget[F]</code> available. For some types,<br />   there is already an instance available.</p></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">(  transducers.into[List].run(tx)(xs)
+,  transducers.into[Vector].run(tx)(xs)
+,  transducers.into[Stream].run(tx)(xs)
+,  transducers.into[Set].run(tx)(xs)
+,  transducers.into[Iterator].run(tx)(xs)
+,  transducers.into[Iterable].run(tx)(xs)
+,  transducers.into[Option].run(tx)(xs)
+,  transducers.into[Option](AsTarget.lastOption).run(tx)(xs)
+)
+</code></pre><p><code class="prettyprint">&gt; (List(2, 4, 6, 8, 10),Vector(2, 4, 6, 8, 10),Stream(2, ?),Set(10, 6, 2, 8, 4),non-empty iterator,List(2, 4, 6, 8, 10),Some(2),Some(10))</code></p><p>Note that choosing <code class="prettyprint">Stream</code> won't automatially stop the consumption of the<br />   input, when the stream is not consumed. Also, using <code class="prettyprint">Option</code> will not<br />   terminate the input consumption early. This might change in the future<br />   (PR welcome ;-) ).</p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> If you already have some target data available, you can use <code class="prettyprint">addto</code>:<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val result = (-10 to 0 by 2).toVector
+transducers.addto(result).run(tx)(xs)
+</code></pre><p><code class="prettyprint">&gt; Vector(-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10)</code></p><p>The same things about <code class="prettyprint">AsTarget</code> apply for <code class="prettyprint">addto</code> as they do for <code class="prettyprint">into</code>.</p><p>All three methods also support a variant where the arguments are reversed<br />   (<code class="prettyprint">(input)(transducer)</code>) which works better with type inference, if the<br />   transducer is declared inline:</p></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">transducers.run(transducers.filter((x: Int) ⇒ x % 2 == 0))(xs)
+//  transducers.run(transducers.filter(_ % 2 == 0))(xs)  // wouldn't compile
+transducers.run(xs)(transducers.filter(_ % 2 == 0))
+</code></pre><p><code class="prettyprint">&gt; List(2, 4, 6, 8, 10)</code></p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /><p>  <code class="prettyprint">into</code> and <code class="prettyprint">addto</code> also have a <code class="prettyprint">from</code> method, where you can define the input<br />   shape, and a transducer.<br />   You get a function from input to output:</p><br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val fn: List[Int] ⇒ Vector[Int] = transducers.into[Vector].from[List].run(tx)
+fn(xs)
+</code></pre><p><code class="prettyprint">&gt; Vector(2, 4, 6, 8, 10)</code></p><p><a name="Composing+Transducers"><h3>Composing Transducers</h3></a></p><p>Transducers can be composed as if they were functions (a <code class="prettyprint">Transducer[A, B]</code><br />   is basically just a <code class="prettyprint">Reducer[B, _] ⇒ Reducer[A, _]</code>).</p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> You can use <code class="prettyprint">compose</code> to create a new Transducer:<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val tx2 = transducers.map((_: Int) * 5)
+val tx0 = tx compose tx2 // first map (*5), then filter (even?)
+
+transducers.run(tx0)(xs)
+</code></pre><p><code class="prettyprint">&gt; List(10, 20, 30, 40, 50)</code></p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> You can also use <code class="prettyprint">andThen</code><br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val tx2 = transducers.map((_: Int) * 4)
+val tx0 = tx andThen tx2 // first filter (even?), then map (*4)
+transducers.run(tx0)(xs)
+</code></pre><p><code class="prettyprint">&gt; List(8, 16, 24, 32, 40)</code></p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> <code class="prettyprint">&gt; &gt;</code> is an alias for <code class="prettyprint">andThen</code><br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val tx2 = transducers.map((_: Int) * 4)
+val tx0 = tx &gt;&gt; tx2 // first filter (even?), then map (*4)
+transducers.run(tx0)(xs)
+</code></pre><p><code class="prettyprint">&gt; List(8, 16, 24, 32, 40)</code></p><p>Instead of creating the transducers beforehand and fighting the<br />   type-inference, you directly chain transducers by calling the corresponding<br />   methods.</p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> This way, the API looks like that of a collection type<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val tx0 = tx map (4*) map (2+) drop 4
+transducers.run(tx0)(xs)
+</code></pre><p><code class="prettyprint">&gt; List(42)</code></p><p><a name="Laziness+and+early+termination"><h3>Laziness and early termination</h3></a></p><p>Transducers are inherently lazy in their execution, similar to views. Unlike<br />   in normal collections, every step is executed in every transducer before the<br />   next value is computed.</p><p>To demonstrate this, the input is wrapped in an iterator <code class="prettyprint">it</code>, that counts<br />   how often it was consumed</p></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">CountingIterator(xs)
+</code></pre><p><code class="prettyprint">&gt; non-empty iterator</code></p></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> So, take terminates early if everything is taken<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val tx0 = tx.take(2)
+(transducers.into[List].run(tx0)(it.it), it.consumed)
+</code></pre><p><code class="prettyprint">&gt; (List(2, 4),4)</code></p><p>Here, only 4 items were consumed (out of 10), because after 4 items, 2 were<br />   found that matched the filter and the process could be terminated.</p><p>Another effect of lazy evaluation is, that transducers can operate on<br />   infinite collections where the default scala collection operators would fail<br />   to terminate.</p><p>Consider this example in Scala:</p>
+<pre><code class="prettyprint">Stream.from(1).dropRight(5).take(5)
+// java.lang.OutOfMemoryError: GC overhead limit exceeded
+</code></pre></div></status><status class="ok"><div style="display: show; text-indent:10px;"><img src="./images/icon_success_sml.gif" /> This works with transducers<br /></div></status><status class="ok"><div style="display: show; text-indent:10px;"></div></status><status class="ok"><div style="display: show; text-indent:0px;"><pre><code class="prettyprint">val xs = Stream.from(1)
+val it = CountingIterator(xs)
+val tx0 = tx.dropRight(5).take(5)
+
+(transducers.into[List].run(tx0)(it.it), it.consumed)
+</code></pre></div></status><status class="ok"><div style="display: show; text-indent:0px;"><p><code class="prettyprint">&gt; (List(2, 4, 6, 8, 10),20)</code></p><p>20 Items are consumed, 10 of which pass the filter condition; 5 are buffered<br />   in case they need to be dropped and 5 will be taken until the process<br />   terminates. </p></div></status><status class="ok"><br /></status><table class="dataTable">
+        <tr><th colSpan="2">Total for specification guide</th></tr>
+        <tr><td>Finished in</td><td class="info">18 ms</td></tr>
+        <tr><td>Results</td><td class="success">10 examples, 0 failure, 0 error</td></tr>
+      </table></html></div></div>
+                <div class="col2"><div id="leftcolumn"><div id="tree">
+      <ul><li id="414032030"><a href="index.html#Transducers+for+Scala">Transducers for Scala</a>
+            <ul><li id="770965553"><a href="install.html#Installation+Notes">Installation Notes</a>
+            <ul><li id=""><a href="install.html#SBT">SBT</a>
+            
+          </li><li id=""><a href="install.html#Leiningen">Leiningen</a>
+            
+          </li><li id=""><a href="install.html#Gradle">Gradle</a>
+            
+          </li><li id=""><a href="install.html#Maven">Maven</a>
+            
+          </li></ul>
+          </li><li id=""><a href="install.html#Other+Dependencies">Other Dependencies</a>
+            
+          </li><li id=""><a href="install.html#Other+Modules">Other Modules</a>
+            
+          </li><li id="1308049982"><a href="guide.html#Transducer+Usage+Guide">Transducer Usage Guide</a>
+            <ul><li id=""><a href="guide.html#Decoupling+from+in-+and+output">Decoupling from in- and output</a>
+            
+          </li><li id=""><a href="guide.html#Composing+Transducers">Composing Transducers</a>
+            
+          </li><li id=""><a href="guide.html#Laziness+and+early+termination">Laziness and early termination</a>
+            
+          </li></ul>
+          </li></ul>
+          </li></ul>
+      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['414032030','1308049982'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
+    </div></div></div>
+                <div class="col3"><div id="rightcolumn"></div></div>
+              </div>
+            </div>
+          </div></body></html>
