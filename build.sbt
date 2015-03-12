@@ -7,14 +7,21 @@ import sbtrelease.ReleaseStateTransformations._
 import ScoverageSbtPlugin.ScoverageKeys._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
+lazy val githubUser = SettingKey[String]("Github username")
+lazy val githubRepo = SettingKey[String]("Github repository")
+lazy val projectMaintainer = SettingKey[String]("Maintainer")
+
 lazy val buildSettings = List(
         organization := "de.knutwalker",
+   projectMaintainer := "Paul Horn",
+          githubUser := "knutwalker",
+          githubRepo := "transducers-scala",
         scalaVersion := "2.11.5",
   crossScalaVersions := "2.11.5" :: "2.10.4" :: Nil
 )
 
 lazy val commonSettings = List(
-  scalacOptions in ThisBuild ++=
+  scalacOptions ++=
     "-deprecation" ::
     "-encoding" ::  "UTF-8" ::
     "-explaintypes" ::
@@ -36,10 +43,11 @@ lazy val commonSettings = List(
     "-Ywarn-nullary-override" ::
     "-Ywarn-nullary-unit" ::
     "-Ywarn-numeric-widen" :: Nil,
-  scmInfo := Some(ScmInfo(
-    url("https://github.com/knutwalker/transducers-scala"),
-    "scm:git:https://github.com/knutwalker/transducers-scala.git",
-    Some("scm:git:ssh://git@github.com:knutwalker/transducers-scala.git"))),
+  scmInfo <<= (githubUser, githubRepo) { (u, r) ⇒ Some(ScmInfo(
+    url(s"https://github.com/$u/$r"),
+    s"scm:git:https://github.com/$u/$r.git",
+    Some(s"scm:git:ssh://git@github.com:$u/$r.git")
+  ))},
   shellPrompt := { state ⇒
     val name = Project.extract(state).currentRef.project
     (if (name == "parent") "" else name + " ") + "> "
@@ -47,22 +55,16 @@ lazy val commonSettings = List(
   coverageExcludedPackages := "scalax.transducers.benchmark.*"
 )
 
-lazy val projectInformation = Map(
-  "maintainer" -> "Paul Horn",
-   "startYear" -> "2014",
-       "years" -> List(2014, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)).distinct.mkString(" – ")
-)
-
 lazy val publishSettings = List(
-                  homepage := Some(url("https://github.com/knutwalker/transducers-scala")),
+                 homepage <<= (githubUser, githubRepo) { (u, r) => Some(url(s"https://github.com/$u/$r")) },
                   licenses := List("Apache License, Verison 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-                 startYear := Some(projectInformation("startYear").toInt),
+                 startYear := Some(2014),
          publishMavenStyle := true,
    publishArtifact in Test := false,
       pomIncludeRepository := { _ => false },
   SonatypeKeys.profileName := "knutwalker",
-               tagComment <<= (Keys.version in ThisBuild) map (v => s"Release version $v"),
-            commitMessage <<= (Keys.version in ThisBuild) map (v => s"Set version to $v"),
+               tagComment <<= (version in ThisBuild) map (v => s"Release version $v"),
+            commitMessage <<= (version in ThisBuild) map (v => s"Set version to $v"),
                versionBump := sbtrelease.Version.Bump.Bugfix,
 
   publishTo := {
@@ -72,11 +74,11 @@ lazy val publishSettings = List(
     else
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
-  pomExtra := {
+  pomExtra <<= (githubUser, projectMaintainer) { (u, m) ⇒
     <developers>
       <developer>
-        <id>knutwalker</id>
-        <name>${projectInformation("maintainer")}</name>
+        <id>${u}</id>
+        <name>${m}</name>
         <url>http://knutwalker.de/</url>
       </developer>
     </developers>
@@ -123,11 +125,11 @@ lazy val doNotPublish = List(
 )
 
 lazy val headerSettings =
-  List(headers := Map(
-    "scala" -> (
-      HeaderPattern.cStyleBlockComment,
+  List(headers <<= (projectMaintainer, startYear) { (m, y) ⇒
+    val years = List(y.get, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)).distinct.mkString(" – ")
+    val license =
       s"""|/*
-          | * Copyright ${projectInformation("years")} ${projectInformation("maintainer")}
+          | * Copyright $years $m
           | *
           | * Licensed under the Apache License, Version 2.0 (the "License");
           | * you may not use this file except in compliance with the License.
@@ -143,8 +145,9 @@ lazy val headerSettings =
           | */
           |
           |""".stripMargin
-    )
-  )) ++
+    Map("java" -> (HeaderPattern.cStyleBlockComment, license),
+        "scala" -> (HeaderPattern.cStyleBlockComment, license))
+  }) ++
   inConfig(Compile)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile))) ++
   inConfig(Test)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile)))
 
@@ -167,7 +170,7 @@ lazy val buildInfos = buildInfoSettings ++ List(
 
 lazy val buildsUberJar = List(
         assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
-     assemblyOutputPath in assembly := baseDirectory.value / (assemblyJarName in assembly).value,
+     assemblyOutputPath in assembly := (baseDirectory in parent).value / (assemblyJarName in assembly).value,
          assemblyOption in assembly ~= { _.copy(includeScala = false) }
 )
 
@@ -203,7 +206,7 @@ lazy val reactiveStreams = project.in(file("contrib") / "reactive-streams")
   .settings(name := "transducers-scala-reactivestreams")
   .settings(transducersSettings: _*)
   .settings(libraryDependencies ++= List(
-    "org.reactivestreams" % "reactive-streams" % "0.4.0"))
+    "org.reactivestreams" % "reactive-streams" % "0.4.0" % "provided"))
   .dependsOn(api)
 
 lazy val rxScala = project.in(file("contrib") / "rx-scala")

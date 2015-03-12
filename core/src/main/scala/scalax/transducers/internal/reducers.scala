@@ -192,7 +192,7 @@ private[internal] final class DropRightReducer[A, R](rf: Reducer[A, R], n: Int) 
 }
 
 private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends Delegate[A, R](rf) {
-  private var previous: A = null.asInstanceOf[A]
+  private var previous: A = _
 
   def apply(r: R, a: A, s: Reduced) =
     if (a != previous) {
