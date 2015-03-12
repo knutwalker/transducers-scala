@@ -68,7 +68,7 @@ lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) c
   testOptions in IntegrationTest += Tests.Argument("html", "markdown", "console", "all", "html.toc", "html.nostats"),
   parallelExecution in IntegrationTest := false,
   libraryDependencies ++= List(
-    "org.specs2" %% "specs2-html" % "3.3.1"  % "it"))
+    "org.specs2" %% "specs2-html" % "3.3.1"  % "it,test"))
 
 lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, reactiveStreams, rxScala) settings (
   transducersSettings,
@@ -196,13 +196,10 @@ lazy val buildInfos = List(
        name in core,
             version,
        scalaVersion,
-  BuildInfoKey.map(libraryDependencies in core)                 { case (k, v) ⇒ "deps_core" -> v },
-  BuildInfoKey.map(libraryDependencies in api)                  { case (k, v) ⇒  "deps_api" -> v },
-  BuildInfoKey.map(name in reactiveStreams)                { case (k, v) ⇒  "name_reactive" -> v },
-  BuildInfoKey.map(name in rxScala)                              { case (k, v) ⇒  "name_rx" -> v },
-  BuildInfoKey.map(libraryDependencies in reactiveStreams) { case (k, v) ⇒  "deps_reactive" -> v },
-  BuildInfoKey.map(libraryDependencies in rxScala)               { case (k, v) ⇒  "deps_rx" -> v }
-  ))
+  BuildInfoKey("dependencies" → (libraryDependencies.in(core).value ++ libraryDependencies.in(api).value).distinct),
+  BuildInfoKey("modules" → List(
+    (name in reactiveStreams).value → (libraryDependencies in reactiveStreams).value,
+            (name in rxScala).value → (libraryDependencies in rxScala).value))))
 
 lazy val buildsUberJar = List(
      assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",

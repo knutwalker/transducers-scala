@@ -19,7 +19,7 @@ import org.specs2.Specification
 import _root_.buildinfo.BuildInfo
 import org.specs2.specification.{Snippets, Forms}
 
-object install extends Specification with Snippets with Forms { def is = "Installation Notes".title ^ s2"""
+object install extends Specification with Snippets with Forms { lazy val is = "Installation Notes".title ^ s2"""
 
 `$name` is published to Sonatype and can be installed with
 your favourite dependency manger:
@@ -68,67 +68,54 @@ $projectModules
 
 """
 
-  def projectDependencies: String =
-    moduleDependencies(dependencies, name)
+  def projectDependencies: String = moduleDependencies(
+    name, dependencies,
+    s"""`$name` has no additional dependencies besides scala ${BuildInfo.scalaVersion}.""")
 
-  def projectModules: String = {
-    if (modules.nonEmpty) {
+  def projectModules: String =
+    if (modules.nonEmpty)
       s"""`$name` also comes with the following additional modules:
          |
-         |${modules.map(moduleString(_, "  ")).mkString("\n")}
+         |${modules.map(moduleString).mkString("\n")}
       """.stripMargin
-    } else {
-      ""
-    }
-  }
+    else ""
 
-  def moduleString(m: Module, ident: String): String = {
+  def moduleDependencies(name: String, dependencies: List[Dependency], empty: ⇒ String = ""): String =
+    if (dependencies.nonEmpty)
+      s"""`$name` depends on the following modules:
+         |
+         |${dependencies.map(_.toString).mkString("- `", "`\n- `", "`\n")}
+      """.stripMargin
+    else empty
+
+  def moduleString(m: Module): String =
     s"""#### ${m.self.artifactId}
        |
        |`${m.self}`
        |
-       |${moduleDependencies(m.deps, m.self.artifactId)}
+       |${moduleDependencies(m.self.artifactId, m.deps)}
      """.stripMargin
-  }
-
-  def moduleDependencies(dependencies: List[Dependency], name: String): String = {
-    if (dependencies.nonEmpty) {
-      s"""`$name` depends on the following modules:
-         |
-         |${dependencies.map(_.toString).mkString("- `", "`\n  - `", "`\n")}
-      """.stripMargin
-    } else {
-      s"""`$name` has no additional dependencies besides scala ${BuildInfo.scalaVersion}."""
-    }
-  }
-
-  def filterDeps(deps: Seq[String]): List[Dependency] =
-    deps.flatMap(Dependency(_))
-      .filterNot(_.scope.contains("provided"))
-      .filterNot(_.artifactId == "scala-library")
-      .distinct
-      .toList
 
   val name = BuildInfo.name
-  val me = Dependency(BuildInfo.organization, name, BuildInfo.version, None)
-  val dependencies = filterDeps(BuildInfo.deps_api ++ BuildInfo.deps_core)
-
-  val reactive = Module(
-    Dependency(BuildInfo.organization, BuildInfo.name_reactive, BuildInfo.version, None),
-    filterDeps(BuildInfo.deps_reactive))
-  val rx = Module(
-    Dependency(BuildInfo.organization, BuildInfo.name_rx, BuildInfo.version, None),
-    filterDeps(BuildInfo.deps_rx))
-  val modules = List(reactive, rx)
+  val me = Dependency(name)
+  val dependencies = filterDeps(BuildInfo.dependencies)
+  val modules = BuildInfo.modules.map(Module(_))
 
   case class Module(self: Dependency, deps: List[Dependency])
+  object Module {
+    def apply(nd: (String, Seq[String])): Module =
+      Module(Dependency(nd._1), filterDeps(nd._2))
+  }
 
   case class Dependency(groupId: String, artifactId: String, version: String, scope: Option[String]) {
     override def toString: String =
-      s""""$groupId" % "$artifactId" % "$version"${scope.fold("")(s ⇒ s""" % "$s" """)}"""
+      s""""$groupId" %% "$artifactId" % "$version"${scope.fold("")(s ⇒ " % \"" + s + "\"")}"""
   }
   object Dependency {
-    def apply(s: String): Option[Dependency] = {
+    def apply(name: String): Dependency =
+      Dependency(BuildInfo.organization, name, BuildInfo.version, None)
+
+    def parse(s: String): Option[Dependency] = {
       val parts = s.split(':')
       if (parts.length == 3) {
         val Array(group, art, version) = parts
@@ -142,4 +129,11 @@ $projectModules
       }
     }
   }
+
+  def filterDeps(deps: Seq[String]): List[Dependency] =
+    deps.flatMap(Dependency.parse)
+      .filterNot(_.scope.contains("provided"))
+      .filterNot(_.artifactId == "scala-library")
+      .distinct
+      .toList
 }

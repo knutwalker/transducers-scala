@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import scalax.transducers.internal.TransducersSpec
+
 import org.specs2.Specification
 import org.specs2.specification.{Snippets, Forms}
 
@@ -26,6 +28,8 @@ ${ "Installation" ~/ install }
 ### Usage Guide
 
 ${ "Usage Guide" ~/ guide }
+$p
+${ "Detailed Spec" ~ TransducersSpec }
 
 """
 }
