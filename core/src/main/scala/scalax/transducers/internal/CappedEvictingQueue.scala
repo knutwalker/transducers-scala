@@ -54,7 +54,7 @@ final class CappedEvictingQueue[A](private val capacity: Int) {
     else
       elementsIterator(this, 0, cursor.toInt)
 
-  override def toString = {
+  override def toString: String = {
     val head = (cursor % max).toInt
     val current = backing(head)
     backing.map(String.valueOf).updated(head, s"($current)").mkString("[", ", ", "]")
@@ -70,9 +70,9 @@ private object CappedEvictingQueue {
     private var drained = 0
     private var current = fromIndex
 
-    def hasNext = drained < nrElements
+    def hasNext: Boolean = drained < nrElements
 
-    def next() = {
+    def next(): A = {
       val index = current % capacity
       val elem = backing(index)
       current += 1
@@ -80,9 +80,9 @@ private object CappedEvictingQueue {
       elem.asInstanceOf[A]
     }
 
-    override def hasDefiniteSize = true
+    override def hasDefiniteSize: Boolean = true
 
-    override def size = nrElements - drained
+    override def size: Int = nrElements - drained
   }
 
 }

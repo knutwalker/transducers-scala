@@ -38,16 +38,16 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
   private val outputBuffer = new ArrayBlockingQueue[B](bufferSize)
 
   def subscriber(reducer: Reducer[A, Unit]): Subscriber[A] = new Subscriber[A] {
-    def onSubscribe(s: Subscription) =
+    def onSubscribe(s: Subscription): Unit =
       upstreamSub.set(s)
 
-    def onError(t: Throwable) =
+    def onError(t: Throwable): Unit =
       downstream.onError(t)
 
-    def onComplete() =
+    def onComplete(): Unit =
       downstream.onComplete()
 
-    def onNext(t: A) =
+    def onNext(t: A): Unit =
       safeSendLeftValue(t, reducer)
   }
 
@@ -61,7 +61,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
   }
 
   def subscription(reducer: Reducer[A, Unit]): Subscription = new Subscription {
-    def request(n: Long) = {
+    def request(n: Long): Unit = {
       val outstanding =
         drainBuffers(demand.addAndGet(n), reducer)
       if (reduced.? && outputBuffer.isEmpty) {
@@ -73,7 +73,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
       }
     }
 
-    def cancel() = {
+    def cancel(): Unit = {
       reduced(())
       upstreamSub.cancel()
     }

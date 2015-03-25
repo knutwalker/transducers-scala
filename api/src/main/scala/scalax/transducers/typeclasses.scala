@@ -91,25 +91,25 @@ trait AsTargetInstances {
   }
 
   implicit val vector: AsTarget[Vector] = new FromBuilder[Vector] {
-    def empty[A] = Vector.newBuilder[A]
+    def empty[A]: RB[A] = Vector.newBuilder[A]
   }
   implicit val stream: AsTarget[Stream] = new FromBuilder[Stream] {
-    def empty[A] = Stream.newBuilder[A]
+    def empty[A]: RB[A] = Stream.newBuilder[A]
   }
   implicit val set: AsTarget[Set] = new FromBuilder[Set] {
-    def empty[A] = Set.newBuilder[A]
+    def empty[A]: RB[A] = Set.newBuilder[A]
   }
   implicit val iterator: AsTarget[Iterator] = new FromBuilder[Iterator] {
-    def empty[A] = Iterator.IteratorCanBuildFrom[A].apply()
+    def empty[A]: RB[A] = Iterator.IteratorCanBuildFrom[A].apply()
   }
   implicit val iterable: AsTarget[Iterable] = new FromBuilder[Iterable] {
-    def empty[A] = Iterable.newBuilder[A]
+    def empty[A]: RB[A] = Iterable.newBuilder[A]
   }
 
   implicit val firstOption: AsTarget[Option] = new AsTarget[Option] {
     type RB[A] = Option[A]
 
-    def empty[A] = None
+    def empty[A]: RB[A] = None
     def from[A](as: Option[A]): RB[A] = as
 
     def append[A](fa: Option[A], a: A): RB[A] = fa orElse Option(a)
@@ -121,7 +121,7 @@ trait AsTargetInstances {
   val lastOption: AsTarget[Option] = new AsTarget[Option] {
     type RB[A] = Option[A]
 
-    def empty[A] = None
+    def empty[A]: RB[A] = None
     def from[A](as: Option[A]): RB[A] = as
 
     def append[A](fa: Option[A], a: A): RB[A] = Option(a) orElse fa
@@ -133,7 +133,7 @@ trait AsTargetInstances {
   implicit val javaList: AsTarget[util.List] = new AsTarget[util.List] {
     type RB[A] = util.List[A]
 
-    def empty[A] = new util.ArrayList[A]
+    def empty[A]: RB[A] = new util.ArrayList[A]
     def from[A](as: util.List[A]): RB[A] = new util.ArrayList[A](as)
 
     def append[A](fa: RB[A], a: A): RB[A] = { fa.add(a); fa }
@@ -145,36 +145,36 @@ trait AsTargetInstances {
 
 trait AsSourceInstances {
   implicit val list: AsSource[List] = new AsSource[List] {
-    def hasNext[A](fa: List[A]) = fa.nonEmpty
-    def produceNext[A](fa: List[A]) = (fa.head, fa.tail)
+    def hasNext[A](fa: List[A]): Boolean = fa.nonEmpty
+    def produceNext[A](fa: List[A]): (A, List[A]) = (fa.head, fa.tail)
   }
   implicit val vector: AsSource[Vector] = new AsSource[Vector] {
-    def hasNext[A](fa: Vector[A]) = fa.nonEmpty
-    def produceNext[A](fa: Vector[A]) = (fa.head, fa.tail)
+    def hasNext[A](fa: Vector[A]): Boolean = fa.nonEmpty
+    def produceNext[A](fa: Vector[A]): (A, Vector[A]) = (fa.head, fa.tail)
   }
   implicit val stream: AsSource[Stream] = new AsSource[Stream] {
-    def hasNext[A](fa: Stream[A]) = fa.nonEmpty
-    def produceNext[A](fa: Stream[A]) = (fa.head, fa.tail)
+    def hasNext[A](fa: Stream[A]): Boolean = fa.nonEmpty
+    def produceNext[A](fa: Stream[A]): (A, Stream[A]) = (fa.head, fa.tail)
   }
   implicit val option: AsSource[Option] = new AsSource[Option] {
-    def hasNext[A](fa: Option[A]) = fa.nonEmpty
-    def produceNext[A](fa: Option[A]) = (fa.get, None)
+    def hasNext[A](fa: Option[A]): Boolean = fa.nonEmpty
+    def produceNext[A](fa: Option[A]): (A, Option[A]) = (fa.get, None)
   }
   implicit val set: AsSource[Set] = new AsSource[Set] {
-    def hasNext[A](fa: Set[A]) = fa.nonEmpty
-    def produceNext[A](fa: Set[A]) = (fa.head, fa.tail)
+    def hasNext[A](fa: Set[A]): Boolean = fa.nonEmpty
+    def produceNext[A](fa: Set[A]): (A, Set[A]) = (fa.head, fa.tail)
   }
   implicit val iterator: AsSource[Iterator] = new AsSource[Iterator] {
-    def hasNext[A](fa: Iterator[A]) = fa.hasNext
-    def produceNext[A](fa: Iterator[A]) = (fa.next(), fa)
+    def hasNext[A](fa: Iterator[A]): Boolean = fa.hasNext
+    def produceNext[A](fa: Iterator[A]): (A, Iterator[A]) = (fa.next(), fa)
   }
   implicit val iterable: AsSource[Iterable] = new AsSource[Iterable] {
-    def hasNext[A](fa: Iterable[A]) = fa.nonEmpty
-    def produceNext[A](fa: Iterable[A]) = (fa.head, fa.tail)
+    def hasNext[A](fa: Iterable[A]): Boolean = fa.nonEmpty
+    def produceNext[A](fa: Iterable[A]): (A, Iterable[A]) = (fa.head, fa.tail)
   }
   implicit val javaIterator: AsSource[JIterator] = new AsSource[JIterator] {
-    def hasNext[A](fa: JIterator[A]) = fa.hasNext
-    def produceNext[A](fa: JIterator[A]) = (fa.next(), fa)
+    def hasNext[A](fa: JIterator[A]): Boolean = fa.hasNext
+    def produceNext[A](fa: JIterator[A]): (A, JIterator[A]) = (fa.next(), fa)
   }
 }
 
