@@ -16,6 +16,7 @@
 
 package scalax.transducers.contrib
 
+import scala.util.Try
 import scalax.transducers.Reducer
 import scalax.transducers.internal.Reduced
 
@@ -96,7 +97,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
   }
 
   private[this] def sendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
-    try {
+    Try {
       if (!reduced.?) {
         reducer((), a, reduced)
         if (reduced.? && outputBuffer.isEmpty) {
@@ -104,9 +105,8 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
           upstreamSub.cancel()
         }
       }
-    }
-    catch {
-      case t: Throwable ⇒ downstream.onError(t)
+    } recover {
+      case t ⇒ downstream.onError(t)
     }
   }
 

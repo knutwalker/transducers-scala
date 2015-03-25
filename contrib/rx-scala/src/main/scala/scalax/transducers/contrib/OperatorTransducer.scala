@@ -16,12 +16,11 @@
 
 package scalax.transducers.contrib
 
+import scala.util.Try
 import scalax.transducers.{TransducerCore, Reducer}
 import scalax.transducers.internal.Reduced
 
 import rx.lang.scala.Subscriber
-
-import scala.util.control.NonFatal
 
 private[contrib] final class OperatorTransducer[A, B](transducer: TransducerCore[A, B]) extends (Subscriber[B] ⇒ Subscriber[A]) {
   def apply(downstream: Subscriber[B]): Subscriber[A] =
@@ -36,16 +35,15 @@ private[contrib] final class OperatorTransducer[A, B](transducer: TransducerCore
       private[this] val reducer = transducer(downstreamReducer)
 
       override def onNext(value: A): Unit =
-        try {
+        Try {
           reducer((), value, reduced)
           if (reduced.?) {
             reducer(())
             downstream.onCompleted()
             this.unsubscribe()
           }
-        }
-        catch {
-          case NonFatal(t) ⇒ downstream.onError(t)
+        } recover {
+          case t ⇒ downstream.onError(t)
         }
 
       override def onError(error: Throwable): Unit =
