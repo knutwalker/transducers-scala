@@ -17,81 +17,77 @@
 package scalax
 package transducers.benchmark
 
-import com.cognitect.transducers.Fns
-import org.openjdk.jmh.annotations._
-import org.openjdk.jmh.infra.Blackhole
-
-import scala.collection.JavaConverters._
-import java.lang.{Iterable ⇒ JIterable}
 import java.util
 import java.util.concurrent.TimeUnit
+import java.util.function.{Function ⇒ JFun, Predicate ⇒ JPred}
 import java.util.stream.Collectors
+
+import com.cognitect.transducers.{Fns, Function ⇒ CFun, ITransducer, Predicate ⇒ CPred}
+import org.openjdk.jmh.annotations._
+
+import scalax.transducers.Transducer
 
 @Threads(value = 1)
 @Fork(value = 1)
-@Warmup(iterations = 10)
-@Measurement(iterations = 10)
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Benchmark)
 class SimpleBenchmark {
-  import SimpleBenchmark._
+
+  private[this] final val ScalaFun: Int ⇒ Int = _ + 1
+  private[this] final val ScalaPred: Int ⇒ Boolean = _ % 2 == 0
+  private[this] final val STransducer: Transducer[Int, Int] =
+    transducers.map(ScalaFun).filter(ScalaPred)
+
+  private[this] final val JavaFun: JFun[Int, Int] = new JFun[Int, Int] {
+    def apply(t: Int): Int = t + 1
+  }
+  private[this] final val JavaPred: JPred[Int] = new JPred[Int] {
+    def test(t: Int): Boolean = t % 2 == 0
+  }
+
+  private[this] final val CogFun: CFun[Int, Int] = new CFun[Int, Int] {
+    def apply(t: Int): Int = t + 1
+  }
+  private[this] final val CogPred: CPred[Int] = new CPred[Int] {
+    def test(t: Int): Boolean = t % 2 == 0
+  }
+  private[this] final val JTransducer: ITransducer[Int, Int] =
+    Fns.compose(Fns.map(CogFun), Fns.filter(CogPred))
 
   @Benchmark
-  def javaList(bh: Blackhole, ints: IntList, f: JavaCollections): Unit = {
-    bh.consume(f.f(ints.jxs))
+  def bench_01_javaList(input: Input): util.List[Int] = {
+    input.jxs.stream()
+      .map[Int](JavaFun)
+      .filter(JavaPred)
+      .collect(Collectors.toList[Int])
   }
 
   @Benchmark
-  def scalaList(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
-    bh.consume(f.f(ints.xs))
+  def bench_02_scalaList(input: Input): Vector[Int] = {
+    input.xs.map(ScalaFun).filter(ScalaPred).toVector
   }
 
   @Benchmark
-  def scalaListWithBreakout(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
-    bh.consume(f.fBreakout(ints.xs))
+  def bench_03_scalaListWithBreakout(input: Input): Vector[Int] = {
+    val mapped: Vector[Int] = input.xs.map(ScalaFun)(scala.collection.breakOut)
+    mapped.filter(ScalaPred)
   }
 
   @Benchmark
-  def javaTransducers(bh: Blackhole, ints: IntList, f: TransducerJava): Unit = {
-    bh.consume(f.f(ints.jxs))
+  def bench_04_javaTransducers(input: Input): util.List[Int] = {
+    Fns.into(JTransducer, new util.ArrayList[Int], input.jxs)
   }
 
   @Benchmark
-  def scalaTransducers(bh: Blackhole, ints: IntList, f: TransducerScala): Unit = {
-    bh.consume(f.f(ints.xs))
-  }
-}
-
-object SimpleBenchmark extends JTransducersConversions {
-
-  @State(Scope.Benchmark)
-  class IntList {
-    val xs = (1 to 1e7.toInt).toList
-    val jxs = xs.asJava
+  def bench_05_scalaTransducers(input: Input): Vector[Int] = {
+    transducers.into[Vector].run(STransducer)(input.xs)
   }
 
-  @State(Scope.Benchmark)
-  class JavaCollections {
-    val f: (util.List[Int]) ⇒ util.List[Int] =
-      xs ⇒ xs.stream().map[Int]((_: Int) + 1).collect(Collectors.toList[Int])
+  @Benchmark
+  def bench_06_scalaToJavaTransducers(input: Input): util.List[Int] = {
+    transducers.into[util.List].run(STransducer)(input.xs)
   }
-
-  @State(Scope.Benchmark)
-  class ScalaCollections {
-    val f: (List[Int]) ⇒ Vector[Int] = xs ⇒ xs.map(_ + 1).toVector
-    val fBreakout: (List[Int]) ⇒ Vector[Int] = xs ⇒ xs.map(_ + 1)(scala.collection.breakOut)
-  }
-
-  @State(Scope.Benchmark)
-  class TransducerScala {
-    val f: (List[Int]) ⇒ util.List[Int] =
-      transducers.into[util.List].from[List].run(transducers.map((_: Int) + 1))
-  }
-
-  @State(Scope.Benchmark)
-  class TransducerJava {
-    val f: (JIterable[Int]) ⇒ util.List[Int] =
-      xs ⇒ Fns.into(Fns.map((_: Int) + 1), new util.ArrayList[Int], xs)
-  }
-
 }

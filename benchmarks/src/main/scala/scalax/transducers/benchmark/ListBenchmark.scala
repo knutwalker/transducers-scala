@@ -17,80 +17,57 @@
 package scalax
 package transducers.benchmark
 
-import scalax.transducers.AsTarget
+import java.lang.{Boolean ⇒ JBool}
+import java.util.concurrent.TimeUnit
 
 import fj.data.{List ⇒ FJList}
 import org.openjdk.jmh.annotations._
-import org.openjdk.jmh.infra.Blackhole
 
-import java.util.concurrent.TimeUnit
+import scalax.transducers.{AsTarget, Transducer}
 
 @Threads(value = 1)
 @Fork(value = 1)
 @Warmup(iterations = 5)
-@Measurement(iterations = 7)
+@Measurement(iterations = 5)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Benchmark)
 class ListBenchmark {
-  import ListBenchmark._
+
+  private[this] final val ScalaFun1: Int ⇒ Int = _ * 2
+  private[this] final val ScalaFun2: Int ⇒ Int = _ - 42
+  private[this] final val ScalaPred: Int ⇒ Boolean = _ % 4 == 0
+  private[this] final val STransducer: Transducer[Int, Int] =
+    transducers.map(ScalaFun1).filter(ScalaPred).map(ScalaFun2).take(50)
+
+  private[this] final val FJFun1: fj.F[Int, Int] = new fj.F[Int, Int] {
+    def f(a: Int): Int = a * 2
+  }
+  private[this] final val FJFun2: fj.F[Int, Int] = new fj.F[Int, Int] {
+    def f(a: Int): Int = a - 42
+  }
+  private[this] final val FJPred: fj.F[Int, JBool] = new fj.F[Int, JBool] {
+    def f(a: Int): JBool = a % 4 == 0
+  }
+
 
   @Benchmark
-  def _01_scalaCollections(bh: Blackhole, ints: IntList, f: ScalaCollections): Unit = {
-    bh.consume(f.f(ints.xs))
+  def bench_01_scalaCollections(input: Input): List[Int] = {
+    input.xs.map(ScalaFun1).filter(ScalaPred).map(ScalaFun2).take(50)
   }
 
   @Benchmark
-  def _02_functionaljavaList(bh: Blackhole, ints: IntList, f: FunctionalJavaList): Unit = {
-    bh.consume(f.f(ints.fjxs))
+  def bench_02_functionaljavaList(input: Input): FJList[Int] = {
+    input.fjxs.map(FJFun1).filter(FJPred).map(FJFun2).take(50)
   }
 
   @Benchmark
-  def _03_oldTransducers(bh: Blackhole, ints: IntList, f: TransducersSlow): Unit = {
-    bh.consume(f.f(ints.xs))
+  def bench_03_oldTransducers(input: Input): List[Int] = {
+    transducers.into[List](AsTarget.listAppend).run(STransducer)(input.xs)
   }
 
   @Benchmark
-  def _04_newTransducers(bh: Blackhole, ints: IntList, f: TransducersFast): Unit = {
-    bh.consume(f.f(ints.xs))
-  }
-}
-
-object ListBenchmark extends JTransducersConversions {
-
-  @State(Scope.Benchmark)
-  class IntList {
-    final val xs = (1 to 10000).toList
-    final val fjxs = FJList.list(xs: _*)
-  }
-
-  @State(Scope.Benchmark)
-  class ScalaCollections {
-    final val f: (List[Int]) ⇒ List[Int] =
-      _.map(_ * 2).filter(_ % 4 == 0).map(_ - 42).take(50)
-  }
-
-  @State(Scope.Benchmark)
-  class FunctionalJavaList {
-    final val f: (FJList[Int]) ⇒ FJList[Int] =
-      _.map((_: Int) * 2)
-        .filter((_: Int) % 4 == 0: java.lang.Boolean)
-        .map((_: Int) - 42)
-        .take(50)
-  }
-
-  @State(Scope.Benchmark)
-  class TransducersSlow {
-    private final val tx = transducers.map((_: Int) + 1)
-      .filter(_ % 4 == 0).map(_ - 42).take(50)
-    final val f: (List[Int]) ⇒ List[Int] =
-      transducers.into[List](AsTarget.listAppend).from[List].run(tx)
-  }
-
-  @State(Scope.Benchmark)
-  class TransducersFast {
-    private final val tx = transducers.map((_: Int) + 1)
-      .filter(_ % 4 == 0).map(_ - 42).take(50)
-    final val f: (List[Int]) ⇒ List[Int] =
-      transducers.into[List](AsTarget.list).from[List].run(tx)
+  def bench_04_newTransducers(input: Input): List[Int] = {
+    transducers.into[List](AsTarget.list).run(STransducer)(input.xs)
   }
 }
