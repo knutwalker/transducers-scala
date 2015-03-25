@@ -43,22 +43,6 @@ object ReducedSpec extends Specification with ScalaCheck {
       }
     }
 
-    "hash as boolean" in {
-      val r = new Reduced
-      r.## === (31 * false.##)
-      r(0)
-      r.## === (31 * true.##)
-    }
-
-    "equals as boolean" in {
-      val r1, r2 = new Reduced
-      r1 ==== r2
-      r1 !== false
-      r1(0)
-      r1 !=== r2
-      r1 !== true
-    }
-
     "toString" in {
       val r1, r2 = new Reduced
       r1(0)

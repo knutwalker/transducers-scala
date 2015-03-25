@@ -30,12 +30,5 @@ class Reduced {
 
   override def toString: String = s"Reduced(${state.get()})"
 
-  override def hashCode(): Int = 31 * state.get().##
-
-  override def equals(obj: scala.Any): Boolean = obj match {
-    case r: Reduced ⇒ r.? == state.get()
-    case _          ⇒ false
-  }
-
   def ? : Boolean = state.get()
 }
