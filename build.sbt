@@ -16,8 +16,8 @@ lazy val buildSettings = List(
    projectMaintainer := "Paul Horn",
           githubUser := "knutwalker",
           githubRepo := "transducers-scala",
-        scalaVersion := "2.11.5",
-  crossScalaVersions := "2.11.5" :: "2.10.4" :: Nil
+        scalaVersion := "2.11.6",
+  crossScalaVersions := "2.11.6" :: "2.10.5" :: Nil
 )
 
 lazy val commonSettings = List(
@@ -256,3 +256,7 @@ lazy val tests = project
     "org.scalacheck"    %% "scalacheck"               % "1.12.2" )
     .map(_ % "test"))
   .dependsOn(core, reactiveStreams, rxScala)
+
+
+addCommandAlias("cover", ";clean;coverage;test;coverageReport;coverageAggregate")
+addCommandAlias("coverCodacy", ";clean;coverage;test;coverageReport;coverageAggregate;codacyCoverage")
