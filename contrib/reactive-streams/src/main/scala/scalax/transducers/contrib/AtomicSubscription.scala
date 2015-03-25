@@ -23,9 +23,9 @@ import scala.collection.immutable.Queue
 import java.util.concurrent.atomic.AtomicReference
 
 private[contrib] class AtomicSubscription extends Subscription {
-  private val underlying = new AtomicReference[Option[Subscription]](None)
+  private[this] val underlying = new AtomicReference[Option[Subscription]](None)
 
-  private var stash = Queue.empty[Subscription ⇒ Unit]
+  private[this] var stash = Queue.empty[Subscription ⇒ Unit]
 
   def set(s: Subscription): Unit =
     if (underlying.compareAndSet(None, Some(s))) {
@@ -35,7 +35,7 @@ private[contrib] class AtomicSubscription extends Subscription {
   def request(n: Long): Unit =
     doOnUnderlying(_.request(n))
 
-  private def doOnUnderlying(f: Subscription ⇒ Unit): Unit =
+  private[this] def doOnUnderlying(f: Subscription ⇒ Unit): Unit =
     underlying.get() match {
       case Some(s) ⇒ f(s)
       case None    ⇒ stash = stash enqueue f
@@ -45,7 +45,7 @@ private[contrib] class AtomicSubscription extends Subscription {
     doOnUnderlying(_.cancel())
 
   @tailrec
-  private def unstash(q: Queue[Subscription ⇒ Unit], s: Subscription): Unit =
+  private[this] def unstash(q: Queue[Subscription ⇒ Unit], s: Subscription): Unit =
     if (q.nonEmpty) {
       val (head, tail) = q.dequeue
       head(s)

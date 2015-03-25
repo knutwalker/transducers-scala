@@ -32,7 +32,7 @@ trait ReactiveStreamsSupport {
       new TransducedPublisher(upstream, transducer)
   }
 
-  private final class TransducedPublisher[A, B](upstream: Publisher[A], transducer: TransducerCore[A, B]) extends Publisher[B] {
+  private[this] final class TransducedPublisher[A, B](upstream: Publisher[A], transducer: TransducerCore[A, B]) extends Publisher[B] {
     def subscribe(downstream: Subscriber[_ >: B]): Unit = {
       val state = new PublisherState[A, B](downstream)
       val reducer = transducer(state.reducer)

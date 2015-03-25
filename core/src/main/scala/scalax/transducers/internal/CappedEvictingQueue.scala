@@ -16,14 +16,12 @@
 
 package scalax.transducers.internal
 
-final class CappedEvictingQueue[A](private val capacity: Int) {
+final class CappedEvictingQueue[A](private[this] val capacity: Int) {
   require(capacity > 0, "capacity must be at least 1")
 
-  import scalax.transducers.internal.CappedEvictingQueue.elementsIterator
-
-  private val backing = new Array[Any](capacity)
-  private val max = capacity.toLong
-  private var cursor = 0L
+  private[this] val backing = new Array[Any](capacity)
+  private[this] val max = capacity.toLong
+  private[this] var cursor = 0L
 
   def add(elem: A): Option[A] =
     if (overCapacity)
@@ -31,10 +29,10 @@ final class CappedEvictingQueue[A](private val capacity: Int) {
     else
       addNormally(elem)
 
-  private def overCapacity: Boolean =
+  private[this] def overCapacity: Boolean =
     cursor >= capacity
 
-  private def addEvictingly(elem: A): Option[A] = {
+  private[this] def addEvictingly(elem: A): Option[A] = {
     val head = (cursor % max).toInt
     val oldest = backing(head)
     backing(head) = elem
@@ -42,7 +40,7 @@ final class CappedEvictingQueue[A](private val capacity: Int) {
     Some(oldest).asInstanceOf[Option[A]]
   }
 
-  private def addNormally(elem: A): Option[A] = {
+  private[this] def addNormally(elem: A): Option[A] = {
     backing(cursor.toInt) = elem
     cursor += 1L
     None
@@ -50,9 +48,9 @@ final class CappedEvictingQueue[A](private val capacity: Int) {
 
   def elements: Iterator[A] =
     if (overCapacity)
-      elementsIterator(this, (cursor % max).toInt, capacity)
+      new CappedEvictingQueue.QueueElementsIterator[A]((cursor % max).toInt, capacity, capacity, backing)
     else
-      elementsIterator(this, 0, cursor.toInt)
+      new CappedEvictingQueue.QueueElementsIterator[A](0, cursor.toInt, capacity, backing)
 
   override def toString: String = {
     val head = (cursor % max).toInt
@@ -61,14 +59,11 @@ final class CappedEvictingQueue[A](private val capacity: Int) {
   }
 }
 
-private object CappedEvictingQueue {
-
-  def elementsIterator[A](q: CappedEvictingQueue[A], fromIndex: Int, nrElements: Int): Iterator[A] =
-    new QueueElementsIterator[A](fromIndex, nrElements, q.capacity, q.backing)
+private[this] object CappedEvictingQueue {
 
   class QueueElementsIterator[A](fromIndex: Int, nrElements: Int, capacity: Int, backing: Array[Any]) extends Iterator[A] {
-    private var drained = 0
-    private var current = fromIndex
+    private[this] var drained = 0
+    private[this] var current = fromIndex
 
     def hasNext: Boolean = drained < nrElements
 

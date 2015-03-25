@@ -26,14 +26,14 @@ import scala.util.control.NonFatal
 private[contrib] final class OperatorTransducer[A, B](transducer: TransducerCore[A, B]) extends (Subscriber[B] ⇒ Subscriber[A]) {
   def apply(downstream: Subscriber[B]): Subscriber[A] =
     new Subscriber[A] {
-      private val reduced = new Reduced
-      private val downstreamReducer: Reducer[B, Unit] = new Reducer[B, Unit] {
+      private[this] val reduced = new Reduced
+      private[this] val downstreamReducer: Reducer[B, Unit] = new Reducer[B, Unit] {
         def apply(r: Unit, a: B, s: Reduced): Unit =
           if (downstream.isUnsubscribed) s(())
           else downstream.onNext(a)
         def apply(r: Unit): Unit = ()
       }
-      private val reducer = transducer(downstreamReducer)
+      private[this] val reducer = transducer(downstreamReducer)
 
       override def onNext(value: A): Unit =
         try {

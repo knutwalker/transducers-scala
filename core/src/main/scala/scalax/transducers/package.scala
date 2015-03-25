@@ -36,7 +36,7 @@ package object transducers extends TransducerOps {
   private[transducers] def transduceFromInit[A, F[_], B, G[_]](xf: Transducer[A, B])(init: G[B], xs: F[A])(implicit F: AsSource[F], G: AsTarget[G]): G[B] =
     transduceAnything[A, F, B, G](xf)(F, G)(G.from[B](init), xs)
 
-  private def transduceAnything[A, F[_], B, G[_]](xf: Transducer[A, B])(F: AsSource[F], G: AsTarget[G])(builder: G.RB[B], xs: F[A]): G[B] = {
+  private[this] def transduceAnything[A, F[_], B, G[_]](xf: Transducer[A, B])(F: AsSource[F], G: AsTarget[G])(builder: G.RB[B], xs: F[A]): G[B] = {
     val xf1: Reducer[A, G.RB[B]] = xf(G.reducer[B])
     val rb: G.RB[B] = internal.Reducing.reduce(builder, xs)(xf1)(F)
     G.finish(rb)

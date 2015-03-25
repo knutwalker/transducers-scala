@@ -31,11 +31,11 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     def apply(r: Unit, a: B, s: Reduced): Unit = sendRightValue(a)
     def apply(r: Unit): Unit = ()
   }
-  private val upstreamSub = new AtomicSubscription
-  private val reduced = new Reduced
-  private val demand = new AtomicLong
-  private val inputBuffer = new ArrayBlockingQueue[A](bufferSize)
-  private val outputBuffer = new ArrayBlockingQueue[B](bufferSize)
+  private[this] val upstreamSub = new AtomicSubscription
+  private[this] val reduced = new Reduced
+  private[this] val demand = new AtomicLong
+  private[this] val inputBuffer = new ArrayBlockingQueue[A](bufferSize)
+  private[this] val outputBuffer = new ArrayBlockingQueue[B](bufferSize)
 
   def subscriber(reducer: Reducer[A, Unit]): Subscriber[A] = new Subscriber[A] {
     def onSubscribe(s: Subscription): Unit =
@@ -51,7 +51,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
       safeSendLeftValue(t, reducer)
   }
 
-  private def safeSendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
+  private[this] def safeSendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
     if (demand.get() > 0) {
       sendLeftValue(a, reducer)
     }
@@ -79,13 +79,13 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     }
   }
 
-  private def drainBuffers(requested: Long, reducer: Reducer[A, Unit]): Long = {
+  private[this] def drainBuffers(requested: Long, reducer: Reducer[A, Unit]): Long = {
     val outstanding =
       drainBuffer(requested, outputBuffer, sendRightValue)
     drainBuffer(outstanding, inputBuffer, sendLeftValue(_: A, reducer))
   }
 
-  private def sendRightValue(b: B): Unit = {
+  private[this] def sendRightValue(b: B): Unit = {
     if (demand.getAndDecrement > 0) {
       downstream.onNext(b)
     }
@@ -95,7 +95,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     }
   }
 
-  private def sendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
+  private[this] def sendLeftValue(a: A, reducer: Reducer[A, Unit]): Unit = {
     try {
       if (!reduced.?) {
         reducer((), a, reduced)
@@ -110,7 +110,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     }
   }
 
-  private def drainBuffer[X](requested: Long, queue: BlockingQueue[X], sending: X ⇒ Unit): Long = {
+  private[this] def drainBuffer[X](requested: Long, queue: BlockingQueue[X], sending: X ⇒ Unit): Long = {
     @tailrec
     def go(requested: Long, buffered: Int): Long =
       if (requested > 0 && buffered > 0) {

@@ -30,7 +30,7 @@ private[transducers] object Reducing {
   def reduceStep[A, R, F[_]: AsSource](f: Reducer[A, R], result: R, input: F[A], reduced: Reduced): R =
     runReduce(f, identity[R], result, input, reduced)
 
-  private def runReduce[A, R, F[_]](f: Reducer[A, R], g: (R ⇒ R), result: R, input: F[A], reduced: Reduced)(implicit F: AsSource[F]): R = {
+  private[this] def runReduce[A, R, F[_]](f: Reducer[A, R], g: (R ⇒ R), result: R, input: F[A], reduced: Reduced)(implicit F: AsSource[F]): R = {
     var acc = f.prepare(result, reduced)
     var these = input
     while (F.hasNext(these) && !reduced.?) {

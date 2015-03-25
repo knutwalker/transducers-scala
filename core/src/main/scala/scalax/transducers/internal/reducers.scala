@@ -24,7 +24,7 @@ private[internal] abstract class Delegate[A, R](rf: Reducer[_, R]) extends Reduc
 }
 
 private[internal] abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implicit F: AsTarget[F]) extends Reducer[A, R] {
-  private var buffer = F.empty[A]
+  private[this] var buffer = F.empty[A]
 
   final def apply(r: R): R =
     rf(if (F.nonEmpty(buffer)) rf(r, F.finish(buffer), new Reduced) else r)
@@ -58,7 +58,7 @@ private[internal] final class NoOpReducer[A, R](rf: Reducer[A, R]) extends Deleg
 }
 
 private[internal] final class OrElseReducer[A, R](rf: Reducer[A, R], cont: ⇒ A) extends Reducer[A, R] {
-  private var hasValue = false
+  private[this] var hasValue = false
 
   def apply(r: R, a: A, s: Reduced): R = {
     hasValue = true
@@ -111,7 +111,7 @@ private[internal] final class ScanReducer[A, B, R](rf: Reducer[B, R], z: B, f: (
 }
 
 private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
-  private var taken = 1L
+  private[this] var taken = 1L
 
   def apply(r: R, a: A, s: Reduced): R =
     if (taken < n) {
@@ -130,7 +130,7 @@ private[internal] final class TakeWhileReducer[A, R](rf: Reducer[A, R], f: A ⇒
 }
 
 private[internal] final class TakeNthReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
-  private var nth = 0L
+  private[this] var nth = 0L
 
   def apply(r: R, a: A, s: Reduced): R = {
     val res = if (nth % n == 0) rf(r, a, s) else r
@@ -140,7 +140,7 @@ private[internal] final class TakeNthReducer[A, R](rf: Reducer[A, R], n: Long) e
 }
 
 private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) extends Reducer[A, R] {
-  private val queue = new CappedEvictingQueue[A](n)
+  private[this] val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: Reduced): R = {
     queue.add(a)
@@ -152,7 +152,7 @@ private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) 
 }
 
 private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
-  private var dropped = 0L
+  private[this] var dropped = 0L
 
   def apply(r: R, a: A, s: Reduced): R = {
     if (dropped < n) {
@@ -164,7 +164,7 @@ private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) exte
 }
 
 private[internal] final class DropWhileReducer[A, R](rf: Reducer[A, R], f: A ⇒ Boolean) extends Delegate[A, R](rf) {
-  private var drop = true
+  private[this] var drop = true
 
   def apply(r: R, a: A, s: Reduced): R =
     if (drop && f(a)) r
@@ -175,7 +175,7 @@ private[internal] final class DropWhileReducer[A, R](rf: Reducer[A, R], f: A ⇒
 }
 
 private[internal] final class DropNthReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
-  private var nth = 0L
+  private[this] var nth = 0L
 
   def apply(r: R, a: A, s: Reduced): R = {
     val res = if (nth % n == 0) r else rf(r, a, s)
@@ -185,14 +185,14 @@ private[internal] final class DropNthReducer[A, R](rf: Reducer[A, R], n: Long) e
 }
 
 private[internal] final class DropRightReducer[A, R](rf: Reducer[A, R], n: Int) extends Delegate[A, R](rf) {
-  private val queue = new CappedEvictingQueue[A](n)
+  private[this] val queue = new CappedEvictingQueue[A](n)
 
   def apply(r: R, a: A, s: Reduced): R =
     queue.add(a).fold(r)(rf(r, _, s))
 }
 
 private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends Delegate[A, R](rf) {
-  private var previous: A = _
+  private[this] var previous: A = _
 
   def apply(r: R, a: A, s: Reduced): R =
     if (a != previous) {
@@ -203,7 +203,7 @@ private[internal] final class DistinctReducer[A, R](rf: Reducer[A, R]) extends D
 }
 
 private[internal] final class ZipWithIndexReducer[A, R](rf: Reducer[(A, Int), R]) extends Delegate[A, R](rf) {
-  private val ids = Iterator.from(0)
+  private[this] val ids = Iterator.from(0)
 
   def apply(r: R, a: A, s: Reduced): R =
     rf(r, (a, ids.next()), s)
@@ -218,8 +218,8 @@ private[internal] final class GroupedReducer[A, R, F[_]: AsTarget](rf: Reducer[F
 }
 
 private[internal] final class GroupByReducer[A, B <: AnyRef, R, F[_]: AsTarget](rf: Reducer[F[A], R], f: A ⇒ B) extends Buffer[A, R, F](rf) {
-  private val mark = new AnyRef
-  private var previous = mark
+  private[this] val mark = new AnyRef
+  private[this] var previous = mark
 
   def apply(r: R, a: A, s: Reduced): R = {
     val key = f(a)
