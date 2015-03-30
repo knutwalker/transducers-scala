@@ -17,12 +17,11 @@
 package scalax
 package transducers.benchmark
 
+import scalax.transducers.Transducer
+
 import java.util.concurrent.TimeUnit
 
 import org.openjdk.jmh.annotations._
-
-import scalax.transducers.Transducer
-
 
 @Threads(value = 1)
 @Fork(value = 1)
@@ -43,6 +42,16 @@ class TransducersBenchmark {
     transducers.flatMap(x ⇒ List(x))
   private[this] final val TakeIdentity: Transducer[Int, Int] =
     transducers.take(Long.MaxValue)
+  private[this] final val TakeAtomIdentity: Transducer[Int, Int] =
+    new TakeAtomTransducer[Int](Long.MaxValue)
+  private[this] final val ScanIdentity: Transducer[Int, Int] =
+    transducers.scan(0)(_ + _)
+  private[this] final val ScanAtomIdentity: Transducer[Int, Int] =
+    new ScanAtomTransducer[Int, Int](0, _ + _)
+  private[this] final val OrElseIdentity: Transducer[Int, Int] =
+    transducers.orElse(-1)
+  private[this] final val OrElseAtomIdentity: Transducer[Int, Int] =
+    new OrElseAtomTransducer[Int](-1)
 
   @Benchmark
   def bench_01_noop(input: Input): Vector[Int] = {
@@ -67,5 +76,30 @@ class TransducersBenchmark {
   @Benchmark
   def bench_05_take(input: Input): Vector[Int] = {
     transducers.into[Vector].run(TakeIdentity)(input.xs)
+  }
+
+  @Benchmark
+  def bench_06_takeAtom(input: Input): Vector[Int] = {
+    transducers.into[Vector].run(TakeAtomIdentity)(input.xs)
+  }
+
+  @Benchmark
+  def bench_07_scan(input: Input): Vector[Int] = {
+    transducers.into[Vector].run(ScanIdentity)(input.xs)
+  }
+
+  @Benchmark
+  def bench_08_scanAtom(input: Input): Vector[Int] = {
+    transducers.into[Vector].run(ScanAtomIdentity)(input.xs)
+  }
+
+  @Benchmark
+  def bench_09_orElse(input: Input): Vector[Int] = {
+    transducers.into[Vector].run(OrElseIdentity)(input.xs)
+  }
+
+  @Benchmark
+  def bench_10_orElseAtom(input: Input): Vector[Int] = {
+    transducers.into[Vector].run(OrElseAtomIdentity)(input.xs)
   }
 }
