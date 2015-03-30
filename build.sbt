@@ -55,9 +55,9 @@ lazy val commonSettings = List(
   coverageExcludedPackages := "scalax.transducers.benchmark.*"
 )
 
-lazy val publishSettings = List(
+lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
                  homepage <<= (githubUser, githubRepo) { (u, r) => Some(url(s"https://github.com/$u/$r")) },
-                  licenses := List("Apache License, Verison 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+                  licenses := List("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
                  startYear := Some(2014),
          publishMavenStyle := true,
    publishArtifact in Test := false,
@@ -175,7 +175,7 @@ lazy val buildsUberJar = List(
 )
 
 lazy val transducersSettings =
-  buildSettings ++ commonSettings ++ publishSettings ++ releaseSettings ++ headerSettings
+  buildSettings ++ commonSettings ++ publishSettings ++ headerSettings
 
 // =========================================
 
