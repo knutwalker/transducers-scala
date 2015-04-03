@@ -1,4 +1,5 @@
 import com.typesafe.sbt.pgp.PgpKeys._
+import de.heikoseeberger.sbtheader.license.Apache2_0
 import JmhKeys._
 import sbtrelease._
 import sbtrelease.ReleasePlugin._
@@ -7,66 +8,145 @@ import sbtrelease.ReleaseStateTransformations._
 import ScoverageSbtPlugin.ScoverageKeys._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
-lazy val githubUser = SettingKey[String]("Github username")
-lazy val githubRepo = SettingKey[String]("Github repository")
-lazy val projectMaintainer = SettingKey[String]("Maintainer")
+
+lazy val parent = project in file(".") dependsOn (
+  api, core, reactiveStreams, rxScala, tests) aggregate (
+  api, all, core, dist, reactiveStreams, rxScala, tests, guide, examples, benchmarks) settings (
+  transducersSettings,
+  doNotPublish,
+  name := "transducers-scala-parent")
+
+lazy val all = project dependsOn (api, core, reactiveStreams, rxScala) aggregate(api, core, reactiveStreams, rxScala) settings(
+  transducersSettings,
+  buildsUberJar,
+  name := "transducers-scala-all")
+
+lazy val api = project enablePlugins AutomateHeaderPlugin settings(
+  transducersSettings,
+  name := "transducers-scala-api")
+
+lazy val core = project enablePlugins AutomateHeaderPlugin dependsOn api settings (
+  transducersSettings,
+  buildsUberJar,
+  name := "transducers-scala")
+
+lazy val reactiveStreams = project in file("contrib") / "reactive-streams" enablePlugins AutomateHeaderPlugin dependsOn api settings(
+  transducersSettings,
+  buildsUberJar,
+  name := "transducers-scala-reactivestreams",
+  libraryDependencies += "org.reactivestreams" % "reactive-streams" % "0.4.0" % "provided")
+
+lazy val rxScala = project in file("contrib") / "rx-scala" enablePlugins AutomateHeaderPlugin dependsOn api settings(
+  transducersSettings,
+  buildsUberJar,
+  name := "transducers-scala-rxscala",
+  libraryDependencies += "io.reactivex" %% "rxscala" % "0.23.1")
+
+lazy val examples = project enablePlugins AutomateHeaderPlugin dependsOn core settings(
+  transducersSettings,
+  doNotPublish,
+  name := "transducers-scala-examples")
+
+lazy val benchmarks = project enablePlugins AutomateHeaderPlugin dependsOn core settings (
+  transducersSettings,
+  doNotPublish,
+  jmhSettings,
+  name := "transducers-scala-bechmarks",
+  outputTarget in Jmh := target.value / s"scala-${scalaBinaryVersion.value}",
+  libraryDependencies ++= List(
+    "org.functionaljava" % "functionaljava"   % "4.3",
+    "com.cognitect"      % "transducers-java" % "0.4.67"))
+
+lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) dependsOn (tests % "test->test") settings (
+  transducersSettings,
+  doNotPublish,
+  buildInfos,
+  name := "transducers-scala-guide",
+  resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+  libraryDependencies += "org.specs2" %% "specs2-html" % "2.4.16" % "test")
+
+lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, reactiveStreams, rxScala) settings (
+  transducersSettings,
+  doNotPublish,
+  name := "transducers-scala-tests",
+  resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+  libraryDependencies ++= List(
+    "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1" % "test",
+    "org.specs2"        %% "specs2-core"              % "3.3.1"   % "test",
+    "org.specs2"        %% "specs2-scalacheck"        % "3.3.1"   % "test",
+    "org.scalacheck"    %% "scalacheck"               % "1.12.2"  % "test"))
+
+lazy val dist = project disablePlugins AssemblyPlugin settings (
+  scalaVersion := "2.11.6",
+  target := baseDirectory.value)
+
+// ====================================================================
+
+lazy val transducersSettings =
+  buildSettings ++ commonSettings ++ publishSettings
 
 lazy val buildSettings = List(
         organization := "de.knutwalker",
-   projectMaintainer := "Paul Horn",
-          githubUser := "knutwalker",
-          githubRepo := "transducers-scala",
         scalaVersion := "2.11.6",
-  crossScalaVersions := "2.11.6" :: "2.10.5" :: Nil
-)
+  crossScalaVersions := scalaVersion.value :: "2.10.5" :: Nil)
 
 lazy val commonSettings = List(
-  scalacOptions ++=
-    "-deprecation" ::
-    "-encoding" ::  "UTF-8" ::
-    "-explaintypes" ::
-    "-feature" ::
-    "-language:existentials" ::
-    "-language:higherKinds" ::
-    "-language:implicitConversions" ::
-    "-language:postfixOps" ::
-    "-unchecked" ::
-    "-Xcheckinit" ::
-    "-Xfatal-warnings" ::
-    "-Xfuture" ::
-    "-Xlint" ::
-    "-Yclosure-elim" ::
-    "-Ydead-code" ::
-    "-Yno-adapted-args" ::
-    "-Ywarn-adapted-args" ::
-    "-Ywarn-inaccessible" ::
-    "-Ywarn-nullary-override" ::
-    "-Ywarn-nullary-unit" ::
-    "-Ywarn-numeric-widen" :: Nil,
-  scmInfo <<= (githubUser, githubRepo) { (u, r) ⇒ Some(ScmInfo(
-    url(s"https://github.com/$u/$r"),
-    s"scm:git:https://github.com/$u/$r.git",
-    Some(s"scm:git:ssh://git@github.com:$u/$r.git")
-  ))},
+  scalacOptions ++= List(
+    "-deprecation",
+    "-encoding",  "UTF-8",
+    "-explaintypes",
+    "-feature",
+    "-language:existentials",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-language:postfixOps",
+    "-unchecked",
+    "-Xcheckinit",
+    "-Xfatal-warnings",
+    "-Xfuture",
+    "-Xlint",
+    "-Yclosure-elim",
+    "-Ydead-code",
+    "-Yno-adapted-args",
+    "-Ywarn-adapted-args",
+    "-Ywarn-inaccessible",
+    "-Ywarn-nullary-override",
+    "-Ywarn-nullary-unit",
+    "-Ywarn-numeric-widen"),
+  scalacOptions in Test += "-Yrangepos",
+  scalacOptions in (Compile, console) ~= (_ filterNot (x ⇒ x == "-Xfatal-warnings" || x.startsWith("-Ywarn"))),
   shellPrompt := { state ⇒
     val name = Project.extract(state).currentRef.project
     (if (name == "parent") "" else name + " ") + "> "
   },
-  coverageExcludedPackages := "scalax.transducers.benchmark.*"
-)
+  coverageExcludedPackages := "scalax.transducers.benchmark.*",
+  headers := {
+    val thisYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+    val years = List(startYear.value.getOrElse(thisYear), thisYear).distinct.mkString(" – ")
+    Map(
+      "java"  -> Apache2_0(years, maintainer.value),
+      "scala" -> Apache2_0(years, maintainer.value))
+  },
+  initialCommands in      console := """import scalax.transducers._""",
+  initialCommands in consoleQuick := "",
+  fork in test := true,
+  logBuffered := false)
 
 lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
-                 homepage <<= (githubUser, githubRepo) { (u, r) => Some(url(s"https://github.com/$u/$r")) },
-                  licenses := List("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
                  startYear := Some(2014),
          publishMavenStyle := true,
    publishArtifact in Test := false,
       pomIncludeRepository := { _ => false },
-  SonatypeKeys.profileName := "knutwalker",
-               tagComment <<= (version in ThisBuild) map (v => s"Release version $v"),
-            commitMessage <<= (version in ThisBuild) map (v => s"Set version to $v"),
+                maintainer := "Paul Horn",
+               profileName := "knutwalker",
+                githubUser := "knutwalker",
+                githubRepo := "transducers-scala",
+                  homepage := Some(url(s"https://github.com/${githubUser.value}/${githubRepo.value}")),
+                  licenses := List("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+                   scmInfo := _scmInfo(githubUser.value, githubRepo.value),
+               tagComment <<= version map (v => s"Release version $v"),
+            commitMessage <<= version map (v => s"Set version to $v"),
                versionBump := sbtrelease.Version.Bump.Bugfix,
-
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
@@ -74,11 +154,11 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
     else
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
-  pomExtra <<= (githubUser, projectMaintainer) { (u, m) ⇒
+  pomExtra := {
     <developers>
       <developer>
-        <id>${u}</id>
-        <name>${m}</name>
+        <id>{githubUser.value}</id>
+        <name>{maintainer.value}</name>
         <url>http://knutwalker.de/</url>
       </developer>
     </developers>
@@ -86,9 +166,9 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
   releaseProcess := List[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
-    setReleaseVersion,
     runClean,
     runTest,
+    setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
     publishSignedArtifacts,
@@ -97,63 +177,14 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
     commitNextVersion,
     pushChanges,
     publishArtifacts
-  )
-)
-
-lazy val publishSignedArtifacts = publishArtifacts.copy(
-  action = { st: State =>
-    val extracted = Project.extract(st)
-    val ref = extracted.get(Keys.thisProjectRef)
-    extracted.runAggregated(publishSigned in Global in ref, st)
-  },
-  enableCrossBuild = true
-)
-
-lazy val releaseToCentral = ReleaseStep(
-  action = { st: State =>
-    val extracted = Project.extract(st)
-    val ref = extracted.get(Keys.thisProjectRef)
-    extracted.runAggregated(sonatypeReleaseAll in Global in ref, st)
-  },
-  enableCrossBuild = true
-)
+  ))
 
 lazy val doNotPublish = List(
           publish := (),
      publishLocal := (),
-  publishArtifact := false
-)
+  publishArtifact := false)
 
-lazy val headerSettings =
-  List(headers <<= (projectMaintainer, startYear) { (m, y) ⇒
-    val years = List(y.get, java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)).distinct.mkString(" – ")
-    val license =
-      s"""|/*
-          | * Copyright $years $m
-          | *
-          | * Licensed under the Apache License, Version 2.0 (the "License");
-          | * you may not use this file except in compliance with the License.
-          | * You may obtain a copy of the License at
-          | *
-          | *     http://www.apache.org/licenses/LICENSE-2.0
-          | *
-          | * Unless required by applicable law or agreed to in writing, software
-          | * distributed under the License is distributed on an "AS IS" BASIS,
-          | * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-          | * See the License for the specific language governing permissions and
-          | * limitations under the License.
-          | */
-          |
-          |""".stripMargin
-    Map("java" -> (HeaderPattern.cStyleBlockComment, license),
-        "scala" -> (HeaderPattern.cStyleBlockComment, license))
-  }) ++
-  inConfig(Compile)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile))) ++
-  inConfig(Test)(compileInputs.in(compile) <<= compileInputs.in(compile).dependsOn(createHeaders.in(compile)))
-
-lazy val buildInfos = buildInfoSettings ++ List(
-  sourceGenerators in Test <+= buildInfo,
-  buildInfoPackage := "buildinfo",
+lazy val buildInfos = List(
      buildInfoKeys := List[BuildInfoKey](
        organization,
        name in core,
@@ -165,98 +196,39 @@ lazy val buildInfos = buildInfoSettings ++ List(
   BuildInfoKey.map(name in rxScala)                              { case (k, v) ⇒  "name_rx" -> v },
   BuildInfoKey.map(libraryDependencies in reactiveStreams) { case (k, v) ⇒  "deps_reactive" -> v },
   BuildInfoKey.map(libraryDependencies in rxScala)               { case (k, v) ⇒  "deps_rx" -> v }
-  )
-)
+  ))
 
 lazy val buildsUberJar = List(
-        assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
-     assemblyOutputPath in assembly := (baseDirectory in parent).value / (assemblyJarName in assembly).value,
-         assemblyOption in assembly ~= { _.copy(includeScala = false) }
-)
+     assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
+  assemblyOutputPath in assembly := (target in dist).value / (assemblyJarName in assembly).value,
+      assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) })
 
-lazy val transducersSettings =
-  buildSettings ++ commonSettings ++ publishSettings ++ headerSettings
+// ====================================================================
 
-// =========================================
+lazy val maintainer = SettingKey[String]("Maintainer")
+lazy val githubUser = SettingKey[String]("Github username")
+lazy val githubRepo = SettingKey[String]("Github repository")
 
-lazy val parent = project.in(file("."))
-  .settings(name := "transducers-scala-parent")
-  .settings(transducersSettings: _*)
-  .settings(doNotPublish: _*)
-  .dependsOn(api, core, reactiveStreams, rxScala, tests, guide, examples, benchmarks)
-  .aggregate(api, core, reactiveStreams, rxScala, tests, guide, examples, benchmarks)
+lazy val publishSignedArtifacts = publishArtifacts.copy(
+  action = { state =>
+    val extracted = Project extract state
+    val ref = extracted get thisProjectRef
+    extracted.runAggregated(publishSigned in Global in ref, state)
+  },
+  enableCrossBuild = true)
 
-lazy val all = project
-  .settings(name := "transducers-scala-all")
-  .settings(transducersSettings: _*)
-  .settings(buildsUberJar: _*)
-  .aggregate(api, core, reactiveStreams, rxScala)
-  .dependsOn(api, core, reactiveStreams, rxScala)
+lazy val releaseToCentral = ReleaseStep(
+  action = { state =>
+    val extracted = Project extract state
+    val ref = extracted get thisProjectRef
+    extracted.runAggregated(sonatypeReleaseAll in Global in ref, state)
+  },
+  enableCrossBuild = true)
 
-lazy val api = project
-  .settings(name := "transducers-scala-api")
-  .settings(transducersSettings: _*)
-
-lazy val core = project
-  .settings(name := "transducers-scala")
-  .settings(transducersSettings: _*)
-  .dependsOn(api)
-
-lazy val reactiveStreams = project.in(file("contrib") / "reactive-streams")
-  .settings(name := "transducers-scala-reactivestreams")
-  .settings(transducersSettings: _*)
-  .settings(libraryDependencies ++= List(
-    "org.reactivestreams" % "reactive-streams" % "0.4.0" % "provided"))
-  .dependsOn(api)
-
-lazy val rxScala = project.in(file("contrib") / "rx-scala")
-  .settings(name := "transducers-scala-rxscala")
-  .settings(transducersSettings: _*)
-  .settings(libraryDependencies ++= List(
-    "io.reactivex" %% "rxscala" % "0.23.1"))
-  .dependsOn(api)
-
-lazy val examples = project
-  .settings(name := "transducers-scala-examples")
-  .settings(transducersSettings: _*)
-  .settings(doNotPublish: _*)
-  .dependsOn(core)
-
-lazy val benchmarks = project
-  .settings(name := "transducers-scala-bechmarks")
-  .settings(transducersSettings: _*)
-  .settings(doNotPublish: _*)
-  .settings(jmhSettings: _*)
-  .settings(
-    outputTarget in Jmh  := target.value / s"scala-${scalaBinaryVersion.value}",
-    libraryDependencies ++= List(
-      "org.functionaljava" % "functionaljava"   % "4.3",
-      "com.cognitect"      % "transducers-java" % "0.4.67"))
-  .dependsOn(core)
-
-lazy val guide = project
-  .settings(name := "transducers-scala-guide")
-  .settings(transducersSettings: _*)
-  .settings(doNotPublish: _*)
-  .settings(buildInfos: _*)
-  .settings(
-    resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
-    libraryDependencies ++= List(
-      "org.specs2" %% "specs2-html" % "2.4.16" % "test"))
-  .dependsOn(tests % "test->test")
-
-lazy val tests = project
-  .settings(name := "transducers-scala-tests")
-  .settings(transducersSettings: _*)
-  .settings(doNotPublish: _*)
-  .settings(libraryDependencies ++= List(
-    "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1",
-    "org.specs2"        %% "specs2-core"              % "2.4.16" ,
-    "org.specs2"        %% "specs2-scalacheck"        % "2.4.16" ,
-    "org.scalacheck"    %% "scalacheck"               % "1.12.2" )
-    .map(_ % "test"))
-  .dependsOn(core, reactiveStreams, rxScala)
-
+def _scmInfo(user: String, repo: String) = Some(ScmInfo(
+  url(s"https://github.com/$user/$repo"),
+  s"scm:git:https://github.com/$user/$repo.git",
+  Some(s"scm:git:ssh://git@github.com:$user/$repo.git")
+))
 
 addCommandAlias("cover", ";clean;coverage;test;coverageReport;coverageAggregate")
-addCommandAlias("coverCodacy", ";clean;coverage;test;coverageReport;coverageAggregate;codacyCoverage")
