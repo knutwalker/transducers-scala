@@ -15,12 +15,17 @@
  */
 
 import org.specs2.Specification
+import org.specs2.specification.{Snippets, Forms}
 
-object index extends Specification { def is = s2"""
-  ${"Transducers for Scala".title}
+object index extends Specification with Snippets with Forms { def is = "Transducers for Scala".title ^ s2"""
 
-  ${ "Installation" ~ install }
-  ${ "Usage Guide" ~ guide }
+### Installation
 
-                                                                             """
+${ "Installation" ~/ install }
+
+### Usage Guide
+
+${ "Usage Guide" ~/ guide }
+
+"""
 }

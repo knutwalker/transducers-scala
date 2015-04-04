@@ -57,13 +57,18 @@ lazy val benchmarks = project enablePlugins AutomateHeaderPlugin dependsOn core 
     "org.functionaljava" % "functionaljava"   % "4.3",
     "com.cognitect"      % "transducers-java" % "0.4.67"))
 
-lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) dependsOn (tests % "test->test") settings (
+lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) configs IntegrationTest dependsOn (tests % "it->test") settings (
   transducersSettings,
   doNotPublish,
   buildInfos,
+  Defaults.itSettings,
   name := "transducers-scala-guide",
   resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
-  libraryDependencies += "org.specs2" %% "specs2-html" % "2.4.16" % "test")
+  scalacOptions in IntegrationTest += "-Yrangepos",
+  testOptions in IntegrationTest += Tests.Argument("html", "markdown", "console", "all", "html.toc", "html.nostats"),
+  parallelExecution in IntegrationTest := false,
+  libraryDependencies ++= List(
+    "org.specs2" %% "specs2-html" % "3.3.1"  % "it"))
 
 lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, reactiveStreams, rxScala) settings (
   transducersSettings,
@@ -169,6 +174,7 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
     runClean,
     runTest,
     setReleaseVersion,
+    runIntegrationTest,
     commitReleaseVersion,
     tagRelease,
     publishSignedArtifacts,
@@ -208,6 +214,17 @@ lazy val buildsUberJar = List(
 lazy val maintainer = SettingKey[String]("Maintainer")
 lazy val githubUser = SettingKey[String]("Github username")
 lazy val githubRepo = SettingKey[String]("Github repository")
+
+lazy val runIntegrationTest = ReleaseStep(
+  action = { state =>
+    val shouldSkipTests = state get skipTests getOrElse false
+    if (!shouldSkipTests) {
+      val extracted = Project extract state
+      val ref = extracted get thisProjectRef
+      extracted.runAggregated(test in IntegrationTest in ref, state)
+    } else state
+  },
+  enableCrossBuild = true)
 
 lazy val publishSignedArtifacts = publishArtifacts.copy(
   action = { state =>

@@ -17,88 +17,92 @@
 import org.specs2.Specification
 
 import _root_.buildinfo.BuildInfo
+import org.specs2.specification.{Snippets, Forms}
 
-object install extends Specification { def is = s2"""
-  ${"Installation Notes".title}
+object install extends Specification with Snippets with Forms { def is = "Installation Notes".title ^ s2"""
 
-  `$name` is published to Sonatype and can be installed with
-  your favourite dependency manger:
+`$name` is published to Sonatype and can be installed with
+your favourite dependency manger:
 
-  - [sbt](http://scala-sbt.org)
-  - [leiningen](http://leiningen.org/)
-  - [gradle](http://gradle.org)
-  - [maven](http://maven.apache.org)
-
-
-  <h4>SBT</h4>
-
-  ```
-  libraryDependencies += "${me.groupId}" %% "${me.artifactId}" % "${me.version}"
-  ```
-
-  <h4>Leiningen</h4>
-
-  ```
-  [${me.groupId}/${me.artifactId} "${me.version}"]
-  ```
-
-  <h4>Gradle</h4>
-
-  ```
-  compile '${me.groupId}:${me.artifactId}:${me.version}'
-  ```
-
-  <h4>Maven</h4>
-
-  ```
-  <dependency>
-    <groupId>${me.groupId}</groupId>
-    <artifactId>${me.artifactId}</artifactId>
-    <version>${me.version}</version>
-  </dependency>
-  ```
-
-  <h3>Other Dependencies</h3>
-
-  $projectDependencies
-
-  <h3>Other Modules</h3>
-
-  $projectModules
-
-                                                                             """
+- [sbt](http://scala-sbt.org)
+- [leiningen](http://leiningen.org/)
+- [gradle](http://gradle.org)
+- [maven](http://maven.apache.org)
 
 
-  def projectDependencies = {
-    if (dependencies.nonEmpty) {
-      s"""`$name` depends on the following modules:
-        |
-        |  ${dependencies.map(_.toString).mkString("- ", "\n  - ", "\n")}
-      """.stripMargin
-    } else {
-      s"""`$name` has no additional dependencies besides scala ${BuildInfo.scalaVersion}."""
-    }
-  }
+#### SBT
 
-  def projectModules = {
+```
+libraryDependencies += "${me.groupId}" %% "${me.artifactId}" % "${me.version}"
+```
+
+#### Leiningen
+
+```
+[${me.groupId}/${me.artifactId} "${me.version}"]
+```
+
+#### Gradle
+
+```
+compile '${me.groupId}:${me.artifactId}:${me.version}'
+```
+
+#### Maven
+
+```
+<dependency>
+  <groupId>${me.groupId}</groupId>
+  <artifactId>${me.artifactId}</artifactId>
+  <version>${me.version}</version>
+</dependency>
+```
+
+### Dependencies
+
+$projectDependencies
+
+### Other Modules
+
+$projectModules
+
+"""
+
+  def projectDependencies: String =
+    moduleDependencies(dependencies, name)
+
+  def projectModules: String = {
     if (modules.nonEmpty) {
       s"""`$name` also comes with the following additional modules:
          |
-         |  ${modules.map(moduleString(_, "  ")).mkString("- ", "\n  - ", "\n")}
+         |${modules.map(moduleString(_, "  ")).mkString("\n")}
       """.stripMargin
     } else {
       ""
     }
   }
 
-  def moduleString(m: Module, ident: String) = {
-    s"""${m.self}
-       |    - Depends on:
-       |    ${m.deps.map(_.toString).mkString("- ", s"\n$ident    - ", "\n")}
+  def moduleString(m: Module, ident: String): String = {
+    s"""#### ${m.self.artifactId}
+       |
+       |`${m.self}`
+       |
+       |${moduleDependencies(m.deps, m.self.artifactId)}
      """.stripMargin
   }
 
-  def filterDeps(deps: Seq[String]) =
+  def moduleDependencies(dependencies: List[Dependency], name: String): String = {
+    if (dependencies.nonEmpty) {
+      s"""`$name` depends on the following modules:
+         |
+         |${dependencies.map(_.toString).mkString("- `", "`\n  - `", "`\n")}
+      """.stripMargin
+    } else {
+      s"""`$name` has no additional dependencies besides scala ${BuildInfo.scalaVersion}."""
+    }
+  }
+
+  def filterDeps(deps: Seq[String]): List[Dependency] =
     deps.flatMap(Dependency(_))
       .filterNot(_.scope.contains("provided"))
       .filterNot(_.artifactId == "scala-library")
