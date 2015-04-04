@@ -54,6 +54,7 @@ lazy val benchmarks = project enablePlugins AutomateHeaderPlugin dependsOn core 
   name := "transducers-scala-bechmarks",
   outputTarget in Jmh := target.value / s"scala-${scalaBinaryVersion.value}",
   libraryDependencies ++= List(
+    "io.reactivex"      %% "rxscala"          % "0.24.0",
     "org.functionaljava" % "functionaljava"   % "4.3",
     "com.cognitect"      % "transducers-java" % "0.4.67"))
 

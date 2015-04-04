@@ -17,8 +17,13 @@
 package scalax
 package transducers.benchmark
 
+import rx.functions.Func1
+
 import java.lang.{Boolean ⇒ JBool}
+import java.util.{List ⇒ JList}
 import java.util.concurrent.TimeUnit
+import java.util.function.{Function ⇒ JFun, Predicate ⇒ JPred}
+import java.util.stream.Collectors
 
 import fj.data.{List ⇒ FJList}
 import org.openjdk.jmh.annotations._
@@ -50,15 +55,43 @@ class ListBenchmark {
     def f(a: Int): JBool = a % 4 == 0
   }
 
+  private[this] final val JFun1: JFun[Int, Int] = new JFun[Int, Int] {
+    def apply(t: Int): Int = t * 2
+  }
+  private[this] final val JFun2: JFun[Int, Int] = new JFun[Int, Int] {
+    def apply(t: Int): Int = t - 42
+  }
+  private[this] final val JPred: JPred[Int] = new JPred[Int] {
+    def test(t: Int): Boolean = t % 4 == 0
+  }
+
+  private[this] final val OFunc1: Func1[Int, Int] = new Func1[Int, Int] {
+    def call(t1: Int): Int = t1 * 2
+  }
+  private[this] final val OFunc2: Func1[Int, Int] = new Func1[Int, Int] {
+    def call(t1: Int): Int = t1 - 42
+  }
+  private[this] final val OPred: Func1[Int, JBool] = new Func1[Int, JBool] {
+    def call(t1: Int): JBool = t1 % 4 == 0
+  }
+
 
   @Benchmark
   def bench_01_scalaCollections(input: Input): List[Int] = {
-    input.xs.map(ScalaFun1).filter(ScalaPred).map(ScalaFun2).take(50)
+    input.xs
+      .map(ScalaFun1)
+      .filter(ScalaPred)
+      .map(ScalaFun2)
+      .take(50)
   }
 
   @Benchmark
   def bench_02_functionaljavaList(input: Input): FJList[Int] = {
-    input.fjxs.map(FJFun1).filter(FJPred).map(FJFun2).take(50)
+    input.fjxs
+      .map(FJFun1)
+      .filter(FJPred)
+      .map(FJFun2)
+      .take(50)
   }
 
   @Benchmark
@@ -69,5 +102,27 @@ class ListBenchmark {
   @Benchmark
   def bench_04_newTransducers(input: Input): List[Int] = {
     transducers.into[List](AsTarget.list).run(STransducer)(input.xs)
+  }
+
+  @Benchmark
+  def bench_05_javaStreams(input: Input): JList[Int] = {
+    input.jxs.stream()
+      .map[Int](JFun1)
+      .filter(JPred)
+      .map[Int](JFun2)
+      .limit(50)
+      .collect(Collectors.toList[Int])
+  }
+
+  @Benchmark
+  def bench_06_rxJava(input: Input): JList[Int] = {
+    rx.Observable.from(input.jxs)
+      .map[Int](OFunc1)
+      .filter(OPred)
+      .map[Int](OFunc2)
+      .take(50)
+      .toList
+      .toBlocking
+      .first()
   }
 }
