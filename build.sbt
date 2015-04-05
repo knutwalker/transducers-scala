@@ -53,6 +53,8 @@ lazy val benchmarks = project enablePlugins AutomateHeaderPlugin dependsOn core 
   jmhSettings,
   name := "transducers-scala-bechmarks",
   outputTarget in Jmh := target.value / s"scala-${scalaBinaryVersion.value}",
+  version in Jmh := "1.6.3",
+  generatorType in Jmh := "asm",
   libraryDependencies ++= List(
     "io.reactivex"      %% "rxscala"          % "0.24.0",
     "org.functionaljava" % "functionaljava"   % "4.3",
