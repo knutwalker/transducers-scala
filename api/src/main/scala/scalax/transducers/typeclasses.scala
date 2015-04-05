@@ -81,18 +81,6 @@ trait AsTargetInstances {
     def size(fa: RB[_]): Int = fa.size
   }
 
-  val listAppend: AsTarget[List] = new AsTarget[List] {
-    type RB[A] = List[A]
-
-    def empty[A]: RB[A] = List.empty[A]
-    def from[A](as: List[A]): RB[A] = as
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa :+ a
-    def finish[A](fa: RB[A]): List[A] = fa
-
-    def size(fa: RB[_]): Int = fa.size
-  }
-
   implicit val vector: AsTarget[Vector] = new FromBuilder[Vector] {
     def empty[A]: RB[A] = Vector.newBuilder[A]
   }

@@ -17,6 +17,8 @@
 package scalax
 package transducers.benchmark
 
+import scalax.transducers.{AsTarget, Transducer}
+
 import rx.functions.Func1
 
 import java.lang.{Boolean ⇒ JBool}
@@ -28,7 +30,7 @@ import java.util.stream.Collectors
 import fj.data.{List ⇒ FJList}
 import org.openjdk.jmh.annotations._
 
-import scalax.transducers.{AsTarget, Transducer}
+import scala.collection.immutable.List
 
 @Threads(value = 1)
 @Fork(value = 1)
@@ -75,6 +77,18 @@ class ListBenchmark {
     def call(t1: Int): JBool = t1 % 4 == 0
   }
 
+  private[this] final val listAppend: AsTarget[List] = new AsTarget[List] {
+    type RB[A] = List[A]
+
+    def empty[A]: RB[A] = List.empty[A]
+    def from[A](as: List[A]): RB[A] = as
+
+    def append[A](fa: RB[A], a: A): RB[A] = fa :+ a
+    def finish[A](fa: RB[A]): List[A] = fa
+
+    def size(fa: RB[_]): Int = fa.size
+  }
+
 
   @Benchmark
   def bench_01_scalaCollections(input: Input): List[Int] = {
@@ -96,7 +110,7 @@ class ListBenchmark {
 
   @Benchmark
   def bench_03_oldTransducers(input: Input): List[Int] = {
-    transducers.into[List](AsTarget.listAppend).run(STransducer)(input.xs)
+    transducers.into[List](listAppend).run(STransducer)(input.xs)
   }
 
   @Benchmark
