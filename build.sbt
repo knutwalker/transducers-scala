@@ -93,14 +93,13 @@ lazy val transducersSettings =
 
 lazy val buildSettings = List(
         organization := "de.knutwalker",
-        scalaVersion := "2.11.6",
-  crossScalaVersions := scalaVersion.value :: "2.10.5" :: Nil)
+        scalaVersion := "2.10.5",
+  crossScalaVersions := scalaVersion.value :: "2.11.6" :: Nil)
 
 lazy val commonSettings = List(
   scalacOptions ++= List(
     "-deprecation",
     "-encoding",  "UTF-8",
-    "-explaintypes",
     "-feature",
     "-language:existentials",
     "-language:higherKinds",

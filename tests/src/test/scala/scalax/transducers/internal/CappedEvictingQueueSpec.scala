@@ -104,8 +104,10 @@ object CappedEvictingQueueSpec extends Specification with ScalaCheck with Arbitr
     }
 
     "show current elements in toString" in prop { (xs: List[String], n: Int @@ NonZeroPositive) ⇒
-      val capacity = xs.size max n
-      val overCapacity = n - xs.size
+      val size1: Int = xs.size
+      val size2: Int = n
+      val capacity = size1 max size2
+      val overCapacity = size2 - size1
       val items = if (overCapacity <= 0)
         xs.take(1).map(x ⇒ s"($x)") ::: xs.drop(1)
       else

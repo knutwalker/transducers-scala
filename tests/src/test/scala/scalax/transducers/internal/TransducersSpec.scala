@@ -536,7 +536,7 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
 
     "produce only the distinct set of items" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== xs.foldLeft(Vector.empty[Int]) { (ys, x) ⇒
-        if (ys.lastOption.contains(x)) ys else ys :+ x
+        if (ys.lastOption.exists(_ == x)) ys else ys :+ x
       }.toList
     }
 
