@@ -132,7 +132,7 @@ $projectModules
 
   def filterDeps(deps: Seq[String]): List[Dependency] =
     deps.flatMap(Dependency.parse)
-      .filterNot(_.scope.contains("provided"))
+      .filterNot(_.scope.exists(_ == "provided"))
       .filterNot(_.artifactId == "scala-library")
       .distinct
       .toList
