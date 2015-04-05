@@ -21,7 +21,7 @@ import scalax.transducers.internal.Reduced
 import scala.annotation.implicitNotFound
 import scala.collection.{TraversableOnce, mutable}
 import scala.collection.immutable.{List, Stream}
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.language.{higherKinds, implicitConversions, reflectiveCalls}
 import java.util
 import java.util.{Iterator ⇒ JIterator}
@@ -83,8 +83,16 @@ trait AsTargetInstances {
   implicit val set: AsTarget[Set] = new FromBuilder[Set] {
     def empty[A]: RB[A] = Set.newBuilder[A]
   }
-  implicit val iterator: AsTarget[Iterator] = new FromBuilder[Iterator] {
-    def empty[A]: RB[A] = Iterator.IteratorCanBuildFrom[A].apply()
+  implicit val iterator: AsTarget[Iterator] = new AsTarget[Iterator] {
+    type RB[A] = ArrayBuffer[A]
+
+    def empty[A]: RB[A] = new ArrayBuffer[A]
+    def from[A](as: Iterator[A]): RB[A] = empty[A] ++= as
+
+    def append[A](fa: RB[A], a: A): RB[A] = fa += a
+    def finish[A](fa: RB[A]): Iterator[A] = fa.iterator
+
+    def size(fa: RB[_]): Int = fa.length
   }
   implicit val iterable: AsTarget[Iterable] = new FromBuilder[Iterable] {
     def empty[A]: RB[A] = new ListBuffer[A]
