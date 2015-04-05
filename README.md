@@ -11,7 +11,7 @@ in many contexts and carry only the simple processing logic.
 `transducers-scala` is published to sonatype:
 
 ```scala
-libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.2.0"
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.3.0"
 ```
 
 ### Snapshot version
@@ -21,7 +21,7 @@ A snapshot is available at sonatype:
 ```scala
 resolvers += "sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.2.1-SNAPSHOT"
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.4.0-SNAPSHOT"
 ```
 
 
@@ -35,7 +35,7 @@ Alternatively, clone this repo and run
 
 ## Using it
 
-Add `"de.knutwalker" %% "transducers-scala" % "0.2.0"` to your dependencies.
+Add `"de.knutwalker" %% "transducers-scala" % "0.3.0"` to your dependencies.
 The full artifact names are `transducers-scala_2.10` and `transducers-scala_2.11`, so
 this library is available for Scala 2.10 and 2.11.
 
