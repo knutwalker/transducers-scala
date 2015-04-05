@@ -17,6 +17,7 @@
 package scalax
 
 import scala.language.higherKinds
+import transducers.internal.Reducing
 
 package object transducers extends TransducerOps {
 
@@ -38,7 +39,7 @@ package object transducers extends TransducerOps {
 
   private[this] def transduceAnything[A, F[_], B, G[_]](xf: Transducer[A, B])(F: AsSource[F], G: AsTarget[G])(builder: G.RB[B], xs: F[A]): G[B] = {
     val xf1: Reducer[A, G.RB[B]] = xf(G.reducer[B])
-    val rb: G.RB[B] = internal.Reducing.reduce(builder, xs)(xf1)(F)
+    val rb: G.RB[B] = Reducing.reduce(builder, xs)(xf1)(F)
     G.finish(rb)
   }
 }
