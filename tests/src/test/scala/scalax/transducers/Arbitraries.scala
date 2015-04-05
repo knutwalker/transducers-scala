@@ -136,7 +136,7 @@ trait Arbitraries {
       pf
     })
 
-  private val posNumGen: Gen[Int @@ Positive] =
+  val posNumGen: Gen[Int @@ Positive] =
     Gen.sized(m ⇒ Choose.chooseInt.choose(0, m * 2).map(Tag(_)))
   implicit val posNum = Arbitrary(posNumGen)
 
@@ -144,7 +144,7 @@ trait Arbitraries {
     Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 0).map(Tag(_)))
   implicit val negNum = Arbitrary(negNumGen)
 
-  private val posNonZeroNumGen: Gen[Int @@ NonZeroPositive] =
+  val posNonZeroNumGen: Gen[Int @@ NonZeroPositive] =
     Gen.sized(m ⇒ Choose.chooseInt.choose(1, max(1, m * 2)).map(Tag(_)))
   implicit val posNonZeroNum = Arbitrary(posNonZeroNumGen)
 
@@ -156,7 +156,7 @@ trait Arbitraries {
     Gen.sized(m ⇒ Choose.chooseInt.choose(-m * 2, 1).map(Tag(_)))
   implicit val oneOrLess = Arbitrary(oneOrLessGen)
 
-  private val slicePairGen: Gen[(Int, Int)] = for (x ← Tag.unsubst(posNumGen); y ← Tag.unsubst(posNumGen)) yield {
+  val slicePairGen: Gen[(Int, Int)] = for (x ← Tag.unsubst(posNumGen); y ← Tag.unsubst(posNumGen)) yield {
     if (x > y) (y, x) else (x, y)
   }
   implicit val slicePair = Arbitrary(slicePairGen)
