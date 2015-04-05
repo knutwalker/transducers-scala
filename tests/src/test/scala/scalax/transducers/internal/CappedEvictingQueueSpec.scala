@@ -76,6 +76,27 @@ object CappedEvictingQueueSpec extends Specification with ScalaCheck with Arbitr
       iter.size ==== xs.size
     }
 
+    "have a size" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+
+      queue.size ==== xs.size
+    }
+
+    "has isEmpty" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+
+      queue.isEmpty ==== xs.isEmpty
+    }
+
+    "has nonEmpty" in prop { (xs: List[String]) ⇒
+      val queue = new CappedEvictingQueue[String](xs.size)
+      xs foreach queue.add
+
+      queue.nonEmpty ==== xs.nonEmpty
+    }
+
     "decline non-positive capacities" in prop { (n: Int @@ Negative) ⇒
       new CappedEvictingQueue[String](n) must throwA[IllegalArgumentException].like {
         case e ⇒ e.getMessage must startWith("requirement failed")

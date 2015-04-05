@@ -46,6 +46,15 @@ final class CappedEvictingQueue[A](private[this] val capacity: Int) {
     None
   }
 
+  def size: Int =
+    scala.math.min(cursor, max).toInt
+
+  def isEmpty: Boolean =
+    cursor == 0L
+
+  def nonEmpty: Boolean =
+    cursor > 0L
+
   def elements: Iterator[A] =
     if (overCapacity)
       new CappedEvictingQueue.QueueElementsIterator[A]((cursor % max).toInt, capacity, capacity, backing)
