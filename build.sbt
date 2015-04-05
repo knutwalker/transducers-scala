@@ -153,7 +153,7 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
                    scmInfo := _scmInfo(githubUser.value, githubRepo.value),
                tagComment <<= version map (v => s"Release version $v"),
             commitMessage <<= version map (v => s"Set version to $v"),
-               versionBump := sbtrelease.Version.Bump.Bugfix,
+               versionBump := sbtrelease.Version.Bump.Minor,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
