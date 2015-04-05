@@ -40,8 +40,15 @@ final class ScanAtomReducer[A, B, R](rf: Reducer[B, R], z: B, f: (B, A) ⇒ B) e
     if (result.compareAndSet(prev, next)) next else update(a)
   }
 
-  override def prepare(r: R, s: Reduced): R =
-    rf(r, result.get(), s)
+  override def prepare(r: R, s: Reduced): R = {
+    val r2 = rf.prepare(r, s)
+    if (!s.?) {
+      rf(r2, result.get(), s)
+    }
+    else {
+      r2
+    }
+  }
 
   def apply(r: R, a: A, s: Reduced): R = {
     val res = update(a)
@@ -60,6 +67,9 @@ final class OrElseAtomTransducer[A](cont: ⇒ A) extends Transducer[A, A] {
 }
 final class OrElseAtomReducer[A, R](rf: Reducer[A, R], cont: ⇒ A) extends Reducer[A, R] {
   private[this] val hasValue = new AtomicBoolean(false)
+
+  def prepare(r: R, s: Reduced): R =
+    rf.prepare(r, s)
 
   def apply(r: R, a: A, s: Reduced): R = {
     hasValue.set(true)
@@ -80,6 +90,9 @@ final class TakeAtomTransducer[A](n: Long) extends Transducer[A, A] {
 }
 final class TakeAtomReducer[A, R](rf: Reducer[A, R], n: Long) extends Reducer[A, R] {
   private[this] val taken = new AtomicLong(1L)
+
+  def prepare(r: R, s: Reduced): R =
+    rf.prepare(r, s)
 
   def apply(r: R, a: A, s: Reduced): R =
     if (taken.get() < n) {
