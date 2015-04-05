@@ -66,19 +66,12 @@ trait AsTargetInstances {
     final def from[A](as: F[A]): RB[A] = empty[A] ++= as.toTraversable.asInstanceOf[TraversableOnce[A]]
     final def append[A](fa: RB[A], a: A): RB[A] = fa += a
     final def finish[A](fa: RB[A]): F[A] = fa.result()
-    final def size(fa: RB[_]): Int = fa.result().size
+    def size(fa: RB[_]): Int = fa.result().size
   }
 
-  implicit val list: AsTarget[List] = new AsTarget[List] {
-    type RB[A] = ListBuffer[A]
-
-    def empty[A]: RB[A] = ListBuffer.empty[A]
-    def from[A](as: List[A]): RB[A] = empty[A] ++= as
-
-    def append[A](fa: RB[A], a: A): RB[A] = fa += a
-    def finish[A](fa: RB[A]): List[A] = fa.result()
-
-    def size(fa: RB[_]): Int = fa.size
+  implicit val list: AsTarget[List] = new FromBuilder[List] {
+    def empty[A]: RB[A] = new ListBuffer[A]
+    override def size(fa: RB[_]): Int = fa.asInstanceOf[ListBuffer[_]].size
   }
 
   implicit val vector: AsTarget[Vector] = new FromBuilder[Vector] {
@@ -94,7 +87,8 @@ trait AsTargetInstances {
     def empty[A]: RB[A] = Iterator.IteratorCanBuildFrom[A].apply()
   }
   implicit val iterable: AsTarget[Iterable] = new FromBuilder[Iterable] {
-    def empty[A]: RB[A] = Iterable.newBuilder[A]
+    def empty[A]: RB[A] = new ListBuffer[A]
+    override def size(fa: RB[_]): Int = fa.asInstanceOf[ListBuffer[_]].size
   }
 
   implicit val firstOption: AsTarget[Option] = new AsTarget[Option] {
