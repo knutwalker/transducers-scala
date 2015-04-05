@@ -33,8 +33,8 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def >>[C](that: Transducer[B, C]): Transducer[A, C] =
     new CombinedTransducer(self, that)
 
-  final def empty: Transducer[A, B] =
-    this >> transducers.empty[B, B]
+  final def empty[C]: Transducer[A, C] =
+    this >> transducers.empty[B, C]
 
   final def orElse(cont: ⇒ B): Transducer[A, B] =
     this >> transducers.orElse[B](cont)
