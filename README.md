@@ -35,7 +35,7 @@ Alternatively, clone this repo and run
 
 ## Using it
 
-Add `"de.knutwalker" %% "transducers-scala" % "0.1.0-SNAPSHOT"` to your dependencies.
+Add `"de.knutwalker" %% "transducers-scala" % "0.2.0"` to your dependencies.
 The full artifact names are `transducers-scala_2.10` and `transducers-scala_2.11`, so
 this library is available for Scala 2.10 and 2.11.
 
@@ -50,7 +50,7 @@ val result = into[List].run(xform)(data)
 assert(result == List('1', '4', '1', '6', '1', '8', '2', '0', '2', '2'))
 ```
 
-For more examples and a better introduction, see the [ExampleSpec](core/src/test/scala/scalax/transducers/ExampleSpec.scala)
+For more examples and a better introduction, see the [Usage Guide](guide/src/it/scala/guide.scala)
 
 
 ## Explanation
@@ -65,7 +65,7 @@ input and output types.
 #### Type simplification
 
 ```scala
-type Reducer[A, R] = ((R, A) => R) with (R => R)
+type Reducer[A, R] = ((R, A) => R)
 
 type Transducer[A, B] = (Reducer[B, R] => Reducer[A, R]) forSome { type R }
 ```
@@ -74,17 +74,19 @@ Reducers are just functions, that combine a result and an input value to a new r
 This implementation is restricted in such a way, that the `R` is identical (same `R` in and out).
 This is mostly not a problem, since transducers may change types and most reducers have access
 to a down-stream reducer of the target type (that can be different from `A`).
-Reducers also have a final/finish/close kind-of operation, that allows them to do something
-whenever some stream of data is finished (although it might never finish).
+Reducers also have two additional operations.
+The first is a setup operation, that is called with the current result before
+and items flow through the reducer.
+The second is a finish operation, that allows the reducer to do something whenever a stream of data is finished (although it might never finish).
 
 A `Transducer[A, B]` is a function, that takes an `Reducer[B, _]` and returns an `Reducer[A, _]`.
 Transducers transform their reducers from right to left. When finally applied, the data flows
 from left to right. So, a `Transducer[A, B]` can roughly be seen as a function `A => B`, in that
 it describes a transformation from `A` to `B`, but it is not specified, how many `B` can be produced.
-A transducer may provide 0, 1, or an arbitraty number of `B`s, not just one (as `A => B` would have to).
+A transducer may provide 0, 1, or an arbitrary number of `B`s, not just one (as `A => B` would have to).
 
 An important note is, that `Transducer[A, B]` is a rank-2 type to quantify `R` without
-needing to know about it. This makes transducers completly unaware of their input or output.
+needing to know about it. This makes transducers completely unaware of their input or output.
 
 
 ## Some other projects with partially similar traits
@@ -95,7 +97,7 @@ there exist a number of projects, that share some traits with `transducers-scala
 ### RxJava (RsScala)
 
 Probably the most similar concept are RxJava's Operators.
-Operators transform Subscribers where tranducers transform reducers.
+Operators transform Subscribers where transducers transform reducers.
 While these operators are bound to be used with Subscribers, the Subscriber/Observer/Observable
 itself can be plugged in easily on different sources and targets.
 
@@ -103,7 +105,7 @@ itself can be plugged in easily on different sources and targets.
 
 Paul Phillips'
 [take on a scala collection/standard library](https://github.com/paulp/psp-std/)
-inlcudes collections, that are thouroughly non-strict and thus, achieve the same traits on terms of
+includes collections, that are thoroughly non-strict and thus, achieve the same traits on terms of
 laziness and early termination. These are, however, regular collections where the operations are
 bound to the specific collection.
 
@@ -122,12 +124,10 @@ The sbt launcher is provided by [Paul Phillips](https://github.com/paulp/sbt-ext
 
 - documentation
 - some more tests
-- better type classes (e.g. for CBF)
 - contrib modules, that included
     - support for scalaz type classes
-    - support for rx observables
-- more transducers
-- publishing
+    - support for functionaljava classes
+    - support for guava classes
 
 ## License
 
