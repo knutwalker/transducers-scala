@@ -27,9 +27,12 @@ private[contrib] final class OperatorTransducer[A, B](transducer: TransducerCore
     new Subscriber[A] {
       private[this] val reduced = new Reduced
       private[this] val downstreamReducer: Reducer[B, Unit] = new Reducer[B, Unit] {
+        def prepare(r: Unit, s: Reduced): Unit = ()
+
         def apply(r: Unit, a: B, s: Reduced): Unit =
           if (downstream.isUnsubscribed) s(())
           else downstream.onNext(a)
+
         def apply(r: Unit): Unit = ()
       }
       private[this] val reducer = transducer(downstreamReducer)

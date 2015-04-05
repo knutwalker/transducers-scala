@@ -43,10 +43,13 @@ trait AsTarget[R[_]] {
   def isEmpty(fa: RB[_]): Boolean = size(fa) == 0
   @inline final def nonEmpty(fa: RB[_]): Boolean = !isEmpty(fa)
 
-  final def reducer[A]: Reducer[A, RB[A]] = new Reducer[A, RB[A]] {
-    def apply(r: RB[A]): RB[A] = r
-    def apply(r: RB[A], a: A, s: Reduced): RB[A] = append(r, a)
-  }
+  final def reducer[A]: Reducer[A, RB[A]] = new AsTargetReducer[A, RB[A]](this.append)
+}
+
+final class AsTargetReducer[A, R](t: (R, A) ⇒ R) extends Reducer[A, R] {
+  def prepare(r: R, s: Reduced): R = r
+  def apply(r: R): R = r
+  def apply(r: R, a: A, s: Reduced): R = t(r, a)
 }
 
 @implicitNotFound("Don't know how to transduce from a ${F}. You need to provide an implicit instance of AsSource[${F}].")

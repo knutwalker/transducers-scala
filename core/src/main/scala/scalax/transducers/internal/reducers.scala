@@ -21,6 +21,7 @@ import scala.language.higherKinds
 
 private[internal] abstract class Delegate[A, R](rf: Reducer[_, R]) extends Reducer[A, R] {
   final def apply(r: R): R = rf(r)
+  def prepare(r: R, s: Reduced): R = rf.prepare(r, s)
 }
 
 private[internal] abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implicit F: AsTarget[F]) extends Reducer[A, R] {
@@ -59,6 +60,9 @@ private[internal] final class NoOpReducer[A, R](rf: Reducer[A, R]) extends Deleg
 
 private[internal] final class OrElseReducer[A, R](rf: Reducer[A, R], cont: ⇒ A) extends Reducer[A, R] {
   private[this] var hasValue = false
+
+  def prepare(r: R, s: Reduced): R =
+    rf.prepare(r, s)
 
   def apply(r: R, a: A, s: Reduced): R = {
     hasValue = true
@@ -142,6 +146,8 @@ private[internal] final class TakeNthReducer[A, R](rf: Reducer[A, R], n: Long) e
 private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) extends Reducer[A, R] {
   private[this] val queue = new CappedEvictingQueue[A](n)
 
+  def prepare(r: R, s: Reduced): R = rf.prepare(r, s)
+
   def apply(r: R, a: A, s: Reduced): R = {
     queue.add(a)
     r
@@ -211,6 +217,8 @@ private[internal] final class ZipWithIndexReducer[A, R](rf: Reducer[(A, Int), R]
 
 private[internal] final class GroupedReducer[A, R, F[_]: AsTarget](rf: Reducer[F[A], R], n: Int) extends Buffer[A, R, F](rf) {
 
+  def prepare(r: R, s: Reduced): R = rf.prepare(r, s)
+
   def apply(r: R, a: A, s: Reduced): R = {
     append(a)
     if (size == n) flush(r, s) else r
@@ -220,6 +228,8 @@ private[internal] final class GroupedReducer[A, R, F[_]: AsTarget](rf: Reducer[F
 private[internal] final class GroupByReducer[A, B <: AnyRef, R, F[_]: AsTarget](rf: Reducer[F[A], R], f: A ⇒ B) extends Buffer[A, R, F](rf) {
   private[this] val mark = new AnyRef
   private[this] var previous = mark
+
+  def prepare(r: R, s: Reduced): R = rf.prepare(r, s)
 
   def apply(r: R, a: A, s: Reduced): R = {
     val key = f(a)

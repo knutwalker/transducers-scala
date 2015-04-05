@@ -29,6 +29,7 @@ import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue}
 final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int = 1024) {
 
   private[contrib] val reducer: Reducer[B, Unit] = new Reducer[B, Unit] {
+    def prepare(r: Unit, s: Reduced): Unit = ()
     def apply(r: Unit, a: B, s: Reduced): Unit = sendRightValue(a)
     def apply(r: Unit): Unit = ()
   }
