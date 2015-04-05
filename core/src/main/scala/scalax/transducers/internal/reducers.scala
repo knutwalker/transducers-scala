@@ -46,8 +46,14 @@ private[internal] abstract class Buffer[A, R, F[_]](rf: Reducer[F[A], R])(implic
 
 
 private[internal] final class EmptyReducer[A, R](rf: Reducer[_, R]) extends Delegate[A, R](rf) {
-  override def prepare(r: R, s: Reduced): R =
-    s(r)
+  override def prepare(r: R, s: Reduced): R = {
+    val r2: R = rf.prepare(r, s)
+    if (!s.?) {
+      s(r2)
+    } else {
+      r2
+    }
+  }
 
   def apply(r: R, a: A, s: Reduced): R =
     s(r)
@@ -105,8 +111,15 @@ private[internal] final class CollectReducer[A, B, R](rf: Reducer[B, R], pf: Par
 private[internal] final class ScanReducer[A, B, R](rf: Reducer[B, R], z: B, f: (B, A) ⇒ B) extends Delegate[A, R](rf) {
   private[this] var result = z
 
-  override def prepare(r: R, s: Reduced): R =
-    rf(r, result, s)
+  override def prepare(r: R, s: Reduced): R = {
+    val r2 = rf.prepare(r, s)
+    if (!s.?) {
+      rf(r2, result, s)
+    }
+    else {
+      r2
+    }
+  }
 
   def apply(r: R, a: A, s: Reduced): R = {
     result = f(result, a)
@@ -123,7 +136,12 @@ private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) exte
       rf(r, a, s)
     }
     else {
-      s(rf(r, a, s))
+      val r2 = rf(r, a, s)
+      if (!s.?) {
+        s(r2)
+      } else {
+        r2
+      }
     }
 }
 
@@ -153,8 +171,13 @@ private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) 
     r
   }
 
-  def apply(r: R): R =
-    Reducing.reduce(r, queue.elements)(rf)
+  def apply(r: R): R = {
+    if (queue.nonEmpty) {
+      Reducing.reduce(r, queue.elements)(rf)
+    } else {
+      rf(r)
+    }
+  }
 }
 
 private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
