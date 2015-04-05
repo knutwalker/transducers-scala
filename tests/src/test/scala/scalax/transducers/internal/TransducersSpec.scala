@@ -19,16 +19,15 @@ package transducers.internal
 
 import scalaz.@@
 
-import transducers.{AsTarget, Transducer, Arbitraries}
+import transducers.{AsTarget, Arbitraries}
 
 import org.specs2._
 import org.specs2.mutable.Specification
 
-import scala.collection.GenIterableLike
 import scala.math.{max, min}
 import java.util.concurrent.atomic.AtomicInteger
 
-object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
+object TransducersSpec extends Specification with ScalaCheck with Arbitraries with TransducerTests {
 
   "empty" should {
     val tx = transducers.empty[Int, Int]
@@ -614,36 +613,5 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries {
     "show itself in toString" in {
       tx.toString ==== s"(groupBy)"
     }
-  }
-
-  private def run[A](xs: List[Int], tx: Transducer[Int, A]) =
-    transducers.run(tx)(xs)
-
-  private def consume(xs: List[Int], tx: Transducer[Int, _]) = {
-    val it = CountingIterator(xs)
-    transducers.run(tx)(it.it)
-    it.consumed
-  }
-
-  private def itemsUntilFound(xs: List[Int], f: Int ⇒ Boolean): Int = {
-    val (dropped, rest) = xs.span(!f(_))
-    dropped.length + rest.take(1).length
-  }
-
-  class CountingIterator[A](xs: GenIterableLike[A, _]) extends Iterator[A] {
-    private[this] final val iter = xs.iterator
-    private[this] final var _consumed = 0
-    def hasNext: Boolean = iter.hasNext
-    def next(): A = {
-      _consumed += 1
-      iter.next()
-    }
-    def consumed: Int = _consumed
-
-    def it: Iterator[A] = this
-  }
-  object CountingIterator {
-    def apply[A](xs: GenIterableLike[A, _]): CountingIterator[A] =
-      new CountingIterator[A](xs)
   }
 }
