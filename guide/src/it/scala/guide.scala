@@ -28,10 +28,14 @@ object guide extends Specification with Snippets { lazy val is = "Transducer Usa
 Transducers are a way to build reusable transformations.
 
 Let's start with some input data `xs`, that will be used for further examples:
-$s1
+${snippet{
+  (1 to 10).toList
+}}
 
 And we will use this simple transducer `tx`, that will filter out odd numbers:
-$s2
+${snippet{
+  transducers.filter((x: Int) ⇒ x % 2 == 0)
+}}
 
 ### Decoupling from in- and output
 
@@ -45,20 +49,46 @@ If you `run` the transducer, it will use the input shape for the output.
 
 $e1
 
-$s3
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  transducers.run(tx)(xs)
+}}
 
 
 You can also change the output shape using `into`:
 
 $e2
 
-$s4
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  transducers.into[Vector].run(tx)(xs)
+}}
 
 
 The shape has to be a first-order kinded type, i.e. `F[_]` or `* -> *`.
 There must be an instance of `AsTarget[F]` available. For some types,
 there is already an instance available.
-$s5
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  (transducers.into[List].run(tx)(xs)
+  , transducers.into[Vector].run(tx)(xs)
+  , transducers.into[Stream].run(tx)(xs)
+  , transducers.into[Set].run(tx)(xs)
+  , transducers.into[Iterator].run(tx)(xs)
+  , transducers.into[Iterable].run(tx)(xs)
+  , transducers.into[Option].run(tx)(xs)
+  , transducers.into[Option](AsTarget.lastOption).run(tx)(xs)
+  )
+}}
 
 
 Note that choosing `Stream` won't automatically stop the consumption of the
@@ -71,7 +101,14 @@ If you already have some target data available, you can use `addto`:
 
 $e3
 
-$s6
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  val result = (-10 to 0 by 2).toVector
+  transducers.addto(result).run(tx)(xs)
+}}
 
 
 The same things about `AsTarget` apply for `addto` as they do for `into`.
@@ -80,7 +117,14 @@ The same things about `AsTarget` apply for `addto` as they do for `into`.
 All three methods also support a variant where the arguments are reversed
 (`(input)(transducer)`) which works better with type inference, if the
 transducer is declared inline:
-$s7
+${snippet{
+  // 8<--
+  val xs = (1 to 10).toList
+  // 8<--
+  transducers.run(transducers.filter((x: Int) ⇒ x % 2 == 0))(xs)
+  //  transducers.run(transducers.filter(_ % 2 == 0))(xs)  // wouldn't compile
+  transducers.run(xs)(transducers.filter(_ % 2 == 0))
+}}
 
 
 `into` and `addto` also have a `from` method, where you can define the input
@@ -89,7 +133,14 @@ You get a function from input to output:
 
 $e4
 
-$s8
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  val fn: List[Int] ⇒ Vector[Int] = transducers.into[Vector].from[List].run(tx)
+  fn(xs)
+}}
 
 
 ### Composing Transducers
@@ -103,21 +154,46 @@ You can use `compose` to create a new Transducer:
 
 $e5
 
-$s9
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  val tx2 = transducers.map((_: Int) * 5)
+  val tx0 = tx compose tx2 // first map (*5), then filter (even?)
+
+  transducers.run(tx0)(xs)
+}}
 
 
 You can also use `andThen`
 
 $e6
 
-$s10
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  val tx2 = transducers.map((_: Int) * 4)
+  val tx0 = tx andThen tx2 // first filter (even?), then map (*4)
+  transducers.run(tx0)(xs)
+}}
 
 
 `>>` is an alias for `andThen`
 
 $e7
 
-$s11
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  val tx2 = transducers.map((_: Int) * 4)
+  val tx0 = tx >> tx2 // first filter (even?), then map (*4)
+  transducers.run(tx0)(xs)
+}}
 
 
 Instead of creating the transducers beforehand and fighting the
@@ -129,7 +205,14 @@ This way, the API looks like that of a collection type
 
 $e8
 
-$s12
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  // 8<--
+  val tx0 = tx map (4 *) map (2 +) drop 4
+  transducers.run(tx0)(xs)
+}}
 
 
 ### Laziness and early termination
@@ -142,14 +225,27 @@ next value is computed.
 
 To demonstrate this, the input is wrapped in an iterator `it`, that counts
 how often it was consumed
-$s13
+${snippet{
+  // 8<--
+  val xs = (1 to 10).toList
+  // 8<--
+  CountingIterator(xs)
+}}
 
 
 So, take terminates early if everything is taken
 
 $e9
 
-$s14
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  val xs = (1 to 10).toList
+  val it = CountingIterator(xs)
+  // 8<--
+  val tx0 = tx.take(2)
+  (transducers.into[List].run(tx0)(it.it), it.consumed)
+}}
 
 
 Here, only 4 items were consumed (out of 10), because after 4 items, 2 were
@@ -162,14 +258,26 @@ to terminate.
 
 
 Consider this example in Scala:
-$s15
+${snippet{
+  Stream.from(1).dropRight(5).take(5)
+  // java.lang.OutOfMemoryError: GC overhead limit exceeded
+}}
 
 
 This works with transducers
 
 $e10
 
-$s16
+${snippet{
+  // 8<--
+  val tx = transducers.filter[Int](_ % 2 == 0)
+  // 8<--
+  val xs = Stream.from(1)
+  val it = CountingIterator(xs)
+  val tx0 = tx.dropRight(5).take(5)
+
+  (transducers.into[List].run(tx0)(it.it), it.consumed)
+}}
 
 
 20 Items are consumed, 10 of which pass the filter condition; 5 are buffered
@@ -179,146 +287,6 @@ terminates.
 $p
 
 """
-
-  lazy val s1 = snippet {
-    (1 to 10).toList
-  }
-
-  lazy val s2 = snippet {
-    transducers.filter((x: Int) ⇒ x % 2 == 0)
-  }
-
-  lazy val s3 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    transducers.run(tx)(xs)
-  }
-
-  lazy val s4 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    transducers.into[Vector].run(tx)(xs)
-  }
-
-  lazy val s5 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    (transducers.into[List].run(tx)(xs)
-      , transducers.into[Vector].run(tx)(xs)
-      , transducers.into[Stream].run(tx)(xs)
-      , transducers.into[Set].run(tx)(xs)
-      , transducers.into[Iterator].run(tx)(xs)
-      , transducers.into[Iterable].run(tx)(xs)
-      , transducers.into[Option].run(tx)(xs)
-      , transducers.into[Option](AsTarget.lastOption).run(tx)(xs)
-      )
-  }
-
-  lazy val s6 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    val result = (-10 to 0 by 2).toVector
-    transducers.addto(result).run(tx)(xs)
-  }
-
-  lazy val s7 = snippet {
-    // 8<--
-    val xs = (1 to 10).toList
-    // 8<--
-    transducers.run(transducers.filter((x: Int) ⇒ x % 2 == 0))(xs)
-    //  transducers.run(transducers.filter(_ % 2 == 0))(xs)  // wouldn't compile
-    transducers.run(xs)(transducers.filter(_ % 2 == 0))
-  }
-
-  lazy val s8 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    val fn: List[Int] ⇒ Vector[Int] = transducers.into[Vector].from[List].run(tx)
-    fn(xs)
-  }
-
-  lazy val s9 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    val tx2 = transducers.map((_: Int) * 5)
-    val tx0 = tx compose tx2 // first map (*5), then filter (even?)
-
-    transducers.run(tx0)(xs)
-  }
-
-  lazy val s10 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    val tx2 = transducers.map((_: Int) * 4)
-    val tx0 = tx andThen tx2 // first filter (even?), then map (*4)
-    transducers.run(tx0)(xs)
-  }
-
-  lazy val s11 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    val tx2 = transducers.map((_: Int) * 4)
-    val tx0 = tx >> tx2 // first filter (even?), then map (*4)
-    transducers.run(tx0)(xs)
-  }
-
-  lazy val s12 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    // 8<--
-    val tx0 = tx map (4 *) map (2 +) drop 4
-    transducers.run(tx0)(xs)
-  }
-
-  lazy val s13 = snippet {
-    // 8<--
-    val xs = (1 to 10).toList
-    // 8<--
-    CountingIterator(xs)
-  }
-
-  lazy val s14 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    val xs = (1 to 10).toList
-    val it = CountingIterator(xs)
-    // 8<--
-    val tx0 = tx.take(2)
-    (transducers.into[List].run(tx0)(it.it), it.consumed)
-  }
-
-  lazy val s15 = snippet {
-    Stream.from(1).dropRight(5).take(5)
-    // java.lang.OutOfMemoryError: GC overhead limit exceeded
-  }
-
-  lazy val s16 = snippet {
-    // 8<--
-    val tx = transducers.filter[Int](_ % 2 == 0)
-    // 8<--
-    val xs = Stream.from(1)
-    val it = CountingIterator(xs)
-    val tx0 = tx.dropRight(5).take(5)
-
-    (transducers.into[List].run(tx0)(it.it), it.consumed)
-  }
 
   lazy val e1 = {
     val tx = transducers.filter[Int](_ % 2 == 0)
