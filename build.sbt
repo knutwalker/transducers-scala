@@ -247,4 +247,4 @@ def _scmInfo(user: String, repo: String) = Some(ScmInfo(
   Some(s"scm:git:ssh://git@github.com:$user/$repo.git")
 ))
 
-addCommandAlias("travis", ";clean;tests/coverage;tests/testOnly -- xonly exclude contrib")
+addCommandAlias("travis", ";clean;tests/coverage;tests/testOnly -- xonly exclude contrib;coverageReport")
