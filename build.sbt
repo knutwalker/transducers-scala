@@ -170,6 +170,16 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
       </developer>
     </developers>
   },
+  pomPostProcess := { (node) =>
+    val rewriteRule = new scala.xml.transform.RewriteRule {
+      override def transform(n: scala.xml.Node): scala.xml.NodeSeq =
+        if (n.label == "dependency" && (n \ "groupId").text == "org.scoverage")
+          scala.xml.NodeSeq.Empty
+        else n
+    }
+    val transformer = new scala.xml.transform.RuleTransformer(rewriteRule)
+    transformer.transform(node).head
+  },
   releaseProcess := List[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
