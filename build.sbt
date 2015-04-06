@@ -11,7 +11,7 @@ import xerial.sbt.Sonatype.SonatypeKeys._
 
 lazy val parent = project in file(".") dependsOn (
   api, core, reactiveStreams, rxScala, tests) aggregate (
-  api, all, core, reactiveStreams, rxScala, tests, guide, examples, benchmarks) settings (
+  api, all, core, reactiveStreams, rxScala, tests, guide, examples) settings (
   transducersSettings,
   doNotPublish,
   name := "transducers-scala-parent")

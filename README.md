@@ -1,7 +1,7 @@
-![Travis CI](https://img.shields.io/travis/knutwalker/transducers-scala/master.svg)
-![Coveralls](https://img.shields.io/coveralls/knutwalker/transducers-scala/master.svg)
-![Maven](https://img.shields.io/maven-central/v/de.knutwalker/transducers-scala_2.11.svg)
-![Apache License](https://img.shields.io/badge/license-APACHE_2-green.svg)
+[![Travis CI](https://img.shields.io/travis/knutwalker/transducers-scala/master.svg)](https://travis-ci.org/knutwalker/transducers-scala)
+[![Coverage Status](https://img.shields.io/coveralls/knutwalker/transducers-scala/master.svg)](https://coveralls.io/r/knutwalker/transducers-scala)
+[![Maven](https://img.shields.io/maven-central/v/de.knutwalker/transducers-scala_2.11.svg)](http://search.maven.org/#search|ga|1|g%3A%22de.knutwalker%22%20AND%20a%3A%22transducers-scala_2.11%22)
+[![Apache License](https://img.shields.io/badge/license-APACHE_2-green.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 # transducers-scala
 
