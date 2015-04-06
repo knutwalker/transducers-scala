@@ -13,5 +13,5 @@ script:
   - sbt ++$TRAVIS_SCALA_VERSION travis
 
 after_success:
-  - sbt 'tests/coveralls'
+  - sbt coveralls
 

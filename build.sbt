@@ -126,7 +126,7 @@ lazy val commonSettings = List(
     val name = Project.extract(state).currentRef.project
     (if (name == "parent") "" else name + " ") + "> "
   },
-  coverageExcludedPackages := "scalax.transducers.benchmark.*|buildinfo",
+  coverageExcludedPackages := "scalax.transducers.benchmark.*|scalax.transducers.contrib.*|buildinfo",
   headers := {
     val thisYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
     val years = List(startYear.value.getOrElse(thisYear), thisYear).distinct.mkString(" – ")
