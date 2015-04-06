@@ -5,12 +5,14 @@ jdk:
   - oraclejdk8
   - oraclejdk7
   - openjdk7
-  - openjdk6
 
 scala:
   - 2.10.4
   - 2.11.2
 
 script:
-  - sbt -sbt-version 0.13.8 -scala-version $TRAVIS_SCALA_VERSION 'tests/test-only -- xonly exclude contrib'
+  - sbt ++$TRAVIS_SCALA_VERSION travis
+
+after_success:
+  - sbt 'tests/coveralls'
 

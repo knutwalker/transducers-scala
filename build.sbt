@@ -126,7 +126,7 @@ lazy val commonSettings = List(
     val name = Project.extract(state).currentRef.project
     (if (name == "parent") "" else name + " ") + "> "
   },
-  coverageExcludedPackages := "scalax.transducers.benchmark.*",
+  coverageExcludedPackages := "scalax.transducers.benchmark.*|buildinfo",
   headers := {
     val thisYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
     val years = List(startYear.value.getOrElse(thisYear), thisYear).distinct.mkString(" – ")
@@ -247,4 +247,4 @@ def _scmInfo(user: String, repo: String) = Some(ScmInfo(
   Some(s"scm:git:ssh://git@github.com:$user/$repo.git")
 ))
 
-addCommandAlias("cover", ";clean;coverage;test;coverageReport;coverageAggregate")
+addCommandAlias("travis", ";clean;tests/coverage;tests/testOnly -- xonly exclude contrib")
