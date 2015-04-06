@@ -1,4 +1,5 @@
 ![Travis CI](https://img.shields.io/travis/knutwalker/transducers-scala/master.svg)
+![Apache License](https://img.shields.io/badge/license-APACHE_2-green.svg)
 
 # transducers-scala
 
