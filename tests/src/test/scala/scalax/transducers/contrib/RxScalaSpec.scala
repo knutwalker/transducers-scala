@@ -25,6 +25,7 @@ import rx.lang.scala.JavaConversions._
 final class RxScalaSpec extends Specification with RxSupport with ContribTransducer {
 
   "The RxScala support" should {
+    tag("contrib")
     "transduce on an RxObservable" in {
       val ints: Observable[Integer] = rx.Observable.range(0, Int.MaxValue)
       val observable = ints.map(Integer2int).transduce(testTx)

@@ -1,3 +1,5 @@
+![Travis CI](https://img.shields.io/travis/knutwalker/transducers-scala/master.svg)
+
 # transducers-scala
 
 Transducers are a way to build reusable transformations.

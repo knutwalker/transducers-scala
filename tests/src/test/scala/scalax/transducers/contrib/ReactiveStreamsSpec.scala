@@ -30,6 +30,7 @@ import concurrent.duration.Duration
 final class ReactiveStreamsSpec extends Specification with ReactiveStreamsSupport with ContribTransducer {
 
   "The reactivestreams support" should {
+    tag("contrib")
     "transduce on a producer" in {
       implicit val system = ActorSystem("foo")
       implicit val mat = FlowMaterializer()
