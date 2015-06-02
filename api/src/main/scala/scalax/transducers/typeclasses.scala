@@ -23,6 +23,7 @@ import scala.collection.{TraversableOnce, mutable}
 import scala.collection.immutable.{List, Stream}
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.language.{higherKinds, implicitConversions, reflectiveCalls}
+import java.lang.{Iterable ⇒ JIterable}
 import java.util
 import java.util.{Iterator ⇒ JIterator}
 
@@ -54,9 +55,15 @@ final class AsTargetReducer[A, R](t: (R, A) ⇒ R) extends Reducer[A, R] {
 
 @implicitNotFound("Don't know how to transduce from a ${F}. You need to provide an implicit instance of AsSource[${F}].")
 trait AsSource[F[_]] {
-  def hasNext[A](fa: F[A]): Boolean
+  type Repr[_]
 
-  def produceNext[A](fa: F[A]): (A, F[A])
+  def prepare[A](fa: F[A]): Repr[A]
+
+  def hasNext[A](fa: Repr[A]): Boolean
+
+  def produceCurrent[A](fa: Repr[A]): A
+
+  def produceNext[A](fa: Repr[A]): Repr[A]
 }
 
 trait AsTargetInstances {
@@ -137,37 +144,98 @@ trait AsTargetInstances {
 }
 
 trait AsSourceInstances {
-  implicit val list: AsSource[List] = new AsSource[List] {
-    def hasNext[A](fa: List[A]): Boolean = fa.nonEmpty
-    def produceNext[A](fa: List[A]): (A, List[A]) = (fa.head, fa.tail)
+  class FromTraversable[F[X] <: Traversable[X]] extends AsSource[F] {
+    type Repr[A] = F[A]
+
+    def prepare[A](fa: F[A]): F[A] = fa
+
+    def hasNext[A](fa: F[A]): Boolean = fa.nonEmpty
+
+    def produceCurrent[A](fa: F[A]): A = fa.head
+
+    def produceNext[A](fa: F[A]): F[A] = fa.tail.asInstanceOf[F[A]]
   }
-  implicit val vector: AsSource[Vector] = new AsSource[Vector] {
-    def hasNext[A](fa: Vector[A]): Boolean = fa.nonEmpty
-    def produceNext[A](fa: Vector[A]): (A, Vector[A]) = (fa.head, fa.tail)
-  }
-  implicit val stream: AsSource[Stream] = new AsSource[Stream] {
-    def hasNext[A](fa: Stream[A]): Boolean = fa.nonEmpty
-    def produceNext[A](fa: Stream[A]): (A, Stream[A]) = (fa.head, fa.tail)
-  }
+
+  implicit val list: AsSource[List] = new FromTraversable[List]
+
+  implicit val vector: AsSource[Vector] = new FromTraversable[Vector]
+
+  implicit val stream: AsSource[Stream] = new FromTraversable[Stream]
+
+  implicit val set: AsSource[Set] = new FromTraversable[Set]
+
+  implicit val iterable: AsSource[Iterable] = new FromTraversable[Iterable]
+
   implicit val option: AsSource[Option] = new AsSource[Option] {
+    type Repr[A] = Option[A]
+
+    def prepare[A](fa: Option[A]): Option[A] = fa
+
     def hasNext[A](fa: Option[A]): Boolean = fa.nonEmpty
-    def produceNext[A](fa: Option[A]): (A, Option[A]) = (fa.get, None)
+
+    def produceCurrent[A](fa: Option[A]): A = fa.get
+
+    def produceNext[A](fa: Option[A]): Option[A] = None
   }
-  implicit val set: AsSource[Set] = new AsSource[Set] {
-    def hasNext[A](fa: Set[A]): Boolean = fa.nonEmpty
-    def produceNext[A](fa: Set[A]): (A, Set[A]) = (fa.head, fa.tail)
-  }
+
   implicit val iterator: AsSource[Iterator] = new AsSource[Iterator] {
+    type Repr[A] = Iterator[A]
+
+    def prepare[A](fa: Iterator[A]): Iterator[A] = fa
+
     def hasNext[A](fa: Iterator[A]): Boolean = fa.hasNext
-    def produceNext[A](fa: Iterator[A]): (A, Iterator[A]) = (fa.next(), fa)
+
+    def produceCurrent[A](fa: Iterator[A]): A = fa.next()
+
+    def produceNext[A](fa: Iterator[A]): Iterator[A] = fa
   }
-  implicit val iterable: AsSource[Iterable] = new AsSource[Iterable] {
-    def hasNext[A](fa: Iterable[A]): Boolean = fa.nonEmpty
-    def produceNext[A](fa: Iterable[A]): (A, Iterable[A]) = (fa.head, fa.tail)
-  }
+
   implicit val javaIterator: AsSource[JIterator] = new AsSource[JIterator] {
+    type Repr[A] = JIterator[A]
+
+    def prepare[A](fa: JIterator[A]): JIterator[A] = fa
+
     def hasNext[A](fa: JIterator[A]): Boolean = fa.hasNext
-    def produceNext[A](fa: JIterator[A]): (A, JIterator[A]) = (fa.next(), fa)
+
+    def produceCurrent[A](fa: JIterator[A]): A = fa.next()
+
+    def produceNext[A](fa: JIterator[A]): JIterator[A] = fa
+  }
+
+  implicit val javaIterable: AsSource[JIterable] = new AsSource[JIterable] {
+    type Repr[A] = JIterator[A]
+
+    def prepare[A](fa: JIterable[A]): JIterator[A] = fa.iterator()
+
+    def hasNext[A](fa: JIterator[A]): Boolean = fa.hasNext
+
+    def produceCurrent[A](fa: JIterator[A]): A = fa.next()
+
+    def produceNext[A](fa: JIterator[A]): JIterator[A] = fa
+  }
+
+  implicit val javaList: AsSource[util.List] = new AsSource[util.List] {
+    type Repr[A] = JIterator[A]
+
+    def prepare[A](fa: util.List[A]): JIterator[A] = fa.iterator()
+
+    def hasNext[A](fa: JIterator[A]): Boolean = fa.hasNext
+
+    def produceCurrent[A](fa: JIterator[A]): A = fa.next()
+
+    def produceNext[A](fa: JIterator[A]): JIterator[A] = fa
+  }
+
+  implicit val javaArray: AsSource[Array] = new AsSource[Array] {
+    type Repr[A] = JIterator[A]
+
+    def prepare[A](fa: Array[A]): JIterator[A] = util.Arrays.asList(fa: _*).iterator()
+
+    def hasNext[A](fa: JIterator[A]): Boolean = fa.hasNext
+
+    def produceCurrent[A](fa: JIterator[A]): A = fa.next()
+
+    def produceNext[A](fa: JIterator[A]): JIterator[A] = fa
   }
 }
 

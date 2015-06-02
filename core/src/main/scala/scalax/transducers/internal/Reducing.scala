@@ -32,11 +32,11 @@ private[transducers] object Reducing {
 
   private[this] def runReduce[A, R, F[_]](f: Reducer[A, R], g: (R ⇒ R), result: R, input: F[A], reduced: Reduced)(implicit F: AsSource[F]): R = {
     var acc = f.prepare(result, reduced)
-    var these = input
+    var these = F.prepare(input)
     while (F.hasNext(these) && !reduced.?) {
-      val (head, tail) = F.produceNext(these)
+      val head = F.produceCurrent(these)
       acc = f(acc, head, reduced)
-      these = tail
+      these = F.produceNext(these)
     }
     g(acc)
   }
