@@ -96,7 +96,7 @@ lazy val transducersSettings =
 lazy val buildSettings = List(
         organization := "de.knutwalker",
         scalaVersion := "2.10.5",
-  crossScalaVersions := scalaVersion.value :: "2.11.6" :: Nil)
+  crossScalaVersions := scalaVersion.value :: "2.11.7" :: Nil)
 
 lazy val commonSettings = List(
   scalacOptions ++= List(
@@ -145,7 +145,6 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
    publishArtifact in Test := false,
       pomIncludeRepository := { _ => false },
                 maintainer := "Paul Horn",
-               profileName := "knutwalker",
                 githubUser := "knutwalker",
                 githubRepo := "transducers-scala",
                   homepage := Some(url(s"https://github.com/${githubUser.value}/${githubRepo.value}")),
