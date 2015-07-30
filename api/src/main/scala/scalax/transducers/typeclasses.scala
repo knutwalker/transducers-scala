@@ -241,6 +241,16 @@ trait AsSourceInstances {
 
 object AsTarget extends AsTargetInstances {
   @inline def apply[F[_]](implicit F: AsTarget[F]): AsTarget[F] = F
+
+  type Id[A] = A
+  implicit val idAsTarget: AsTarget[Id] = new AsTarget[Id] {
+    type RB[A] = A
+    def empty[A]: A = null.asInstanceOf[A]
+    def from[A](as: Id[A]): A = as
+    def finish[A](fa: A): Id[A] = fa
+    def size(fa: Id[_]): Int = 1
+    def append[A](fa: A, a: A): A = a
+  }
 }
 
 object AsSource extends AsSourceInstances {
