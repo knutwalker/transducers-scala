@@ -3,13 +3,13 @@ import de.heikoseeberger.sbtheader.license.Apache2_0
 import ReleaseTransformations._
 
 lazy val parent = project in file(".") dependsOn (
-  api, core, reactiveStreams, rxScala, tests) aggregate (
-  api, all, core, reactiveStreams, rxScala, tests, guide, examples) settings (
+  api, core, reactiveStreams, rxScala, akkaStream, tests) aggregate (
+  api, all, core, reactiveStreams, rxScala, akkaStream, tests, guide, examples) settings (
   transducersSettings,
   doNotPublish,
   name := "transducers-scala-parent")
 
-lazy val all = project dependsOn (api, core, reactiveStreams, rxScala) aggregate(api, core, reactiveStreams, rxScala) settings(
+lazy val all = project dependsOn (api, core, reactiveStreams, rxScala, akkaStream) aggregate(api, core, reactiveStreams, rxScala, akkaStream) settings(
   transducersSettings,
   buildsUberJar,
   name := "transducers-scala-all")
@@ -34,6 +34,12 @@ lazy val rxScala = project in file("contrib") / "rx-scala" enablePlugins Automat
   buildsUberJar,
   name := "transducers-scala-rxscala",
   libraryDependencies += "io.reactivex" %% "rxscala" % "0.26.0")
+
+lazy val akkaStream = project in file("contrib") / "akka-stream" enablePlugins AutomateHeaderPlugin dependsOn api settings(
+  transducersSettings,
+  buildsUberJar,
+  name := "transducers-scala-akka-stream",
+  libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.4.2")
 
 lazy val examples = project enablePlugins AutomateHeaderPlugin dependsOn core settings(
   transducersSettings,
@@ -62,7 +68,7 @@ lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) c
   libraryDependencies ++= List(
     "org.specs2" %% "specs2-html" % "3.7.2"  % "it,test"))
 
-lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, reactiveStreams, rxScala) settings (
+lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, reactiveStreams, rxScala, akkaStream) settings (
   transducersSettings,
   doNotPublish,
   name := "transducers-scala-tests",
@@ -199,7 +205,8 @@ lazy val buildInfos = List(
   BuildInfoKey("dependencies" → (libraryDependencies.in(core).value ++ libraryDependencies.in(api).value).distinct),
   BuildInfoKey("modules" → List(
     (name in reactiveStreams).value → (libraryDependencies in reactiveStreams).value,
-            (name in rxScala).value → (libraryDependencies in rxScala).value))))
+            (name in rxScala).value → (libraryDependencies in rxScala).value,
+         (name in akkaStream).value → (libraryDependencies in akkaStream).value))))
 
 lazy val buildsUberJar = List(
      assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
