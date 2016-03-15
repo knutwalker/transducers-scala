@@ -1,6 +1,5 @@
 import com.typesafe.sbt.pgp.PgpKeys._
 import de.heikoseeberger.sbtheader.license.Apache2_0
-import JmhKeys._
 import sbtrelease._
 import sbtrelease.ReleasePlugin._
 import sbtrelease.ReleasePlugin.ReleaseKeys._
@@ -47,14 +46,10 @@ lazy val examples = project enablePlugins AutomateHeaderPlugin dependsOn core se
   doNotPublish,
   name := "transducers-scala-examples")
 
-lazy val benchmarks = project enablePlugins AutomateHeaderPlugin dependsOn core settings (
+lazy val benchmarks = project enablePlugins (AutomateHeaderPlugin, JmhPlugin) dependsOn core settings (
   transducersSettings,
   doNotPublish,
-  jmhSettings,
   name := "transducers-scala-bechmarks",
-  outputTarget in Jmh := target.value / s"scala-${scalaBinaryVersion.value}",
-  version in Jmh := "1.6.3",
-  generatorType in Jmh := "asm",
   libraryDependencies ++= List(
     "io.reactivex"      %% "rxscala"          % "0.24.0",
     "org.functionaljava" % "functionaljava"   % "4.3",
