@@ -19,7 +19,7 @@ package transducers.internal
 
 import transducers._
 
-import scalaz.NonEmptyList
+import scalaz.{ IList, NonEmptyList }
 
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
@@ -164,6 +164,6 @@ trait ArbitraryTransducers extends Arbitraries {
     Gen.sized(s ⇒ Gen.choose(0, s / 2).flatMap(t ⇒ Gen.resize(t, arbitrary[A])))
 
   def arbNel[A: Arbitrary]: Gen[NonEmptyList[A]] =
-    arbitrary[A].flatMap(x ⇒ halfSized[List[A]].map(xs ⇒ NonEmptyList.nel(x, xs)))
+    arbitrary[A].flatMap(x ⇒ halfSized[List[A]].map(xs ⇒ NonEmptyList.nel(x, IList.fromList(xs))))
 }
 object ArbitraryTransducers extends ArbitraryTransducers

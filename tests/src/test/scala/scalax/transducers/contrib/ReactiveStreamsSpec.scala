@@ -19,13 +19,14 @@ package scalax.transducers.contrib
 import scalax.transducers.ContribTransducer
 
 import akka.actor.ActorSystem
-import akka.stream.FlowMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{ Sink, Source }
+
 import org.reactivestreams.Publisher
 import org.specs2.mutable.Specification
 
-import concurrent.Await
-import concurrent.duration.Duration
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 final class ReactiveStreamsSpec extends Specification with ReactiveStreamsSupport with ContribTransducer {
 
@@ -33,17 +34,17 @@ final class ReactiveStreamsSpec extends Specification with ReactiveStreamsSuppor
     tag("contrib")
     "transduce on a producer" in {
       implicit val system = ActorSystem("foo")
-      implicit val mat = FlowMaterializer()
+      implicit val mat = ActorMaterializer()
 
       val publisher: Publisher[(Char, Int)] =
-        Source(Iterator.from(0))
-          .runWith(Sink.publisher)
+        Source.fromIterator(() ⇒ Iterator.from(0))
+          .runWith(Sink.asPublisher(false))
           .transduce(testTx)
 
       val result: List[(Char, Int)] =
-        Await.result(Source(publisher).runWith(Sink.fold(List.empty[(Char, Int)])(_ :+ _)), Duration.Inf)
+        Await.result(Source.fromPublisher(publisher).runWith(Sink.fold(List.empty[(Char, Int)])(_ :+ _)), Duration.Inf)
 
-      system.shutdown()
+      system.terminate()
 
       result ==== expectedResult
     }
