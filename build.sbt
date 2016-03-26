@@ -46,14 +46,19 @@ lazy val examples = project enablePlugins AutomateHeaderPlugin dependsOn core se
   doNotPublish,
   name := "transducers-scala-examples")
 
-lazy val benchmarks = project enablePlugins (AutomateHeaderPlugin, JmhPlugin) dependsOn core settings (
+lazy val benchmarks = project enablePlugins (AutomateHeaderPlugin, JmhPlugin) dependsOn (core, akkaStream) settings (
   transducersSettings,
   doNotPublish,
   name := "transducers-scala-bechmarks",
+  resolvers += Resolver.sonatypeRepo("snapshots"),
   libraryDependencies ++= List(
     "io.reactivex"      %% "rxscala"          % "0.26.0",
     "org.functionaljava" % "functionaljava"   % "4.5",
-    "com.cognitect"      % "transducers-java" % "0.4.67"))
+    "com.cognitect"      % "transducers-java" % "0.4.67",
+    "co.fs2"            %% "fs2-core"         % "0.9.0-SNAPSHOT",
+    "com.typesafe.play" %% "play-iteratees"   % "2.5.0",
+    "org.scalaz.stream" %% "scalaz-stream"    % "0.8",
+    "io.iteratee"       %% "iteratee-core"    % "0.2.1"))
 
 lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) configs IntegrationTest dependsOn (tests % "it->test") settings (
   transducersSettings,
