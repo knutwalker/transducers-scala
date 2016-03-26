@@ -16,8 +16,10 @@ in many contexts and carry only the simple processing logic.
 `transducers-scala` is published to sonatype:
 
 ```scala
-libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.3.0"
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.5.0"
 ```
+
+Detailed instructions are available [the installation notes](http://knutwalker.github.io/transducers-scala/install.html).
 
 ### Snapshot version
 
@@ -26,7 +28,7 @@ A snapshot is available at sonatype:
 ```scala
 resolvers += "sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.4.0-SNAPSHOT"
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.6.0-SNAPSHOT"
 ```
 
 
@@ -40,7 +42,7 @@ Alternatively, clone this repo and run
 
 ## Using it
 
-Add `"de.knutwalker" %% "transducers-scala" % "0.3.0"` to your dependencies.
+Add `"de.knutwalker" %% "transducers-scala" % "0.5.0"` to your dependencies.
 The full artifact names are `transducers-scala_2.10` and `transducers-scala_2.11`, so
 this library is available for Scala 2.10 and 2.11.
 
@@ -55,7 +57,7 @@ val result = into[List].run(xform)(data)
 assert(result == List('1', '4', '1', '6', '1', '8', '2', '0', '2', '2'))
 ```
 
-For more examples and a better introduction, see the [Usage Guide](guide/src/it/scala/guide.scala)
+For more examples and a better introduction, see the [Usage Guide](http://knutwalker.github.io/transducers-scala/guide.html).
 
 
 ## Explanation
