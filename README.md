@@ -1,7 +1,7 @@
-[![Travis CI](https://img.shields.io/travis/knutwalker/transducers-scala/master.svg)](https://travis-ci.org/knutwalker/transducers-scala)
-[![Coverage Status](https://img.shields.io/coveralls/knutwalker/transducers-scala/master.svg)](https://coveralls.io/r/knutwalker/transducers-scala)
-[![Maven](https://img.shields.io/maven-central/v/de.knutwalker/transducers-scala_2.11.svg)](http://search.maven.org/#search|ga|1|g%3A%22de.knutwalker%22%20AND%20a%3A%22transducers-scala_2.11%22)
-[![Apache License](https://img.shields.io/badge/license-APACHE_2-green.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Build Status][ci-img]][ci]
+[![Coverage][coverage-img]][coverage]
+[![Maven][maven-img]][maven]
+[![Apache License][license-img]][license]
 
 # transducers-scala
 
@@ -19,7 +19,7 @@ in many contexts and carry only the simple processing logic.
 libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.5.0"
 ```
 
-Detailed instructions are available [the installation notes](http://knutwalker.github.io/transducers-scala/install.html).
+Detailed instructions are available [the installation notes][install].
 
 ### Snapshot version
 
@@ -57,7 +57,7 @@ val result = into[List].run(xform)(data)
 assert(result == List('1', '4', '1', '6', '1', '8', '2', '0', '2', '2'))
 ```
 
-For more examples and a better introduction, see the [Usage Guide](http://knutwalker.github.io/transducers-scala/guide.html).
+For more examples and a better introduction, see the [Usage Guide][usage].
 
 
 ## Explanation
@@ -98,7 +98,7 @@ needing to know about it. This makes transducers completely unaware of their inp
 
 ## Some other projects with partially similar traits
 
-Besides [Clojure](http://clojure.org/) and [transducers-java](https://github.com/cognitect-labs/transducers-java)
+Besides [Clojure](http://clojure.org/) and [transducers-java][transducers-java]
 there exist a number of projects, that share some traits with `transducers-scala`.
 
 ### RxJava (RsScala)
@@ -111,7 +111,7 @@ itself can be plugged in easily on different sources and targets.
 ### psp-view (psp-std)
 
 Paul Phillips'
-[take on a scala collection/standard library](https://github.com/paulp/psp-std/)
+[take on a scala collection/standard library][psp-std]
 includes collections, that are thoroughly non-strict and thus, achieve the same traits on terms of
 laziness and early termination. These are, however, regular collections where the operations are
 bound to the specific collection.
@@ -120,11 +120,10 @@ bound to the specific collection.
 ## Acknowledgement
 
 This stuff is build on top of Rich Hickeys transducers for Clojure and Java.
-See [this talk](https://www.youtube.com/watch?v=6mTbuzafcII)
-and [this post](http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming) for more info.
-Also, there is a [Java implementation](https://github.com/cognitect-labs/transducers-java).
+See [this talk][transducers-yt] and [this post][transducers-blog] for more info.
+Also, there is a [Java implementation][transducers-java].
 
-The sbt launcher is provided by [Paul Phillips](https://github.com/paulp/sbt-extras).
+The sbt launcher is provided by [Paul Phillips][sbt-extras].
 
 
 ## Stuff todo
@@ -151,3 +150,21 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+[ci-img]: https://img.shields.io/travis/knutwalker/transducers-scala/master.svg
+[coverage-img]: https://img.shields.io/codecov/c/github/knutwalker/transducers-scala/master.svg
+[maven-img]: https://img.shields.io/maven-central/v/de.knutwalker/transducers-scala_2.11.svg?label=latest
+[license-img]: https://img.shields.io/badge/license-APACHE_2-green.svg
+
+[ci]: https://travis-ci.org/knutwalker/transducers-scala
+[coverage]: https://codecov.io/github/knutwalker/transducers-scala
+[maven]: http://search.maven.org/#search|ga|1|g%3A%22de.knutwalker%22%20AND%20a%3Atransducers-scala*_2.11
+[license]: https://www.apache.org/licenses/LICENSE-2.0
+
+[install]: http://knutwalker.github.io/transducers-scala/install.html
+[usage]: http://knutwalker.github.io/transducers-scala/guide.html
+[psp-std]: https://github.com/paulp/psp-std/
+[transducers-java]: https://github.com/cognitect-labs/transducers-java
+[transducers-yt]: https://www.youtube.com/watch?v=6mTbuzafcII
+[transducers-blog]: http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming
+[sbt-extras]: https://github.com/paulp/sbt-extras
