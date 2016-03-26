@@ -207,11 +207,12 @@ lazy val buildInfos = List(
        name in core,
             version,
        scalaVersion,
-  BuildInfoKey("dependencies" → (libraryDependencies.in(core).value ++ libraryDependencies.in(api).value).distinct),
+  BuildInfoKey("dependencies" → (libraryDependencies.in(core).value ++ libraryDependencies.in(api).value)
+    .distinct.filterNot(_.configurations.exists(_ == "ensime-internal"))),
   BuildInfoKey("modules" → List(
-    (name in reactiveStreams).value → (libraryDependencies in reactiveStreams).value,
-            (name in rxScala).value → (libraryDependencies in rxScala).value,
-         (name in akkaStream).value → (libraryDependencies in akkaStream).value))))
+    (name in reactiveStreams).value → (libraryDependencies in reactiveStreams).value.filterNot(_.configurations.exists(_ == "ensime-internal")),
+            (name in rxScala).value → (libraryDependencies in rxScala).value.filterNot(_.configurations.exists(_ == "ensime-internal")),
+         (name in akkaStream).value → (libraryDependencies in akkaStream).value.filterNot(_.configurations.exists(_ == "ensime-internal"))))))
 
 lazy val buildsUberJar = List(
      assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${version.value}.jar",
