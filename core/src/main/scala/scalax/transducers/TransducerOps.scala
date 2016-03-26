@@ -70,6 +70,9 @@ private[transducers] trait TransducerOps {
   final def scan[A, B](z: B)(f: (B, A) ⇒ B): Transducer[A, B] =
     new ScanTransducer[A, B](z, f)
 
+  final def foldAlong[A, B, S](s: S)(f: (S, A) ⇒ (S, B)): Transducer[A, B] =
+    new FoldAlongTransducer[A, B, S](s, f)
+
   final def head[A]: Transducer[A, A] =
     take[A](1)
 

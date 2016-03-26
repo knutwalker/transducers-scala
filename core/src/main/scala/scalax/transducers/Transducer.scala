@@ -78,6 +78,9 @@ trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(
   final def scan[C](z: C)(f: (C, B) ⇒ C): Transducer[A, C] =
     this >> transducers.scan[B, C](z)(f)
 
+  final def foldAlong[S, C](z: S)(f: (S, B) ⇒ (S, C)): Transducer[A, C] =
+    this >> transducers.foldAlong[B, C, S](z)(f)
+
   final def head: Transducer[A, B] =
     this >> transducers.head
 

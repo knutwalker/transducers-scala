@@ -127,6 +127,17 @@ private[internal] final class ScanReducer[A, B, R](rf: Reducer[B, R], z: B, f: (
   }
 }
 
+private[internal] final class FoldAlongReducer[A, B, S, R](rf: Reducer[B, R], z: S, f: (S, A) ⇒ (S, B)) extends Delegate[A, R](rf) {
+  private[this] var state = z
+
+  def apply(r: R, a: A, s: Reduced): R = {
+    val (newState, elem) = f(state, a)
+    state = newState
+    rf(r, elem, s)
+  }
+}
+
+
 private[internal] final class TakeReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
   private[this] var taken = 1L
 

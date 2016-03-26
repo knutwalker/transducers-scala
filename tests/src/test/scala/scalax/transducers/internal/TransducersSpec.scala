@@ -296,6 +296,23 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
     }
   }
 
+  "foldAlong" should {
+    def tpl[A](x: A): (A, A) = (x, x)
+    val along = (f: (Int, Int) ⇒ Int) ⇒ (s: Int, a: Int) ⇒ tpl(f(s, a))
+
+    "produce all the intermediate values and their state" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+      run(xs, transducers.foldAlong(z)(along(f))) ==== xs.scanLeft(z)(f).drop(1)
+    }
+
+    "consume every item" in prop { (xs: List[Int], f: (Int, Int) ⇒ Int, z: Int) ⇒
+      consume(xs, transducers.foldAlong(z)(along(f))) ==== xs.length
+    }
+
+    "show itself in toString" in prop { (f: (Int, Int) ⇒ Int, z: Int) ⇒
+      transducers.foldAlong(z)(along(f)).toString ==== "(fold-along)"
+    }
+  }
+
   "head" should {
     val tx = transducers.head[Int]
 

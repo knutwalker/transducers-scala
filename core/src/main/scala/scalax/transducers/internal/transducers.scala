@@ -93,6 +93,13 @@ private[transducers] final class ScanTransducer[A, B](z: B, f: (B, A) ⇒ B) ext
   override def toString: String = "(scan)"
 }
 
+private[transducers] final class FoldAlongTransducer[A, B, S](z: S, f: (S, A) ⇒ (S, B)) extends Transducer[A, B] {
+  def apply[R](rf: Reducer[B, R]): Reducer[A, R] =
+    new FoldAlongReducer[A, B, S, R](rf, z, f)
+
+  override def toString: String = "(fold-along)"
+}
+
 private[transducers] final class TakeTransducer[A](n: Long) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]): Reducer[A, R] =
     new TakeReducer[A, R](rf, n)
