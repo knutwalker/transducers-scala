@@ -245,7 +245,7 @@ object AsTarget extends AsTargetInstances {
   type Id[A] = A
   implicit val idAsTarget: AsTarget[Id] = new AsTarget[Id] {
     type RB[A] = A
-    def empty[A]: A = null.asInstanceOf[A]
+    def empty[A]: A = null.asInstanceOf[A] // scalastyle:ignore
     def from[A](as: Id[A]): A = as
     def finish[A](fa: A): Id[A] = fa
     def size(fa: Id[_]): Int = 1

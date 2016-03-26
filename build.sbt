@@ -1,12 +1,6 @@
 import com.typesafe.sbt.pgp.PgpKeys._
 import de.heikoseeberger.sbtheader.license.Apache2_0
-import sbtrelease._
-import sbtrelease.ReleasePlugin._
-import sbtrelease.ReleasePlugin.ReleaseKeys._
-import sbtrelease.ReleaseStateTransformations._
-//import ScoverageSbtPlugin.ScoverageKeys._
-import xerial.sbt.Sonatype.SonatypeKeys._
-
+import ReleaseTransformations._
 
 lazy val parent = project in file(".") dependsOn (
   api, core, reactiveStreams, rxScala, tests) aggregate (
@@ -134,7 +128,7 @@ lazy val commonSettings = List(
   fork in test := true,
   logBuffered := false)
 
-lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
+lazy val publishSettings = List(
                  startYear := Some(2014),
          publishMavenStyle := true,
    publishArtifact in Test := false,
@@ -145,9 +139,9 @@ lazy val publishSettings = releaseSettings ++ sonatypeSettings ++ List(
                   homepage := Some(url(s"https://github.com/${githubUser.value}/${githubRepo.value}")),
                   licenses := List("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
                    scmInfo := _scmInfo(githubUser.value, githubRepo.value),
-               tagComment <<= version map (v => s"Release version $v"),
-            commitMessage <<= version map (v => s"Set version to $v"),
-               versionBump := sbtrelease.Version.Bump.Minor,
+        releaseTagComment <<= version map (v => s"Release version $v"),
+     releaseCommitMessage <<= version map (v => s"Set version to $v"),
+        releaseVersionBump := sbtrelease.Version.Bump.Minor,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
@@ -220,7 +214,7 @@ lazy val githubRepo = SettingKey[String]("Github repository")
 
 lazy val runIntegrationTest = ReleaseStep(
   action = { state =>
-    val shouldSkipTests = state get skipTests getOrElse false
+    val shouldSkipTests = state get ReleaseKeys.skipTests getOrElse false
     if (!shouldSkipTests) {
       val extracted = Project extract state
       val ref = extracted get thisProjectRef
@@ -238,11 +232,7 @@ lazy val publishSignedArtifacts = publishArtifacts.copy(
   enableCrossBuild = true)
 
 lazy val releaseToCentral = ReleaseStep(
-  action = { state =>
-    val extracted = Project extract state
-    val ref = extracted get thisProjectRef
-    extracted.runAggregated(sonatypeReleaseAll in Global in ref, state)
-  },
+  action = Command.process("sonatypeReleaseAll", _),
   enableCrossBuild = true)
 
 def _scmInfo(user: String, repo: String) = Some(ScmInfo(
