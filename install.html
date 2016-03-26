@@ -1,128 +1,114 @@
-<html><head>
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-      <style type="text/css" media="all">
-        @import url('./css/maven-base.css');
-        @import url('./css/maven-theme.css');
-      </style>
-      <link href="./css/prettify.css" type="text/css" rel="stylesheet" />
-      <script type="text/javascript" src="./css/prettify.js"></script>
-      <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
-      <link href="./css/tooltip.css" rel="stylesheet" type="text/css" />
-      <link href="./css/specs2-user.css" type="text/css" rel="stylesheet" />
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Installation Notes</title>
+    <link href="./images/s2.ico"                                   type="image/x-icon" rel="specs2 icon"/>
+    <link href="./css/opensans-fonts.css"                          type="text/css"     rel="stylesheet" />
+    <link href="./css/bootstrap.min.css"                           type="text/css"     rel="stylesheet" />
+    <link href="./css/font-awesome.min.css"                        type="text/css"     rel="stylesheet" />
+    <link href="./css/prettify.css"                                type="text/css"     rel="stylesheet" />
+    <link href="./css/tabber.css"                                  type="text/css"     rel="stylesheet" />
+    <link href="./css/tipuesearch.css"                             type="text/css"     rel="stylesheet" />
+    <link href="./css/specs2.css"                                  type="text/css"     rel="stylesheet" />
+    <link href="./css/specs2-user.css"                             type="text/css"     rel="stylesheet" />
 
-      <script type="text/javascript" src="./css/jquery.js"></script>
-      <script type="text/javascript" src="./css/jquery.cookie.js"></script>
-      <script type="text/javascript" src="./css/jquery.hotkeys.js"></script>
-      <script type="text/javascript" src="./css/jquery.jstree.js"></script>
-      <script type="text/javascript" src="./css/tooltip.js"></script>
-      <script type="text/javascript" src="./js/specs2-user.js"></script>
-      <script language="javascript">$.getScript("./js/specs2-user.js", initUserScript(document));</script>
-      <script language="javascript">
-      function init() {  prettyPrint(); };
-      /* found on : http://www.tek-tips.com/faqs.cfm?fid=6620 */
-      String.prototype.endsWith = function(str) { return (this.match(str+'$') == str) };
-      function changeWidth(id,width) {  document.getElementById(id).style.width = width; };
-      function changeMarginLeft(id, margin) { document.getElementById(id).style.marginLeft = margin; };
-      function toggleImage(image) {
-        if (image.src.endsWith('images/expanded.gif')) 
-          image.src = image.src.replace('expanded', 'collapsed');
-        else 
-          image.src = image.src.replace('collapsed', 'expanded');
-      };
-      function showHide(id) {
-        element = document.getElementById(id);
-        element.style.display = (element.style.display == 'block')? 'none' : 'block';
-      };
-      function showHideByClass(name) {
-        var elements = document.getElementsByClassName(name);
-        for (i = 0; i < elements.length; i++) {
-          elements[i].style.display = (elements[i].style.display == 'none') ? elements[i].style.display = '': 'none';
-        }
-      };
-      function showByClass(name) {
-        var elements = document.getElementsByClassName(name);
-        for (i = 0; i < elements.length; i++) {
-          elements[i].style.display = 'block';
-        }
-      };
-      function hideByClass(name) {
-        var elements = document.getElementsByClassName(name);
-        for (i = 0; i < elements.length; i++) {
-          elements[i].style.display = 'none';
-        }
-      };
-      function showById(id) {
-        document.getElementById(id).style.display = ''
-      };
-      function hideById(id) {
-        document.getElementById(id).style.display = 'none'
-      };
-    </script>
-      <script language="javascript">window.onload=init;</script>
-      <!-- the tabber.js file must be loaded after the onload function has been set, in order to run the
-           tabber code, then the init code -->
-      <script type="text/javascript" src="./css/tabber.js"></script>
-      <link rel="stylesheet" href="./css/tabber.css" type="text/css" media="screen" />
-      <title>Installation Notes</title>
-    </head><body><div id="breadcrumbs"><a href="index.html">index</a><t> / </t><a href="install.html">install</a></div><div class="colmask threecol">
-            <div class="colmid">
-              <div class="colleft">
-                <div class="col1"><div id="central"><html><title>Installation Notes</title><a name="Installation+Notes"><h2 specId="770965553">Installation Notes</h2></a><status class="ok"><div style="display: show; text-indent:10px;"><p><code class="prettyprint">transducers-scala</code> is published to Sonatype and can be installed with<br />   your favourite dependency manger:</p>
+    <script src="./javascript/jquery.js"                           type="text/javascript"></script>
+    <script src="./javascript/jquery.jstree.js"                    type="text/javascript"></script>
+    <script src="./javascript/tabber.js"                           type="text/javascript"></script>
+    <script src="./javascript/tabber_start.js"                     type="text/javascript"></script>
+    <script src="./javascript/prettify.js"                         type="text/javascript"></script>
+    <script src="./javascript/specs2.js"                           type="text/javascript"></script>
+    <script src="./javascript/specs2-user.js"                      type="text/javascript"></script>
+    <script src="./javascript/tipuesearch/tipuesearch_set.js"      type="text/javascript"></script>
+    <script src="./javascript/tipuesearch/tipuesearch_contents.js" type="text/javascript"></script>
+    <script src="./javascript/tipuesearch/tipuesearch.min.js"      type="text/javascript"></script>
+
+</head>
+<body onload="prettyPrint()">
+
+<div class="container">
+
+<div class="col-md-2 sidebar-outer">
+<div class="col-md-2 fixed">
+
+<div class="col-md-1"></div>
+
+<!-- table of contents -->
+<div id="tree"><ul>
+                <li id="install"><a href="install.html" title="Installation Notes">Installation Notes</a>
+      <ul><ul><li><a href="install.html#sbt" title="SBT">SBT</a>
+          
+        </li><li><a href="install.html#leiningen" title="Leiningen">Leiningen</a>
+          
+        </li><li><a href="install.html#gradle" title="Gradle">Gradle</a>
+          
+        </li><li><a href="install.html#maven" title="Maven">Maven</a>
+          
+        </li><li><a href="install.html#dependencies" title="Dependencies">Dependencies</a>
+          
+        </li><li><a href="install.html#other-modules" title="Other Modules">Other Modules</a>
+          <ul><li><a href="install.html#transducers-scala-reactivestreams" title="transducers-scala-reactivestreams">transducers-sca...</a>
+          
+        </li><li><a href="install.html#transducers-scala-rxscala" title="transducers-scala-rxscala">transducers-sca...</a>
+          
+        </li><li><a href="install.html#transducers-scala-akka-stream" title="transducers-scala-akka-stream">transducers-sca...</a>
+          
+        </li></ul>
+        </li></ul></ul>
+      <ul>
+                    
+                  </ul>
+    </li>
+              </ul></div><script>$(function () { $('#tree').jstree({'core':{'initially_open':['install'], 'animation':200}, 'themes' : {'theme': 'default','url': './css/themes/default/style.css'}, 'plugins':['themes', 'html_data']}); });</script>
+
+</div>
+</div>
+
+
+<div class="col-md-10">
+<h1>Installation Notes</h1>
+<div id="tipue_search_content"></div>
+
+<p><code class="prettyprint">transducers-scala</code> is published to Sonatype and can be installed with your favourite dependency manger:</p>
 <ul>
-  <li><a href="http://scala-sbt.org">sbt</a></li>
-  <li><a href="http://leiningen.org/">leiningen</a></li>
-  <li><a href="http://gradle.org">gradle</a></li>
-  <li><a href="http://maven.apache.org">maven</a></li>
-</ul><p><a name="SBT"><h4>SBT</h4></a></p><p><pre><code class="prettyprint">  libraryDependencies += &quot;de.knutwalker&quot; %% &quot;transducers-scala&quot; % &quot;0.2.1-SNAPSHOT&quot;
-</code></pre></p><p><a name="Leiningen"><h4>Leiningen</h4></a></p><p><pre><code class="prettyprint">  [de.knutwalker/transducers-scala &quot;0.2.1-SNAPSHOT&quot;]
-</code></pre></p><p><a name="Gradle"><h4>Gradle</h4></a></p><p><pre><code class="prettyprint">  compile 'de.knutwalker:transducers-scala:0.2.1-SNAPSHOT'
-</code></pre></p><p><a name="Maven"><h4>Maven</h4></a></p><p><pre><code class="prettyprint">  &lt;dependency&gt;
-    &lt;groupId&gt;de.knutwalker&lt;/groupId&gt;
-    &lt;artifactId&gt;transducers-scala&lt;/artifactId&gt;
-    &lt;version&gt;0.2.1-SNAPSHOT&lt;/version&gt;
-  &lt;/dependency&gt;
-</code></pre></p><p><a name="Other+Dependencies"><h3>Other Dependencies</h3></a></p><p><code class="prettyprint">transducers-scala</code> has no additional dependencies besides scala 2.11.5.</p><p><a name="Other+Modules"><h3>Other Modules</h3></a></p><p><code class="prettyprint">transducers-scala</code> also comes with the following additional modules:</p>
+<li><a href="http://scala-sbt.org">sbt</a></li>
+<li><a href="http://leiningen.org/">leiningen</a></li>
+<li><a href="http://gradle.org">gradle</a></li>
+<li><a href="http://maven.apache.org">maven</a></li>
+</ul>
+<h4 id="sbt">SBT</h4>
+<pre><code class="prettyprint">libraryDependencies += &quot;de.knutwalker&quot; %% &quot;transducers-scala&quot; % &quot;0.5.0-SNAPSHOT&quot;</code></pre>
+<h4 id="leiningen">Leiningen</h4>
+<pre><code class="prettyprint">[de.knutwalker/transducers-scala &quot;0.5.0-SNAPSHOT&quot;]</code></pre>
+<h4 id="gradle">Gradle</h4>
+<pre><code class="prettyprint">compile &#39;de.knutwalker:transducers-scala:0.5.0-SNAPSHOT&#39;</code></pre>
+<h4 id="maven">Maven</h4>
+<pre><code class="prettyprint">&lt;dependency&gt;
+  &lt;groupId&gt;de.knutwalker&lt;/groupId&gt;
+  &lt;artifactId&gt;transducers-scala&lt;/artifactId&gt;
+  &lt;version&gt;0.5.0-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+<h3 id="dependencies">Dependencies</h3>
+<p><code class="prettyprint">transducers-scala</code> has no additional dependencies besides scala 2.11.8.</p>
+<h3 id="other-modules">Other Modules</h3>
+<p><code class="prettyprint">transducers-scala</code> also comes with the following additional modules:</p>
+<h4 id="transducers-scala-reactivestreams">transducers-scala-reactivestreams</h4>
+<p><code class="prettyprint">&quot;de.knutwalker&quot; %% &quot;transducers-scala-reactivestreams&quot; % &quot;0.5.0-SNAPSHOT&quot;</code></p>
+<h4 id="transducers-scala-rxscala">transducers-scala-rxscala</h4>
+<p><code class="prettyprint">&quot;de.knutwalker&quot; %% &quot;transducers-scala-rxscala&quot; % &quot;0.5.0-SNAPSHOT&quot;</code></p>
+<p><code class="prettyprint">transducers-scala-rxscala</code> depends on the following modules:</p>
 <ul>
-  <li><p>&quot;de.knutwalker&quot; % &quot;transducers-scala-reactivestreams&quot; % &quot;0.2.1-SNAPSHOT&quot;</p>
-  <ul>
-    <li>Depends on:</li>
-    <li>&quot;org.reactivestreams&quot; % &quot;reactive-streams&quot; % &quot;0.4.0&quot;</li>
-  </ul></li>
-  <li><p>&quot;de.knutwalker&quot; % &quot;transducers-scala-rxscala&quot; % &quot;0.2.1-SNAPSHOT&quot;</p>
-  <ul>
-    <li>Depends on:</li>
-    <li>&quot;io.reactivex&quot; % &quot;rxscala&quot; % &quot;0.23.1&quot;</li>
-  </ul></li>
-</ul></div></status></html></div></div>
-                <div class="col2"><div id="leftcolumn"><div id="tree">
-      <ul><li id="414032030"><a href="index.html#Transducers+for+Scala">Transducers for Scala</a>
-            <ul><li id="770965553"><a href="install.html#Installation+Notes">Installation Notes</a>
-            <ul><li id=""><a href="install.html#SBT">SBT</a>
-            
-          </li><li id=""><a href="install.html#Leiningen">Leiningen</a>
-            
-          </li><li id=""><a href="install.html#Gradle">Gradle</a>
-            
-          </li><li id=""><a href="install.html#Maven">Maven</a>
-            
-          </li></ul>
-          </li><li id=""><a href="install.html#Other+Dependencies">Other Dependencies</a>
-            
-          </li><li id=""><a href="install.html#Other+Modules">Other Modules</a>
-            
-          </li><li id="1308049982"><a href="guide.html#Transducer+Usage+Guide">Transducer Usage Guide</a>
-            <ul><li id=""><a href="guide.html#Decoupling+from+in-+and+output">Decoupling from in- and output</a>
-            
-          </li><li id=""><a href="guide.html#Composing+Transducers">Composing Transducers</a>
-            
-          </li><li id=""><a href="guide.html#Laziness+and+early+termination">Laziness and early termination</a>
-            
-          </li></ul>
-          </li></ul>
-          </li></ul>
-      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['414032030','770965553'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
-    </div></div></div>
-                <div class="col3"><div id="rightcolumn"></div></div>
-              </div>
-            </div>
-          </div></body></html>
+<li><code class="prettyprint">&quot;io.reactivex&quot; %% &quot;rxscala&quot; % &quot;0.26.0&quot;</code></li>
+</ul>
+<h4 id="transducers-scala-akka-stream">transducers-scala-akka-stream</h4>
+<p><code class="prettyprint">&quot;de.knutwalker&quot; %% &quot;transducers-scala-akka-stream&quot; % &quot;0.5.0-SNAPSHOT&quot;</code></p>
+<p><code class="prettyprint">transducers-scala-akka-stream</code> depends on the following modules:</p>
+<ul>
+<li><code class="prettyprint">&quot;com.typesafe.akka&quot; %% &quot;akka-stream&quot; % &quot;2.4.2&quot;</code></li>
+</ul>
+</div>
+
+</div>
+
+</body>
+</html>
