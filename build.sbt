@@ -1,6 +1,7 @@
 import com.typesafe.sbt.pgp.PgpKeys._
 import de.heikoseeberger.sbtheader.license.Apache2_0
 import ReleaseTransformations._
+import xerial.sbt.Sonatype.SonatypeCommand
 
 lazy val parent = project in file(".") dependsOn (
   api, core, reactiveStreams, rxScala, akkaStream, tests) aggregate (
@@ -189,11 +190,10 @@ lazy val publishSettings = List(
     commitReleaseVersion,
     tagRelease,
     publishSignedArtifacts,
-    releaseToCentral,
+    releaseStepCommand(SonatypeCommand.sonatypeReleaseAll),
     setNextVersion,
     commitNextVersion,
-    pushChanges,
-    publishArtifacts
+    pushChanges
   ))
 
 lazy val doNotPublish = List(
@@ -242,10 +242,6 @@ lazy val publishSignedArtifacts = publishArtifacts.copy(
     val ref = extracted get thisProjectRef
     extracted.runAggregated(publishSigned in Global in ref, state)
   },
-  enableCrossBuild = true)
-
-lazy val releaseToCentral = ReleaseStep(
-  action = Command.process("sonatypeReleaseAll", _),
   enableCrossBuild = true)
 
 def _scmInfo(user: String, repo: String) = Some(ScmInfo(
