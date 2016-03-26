@@ -12,19 +12,19 @@ your favourite dependency manger:
 #### SBT
 
 ```
-libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.5.0-SNAPSHOT"
+libraryDependencies += "de.knutwalker" %% "transducers-scala" % "0.5.0"
 ```
 
 #### Leiningen
 
 ```
-[de.knutwalker/transducers-scala "0.5.0-SNAPSHOT"]
+[de.knutwalker/transducers-scala "0.5.0"]
 ```
 
 #### Gradle
 
 ```
-compile 'de.knutwalker:transducers-scala:0.5.0-SNAPSHOT'
+compile 'de.knutwalker:transducers-scala:0.5.0'
 ```
 
 #### Maven
@@ -33,7 +33,7 @@ compile 'de.knutwalker:transducers-scala:0.5.0-SNAPSHOT'
 <dependency>
   <groupId>de.knutwalker</groupId>
   <artifactId>transducers-scala</artifactId>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.5.0</version>
 </dependency>
 ```
 
@@ -47,13 +47,13 @@ compile 'de.knutwalker:transducers-scala:0.5.0-SNAPSHOT'
 
 #### transducers-scala-reactivestreams
 
-`"de.knutwalker" %% "transducers-scala-reactivestreams" % "0.5.0-SNAPSHOT"`
+`"de.knutwalker" %% "transducers-scala-reactivestreams" % "0.5.0"`
 
 
      
 #### transducers-scala-rxscala
 
-`"de.knutwalker" %% "transducers-scala-rxscala" % "0.5.0-SNAPSHOT"`
+`"de.knutwalker" %% "transducers-scala-rxscala" % "0.5.0"`
 
 `transducers-scala-rxscala` depends on the following modules:
 
@@ -63,7 +63,7 @@ compile 'de.knutwalker:transducers-scala:0.5.0-SNAPSHOT'
      
 #### transducers-scala-akka-stream
 
-`"de.knutwalker" %% "transducers-scala-akka-stream" % "0.5.0-SNAPSHOT"`
+`"de.knutwalker" %% "transducers-scala-akka-stream" % "0.5.0"`
 
 `transducers-scala-akka-stream` depends on the following modules:
 
