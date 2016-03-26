@@ -273,7 +273,7 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
     }
 
     "show its composition in toString" in prop { (f: (Int, Int) ⇒ Int, z: Int) ⇒
-      transducers.fold(z)(f).toString ==== "(scan).(takeRight 1)"
+      transducers.fold(z)(f).toString ==== "(scan).(last)"
     }
   }
 
@@ -318,8 +318,8 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
       consume(xs, tx) ==== xs.length
     }
 
-    "show its composition in toString" in {
-      tx.toString ==== "(takeRight 1)"
+    "show itself in toString" in {
+      tx.toString ==== "(last)"
     }
   }
 

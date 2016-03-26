@@ -180,6 +180,22 @@ private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) 
   }
 }
 
+private[internal] final class LastReducer[A, R](rf: Reducer[A, R]) extends Reducer[A, R] {
+  private[this] var lastValue: A = null.asInstanceOf[A] // scalastyle:ignore
+
+  def prepare(r: R, s: Reduced): R = rf.prepare(r, s)
+
+  def apply(r: R, a: A, s: Reduced): R = {
+    lastValue = a
+    r
+  }
+
+  def apply(r: R): R = {
+    if (lastValue == null) rf(r) // scalastyle:ignore
+    else rf(r, lastValue, new Reduced)
+  }
+}
+
 private[internal] final class DropReducer[A, R](rf: Reducer[A, R], n: Long) extends Delegate[A, R](rf) {
   private[this] var dropped = 0L
 

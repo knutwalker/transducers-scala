@@ -111,6 +111,13 @@ private[transducers] final class TakeRightTransducer[A](n: Int) extends Transduc
   override def toString: String = s"(takeRight $n)"
 }
 
+private[transducers] final class LastTransducer[A] extends Transducer[A, A] {
+  def apply[R](rf: Reducer[A, R]): Reducer[A, R] =
+    new LastReducer[A, R](rf)
+
+  override def toString: String = s"(last)"
+}
+
 private[transducers] final class TakeNthTransducer[A](n: Long) extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]): Reducer[A, R] =
     new TakeNthReducer[A, R](rf, n)

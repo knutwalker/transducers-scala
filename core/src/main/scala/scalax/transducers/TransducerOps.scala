@@ -74,7 +74,7 @@ private[transducers] trait TransducerOps {
     take[A](1)
 
   final def last[A]: Transducer[A, A] =
-    takeRight[A](1)
+    new LastTransducer[A]
 
   final def init[A]: Transducer[A, A] =
     dropRight[A](1)
