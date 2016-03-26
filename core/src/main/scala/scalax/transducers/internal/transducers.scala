@@ -37,6 +37,9 @@ private[transducers] final class NoOpTransducer[A] extends Transducer[A, A] {
   def apply[R](rf: Reducer[A, R]): Reducer[A, R] =
     new NoOpReducer[A, R](rf)
 
+  override private[transducers] def combineWith[C](that: Transducer[A, C]): Transducer[A, C] =
+    that
+
   override def toString: String = "(noop)"
 }
 

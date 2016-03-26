@@ -94,6 +94,11 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
     "show itself in toString" in {
       tx.toString ==== "(noop)"
     }
+
+    "remove itself under composition" in {
+      val mapped = tx.map(_ + 1)
+      mapped.toString ==== "(map)"
+    }
   }
 
   "orElse" should {
@@ -525,7 +530,7 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
       val (n, m) = xy
       val expected =
         if (m <= n) "(empty)"
-        else if (n == 0) s"(noop).(take $m)"
+        else if (n == 0) s"(take $m)"
         else s"(drop $n).(take ${m - n})"
       transducers.slice(n.toLong, m.toLong).toString ==== expected
     }
@@ -536,7 +541,7 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
 
     "produce only the distinct set of items" in prop { (xs: List[Int]) ⇒
       run(xs, tx) ==== xs.foldLeft(Vector.empty[Int]) { (ys, x) ⇒
-        if (ys.lastOption.exists(_ == x)) ys else ys :+ x
+        if (ys.lastOption.contains(x)) ys else ys :+ x
       }.toList
     }
 

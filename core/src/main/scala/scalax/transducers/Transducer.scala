@@ -24,14 +24,17 @@ import scala.language.{existentials, higherKinds}
 trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(Int, Long, Double, Char, Boolean) B] extends TransducerCore[A, B] {
   self ⇒
 
+  private[transducers] def combineWith[C](that: Transducer[B, C]): Transducer[A, C] =
+    new CombinedTransducer(self, that)
+
   final def andThen[C](that: Transducer[B, C]): Transducer[A, C] =
-    >>[C](that)
+    combineWith[C](that)
 
   final def compose[C](that: Transducer[C, A]): Transducer[C, B] =
-    that >> self
+    that.combineWith(self)
 
   final def >>[C](that: Transducer[B, C]): Transducer[A, C] =
-    new CombinedTransducer(self, that)
+    combineWith[C](that)
 
   final def empty[C]: Transducer[A, C] =
     this >> transducers.empty[B, C]
