@@ -203,7 +203,7 @@ private[internal] final class LastReducer[A, R](rf: Reducer[A, R]) extends Reduc
 
   def apply(r: R): R = {
     if (lastValue == null) rf(r) // scalastyle:ignore
-    else rf(r, lastValue, new Reduced)
+    else rf(rf(r, lastValue, new Reduced))
   }
 }
 
