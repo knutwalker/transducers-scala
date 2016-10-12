@@ -40,7 +40,7 @@ lazy val akkaStream = project in file("contrib") / "akka-stream" enablePlugins A
   transducersSettings,
   buildsUberJar,
   name := "transducers-scala-akka-stream",
-  libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.4.2")
+  libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.4.11")
 
 lazy val examples = project enablePlugins AutomateHeaderPlugin dependsOn core settings(
   transducersSettings,
@@ -80,7 +80,7 @@ lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, rea
   name := "transducers-scala-tests",
   resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
   libraryDependencies ++= List(
-    "com.typesafe.akka" %% "akka-stream"       % "2.4.2"  % "test",
+    "com.typesafe.akka" %% "akka-stream"       % "2.4.11"  % "test",
     "org.specs2"        %% "specs2-core"       % "3.7.2"  % "test",
     "org.specs2"        %% "specs2-scalacheck" % "3.7.2"  % "test",
     "org.scalacheck"    %% "scalacheck"        % "1.13.0" % "test"))
