@@ -122,7 +122,6 @@ lazy val commonSettings = List(
     "-Ywarn-nullary-override",
     "-Ywarn-nullary-unit",
     "-Ywarn-numeric-widen",
-    "-Ywarn-self-implicit",
     // implicits,params,linted probably too aggressive
     "-Ywarn-unused:imports,patvars,privates,locals,explicits", // implicits,params,linted
     "-Ywarn-value-discard",
