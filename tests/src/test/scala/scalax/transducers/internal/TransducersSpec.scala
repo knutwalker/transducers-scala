@@ -128,7 +128,10 @@ object TransducersSpec extends Specification with ScalaCheck with Arbitraries wi
 
     "run a side-effect for each value" in prop { (xs: List[Int]) ⇒
       val sideEffects = new AtomicInteger
-      val tx_! = transducers.foreach[Int](_ ⇒ sideEffects.incrementAndGet())
+      val tx_! = transducers.foreach[Int](_ ⇒ {
+        sideEffects.incrementAndGet()
+        ()
+      })
       run(xs, tx_!)
       sideEffects.get ==== xs.length
     }

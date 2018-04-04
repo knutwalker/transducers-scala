@@ -18,17 +18,15 @@ package scalax.transducers.contrib
 
 import scalax.transducers.ContribTransducer
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{ Keep, Flow, Sink, Source }
-import akka.stream.javadsl.{ Keep ⇒ JKeep, Flow ⇒ JFlow, Sink ⇒ JSink, Source ⇒ JSource }
 
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mutable.Specification
 import org.specs2.specification.AfterAll
 
-import scala.concurrent.{ Future, Await }
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
 

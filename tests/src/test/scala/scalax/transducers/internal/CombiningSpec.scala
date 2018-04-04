@@ -17,10 +17,7 @@
 package scalax
 package transducers.internal
 
-import scalaz.{NonEmptyList, Tag, @@}
-
-import org.scalacheck.{Gen, Arbitrary}
-import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Arbitrary
 
 import transducers.Transducer
 
