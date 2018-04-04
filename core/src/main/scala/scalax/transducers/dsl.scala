@@ -16,8 +16,6 @@
 
 package scalax.transducers
 
-import scala.language.higherKinds
-
 final class Into[G[_]: AsTarget] {
   def run[A, F[_]: AsSource, B](xf: Transducer[A, B])(xs: F[A]): G[B] =
     transduceFromNaught(xf)(xs)

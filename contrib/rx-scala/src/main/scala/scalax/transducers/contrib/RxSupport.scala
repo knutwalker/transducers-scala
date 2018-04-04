@@ -21,8 +21,6 @@ import scalax.transducers.TransducerCore
 import rx.lang.scala.JavaConversions.toJavaOperator
 import rx.lang.scala.Observable
 
-import scala.language.implicitConversions
-
 trait RxSupport {
 
   implicit final def rxJava[A](underlying: rx.Observable[A]): TransducerEnabledJavaObservable[A] =

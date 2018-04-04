@@ -20,8 +20,6 @@ import scalax.transducers.TransducerCore
 
 import org.reactivestreams.{Publisher, Subscriber}
 
-import scala.language.implicitConversions
-
 trait ReactiveStreamsSupport {
 
   implicit final def reactiveStreams[A](underlying: Publisher[A]): TransducerEnabledPublisher[A] =

@@ -22,7 +22,6 @@ import scala.annotation.implicitNotFound
 import scala.collection.{TraversableOnce, mutable}
 import scala.collection.immutable.{List, Stream}
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.language.{higherKinds, implicitConversions, reflectiveCalls}
 import java.lang.{Iterable ⇒ JIterable}
 import java.util
 import java.util.{Iterator ⇒ JIterator}

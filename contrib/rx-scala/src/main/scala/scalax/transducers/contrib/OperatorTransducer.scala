@@ -37,7 +37,7 @@ private[contrib] final class OperatorTransducer[A, B](transducer: TransducerCore
       }
       private[this] val reducer = transducer(downstreamReducer)
 
-      override def onNext(value: A): Unit =
+      override def onNext(value: A): Unit = {
         Try {
           reducer((), value, reduced)
           if (reduced.?) {
@@ -48,6 +48,8 @@ private[contrib] final class OperatorTransducer[A, B](transducer: TransducerCore
         } recover {
           case t ⇒ downstream.onError(t)
         }
+        ()
+      }
 
       override def onError(error: Throwable): Unit =
         downstream.onError(error)

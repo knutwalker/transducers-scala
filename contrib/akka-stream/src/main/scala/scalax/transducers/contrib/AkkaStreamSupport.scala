@@ -21,8 +21,6 @@ import scalax.transducers.TransducerCore
 import akka.stream.scaladsl.{ FlowOps , Flow, Source }
 import akka.stream.javadsl.{ Flow ⇒ JFlow , Source ⇒ JSource }
 
-import scala.language.{ reflectiveCalls, implicitConversions }
-
 trait AkkaStreamSupport {
 
   implicit final def akkaStream[A, M](underlying: Source[A, M]): TransducerEnabledStream[A, M, ({type λ[α] = Source[α, M]})#λ] =

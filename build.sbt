@@ -34,13 +34,13 @@ lazy val rxScala = project in file("contrib") / "rx-scala" enablePlugins Automat
   transducersSettings,
   buildsUberJar,
   name := "transducers-scala-rxscala",
-  libraryDependencies += "io.reactivex" %% "rxscala" % "0.26.0")
+  libraryDependencies += "io.reactivex" %% "rxscala" % "0.26.5")
 
 lazy val akkaStream = project in file("contrib") / "akka-stream" enablePlugins AutomateHeaderPlugin dependsOn api settings(
   transducersSettings,
   buildsUberJar,
   name := "transducers-scala-akka-stream",
-  libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.4.2")
+  libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.4.20")
 
 lazy val examples = project enablePlugins AutomateHeaderPlugin dependsOn core settings(
   transducersSettings,
@@ -53,10 +53,10 @@ lazy val benchmarks = project enablePlugins (AutomateHeaderPlugin, JmhPlugin) de
   name := "transducers-scala-bechmarks",
   resolvers += Resolver.sonatypeRepo("snapshots"),
   libraryDependencies ++= List(
-    "io.reactivex"      %% "rxscala"          % "0.26.0",
+    "io.reactivex"      %% "rxscala"          % "0.26.5",
     "org.functionaljava" % "functionaljava"   % "4.5",
     "com.cognitect"      % "transducers-java" % "0.4.67",
-    "co.fs2"            %% "fs2-core"         % "0.9.0-SNAPSHOT",
+    "co.fs2"            %% "fs2-core"         % "0.10.3",
     "com.typesafe.play" %% "play-iteratees"   % "2.5.0",
     "org.scalaz.stream" %% "scalaz-stream"    % "0.8",
     "io.iteratee"       %% "iteratee-core"    % "0.2.1"))
@@ -72,7 +72,7 @@ lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) c
   testOptions in IntegrationTest += Tests.Argument("html", "markdown", "console", "all", "html.toc", "html.nostats"),
   parallelExecution in IntegrationTest := false,
   libraryDependencies ++= List(
-    "org.specs2" %% "specs2-html" % "3.7.2"  % "it,test"))
+    "org.specs2" %% "specs2-html" % "3.9.5"  % "it,test"))
 
 lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, reactiveStreams, rxScala, akkaStream) settings (
   transducersSettings,
@@ -80,13 +80,13 @@ lazy val tests = project enablePlugins AutomateHeaderPlugin dependsOn (core, rea
   name := "transducers-scala-tests",
   resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
   libraryDependencies ++= List(
-    "com.typesafe.akka" %% "akka-stream"       % "2.4.2"  % "test",
-    "org.specs2"        %% "specs2-core"       % "3.7.2"  % "test",
-    "org.specs2"        %% "specs2-scalacheck" % "3.7.2"  % "test",
-    "org.scalacheck"    %% "scalacheck"        % "1.13.0" % "test"))
+    "com.typesafe.akka" %% "akka-stream"       % "2.4.20"  % "test",
+    "org.specs2"        %% "specs2-core"       % "3.9.5"  % "test",
+    "org.specs2"        %% "specs2-scalacheck" % "3.9.5"  % "test",
+    "org.scalacheck"    %% "scalacheck"        % "1.13.5" % "test"))
 
 lazy val dist = project disablePlugins AssemblyPlugin settings (
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.5",
   target := baseDirectory.value)
 
 // ====================================================================
@@ -96,38 +96,46 @@ lazy val transducersSettings =
 
 lazy val buildSettings = List(
         organization := "de.knutwalker",
-        scalaVersion := "2.11.8",
-  crossScalaVersions := scalaVersion.value :: "2.10.6" :: Nil)
+        scalaVersion := "2.12.5",
+  crossScalaVersions := scalaVersion.value :: "2.11.8" :: "2.10.6" :: Nil)
 
 lazy val commonSettings = List(
   scalacOptions ++= List(
     "-deprecation",
-    "-encoding",  "UTF-8",
+    "-explaintypes",
     "-feature",
+    "-unchecked",
+    "-encoding", "UTF-8",
     "-language:existentials",
     "-language:higherKinds",
     "-language:implicitConversions",
     "-language:postfixOps",
-    "-unchecked",
-    "-Xcheckinit",
-    "-Xfatal-warnings",
+    "-language:reflectiveCalls",
+    "-Xlint:_",
     "-Xfuture",
-    "-Xlint",
-    "-Yclosure-elim",
-    "-Ydead-code",
+    "-Xfatal-warnings",
     "-Yno-adapted-args",
     "-Ywarn-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-extra-implicit",
     "-Ywarn-inaccessible",
+    "-Ywarn-infer-any",
     "-Ywarn-nullary-override",
     "-Ywarn-nullary-unit",
-    "-Ywarn-numeric-widen"),
-  scalacOptions in Test += "-Yrangepos",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-self-implicit",
+    // implicits,params,linted probably too aggressive
+    "-Ywarn-unused:imports,patvars,privates,locals,explicits", // implicits,params,linted
+    "-Ywarn-value-discard",
+    "-target:jvm-1.8",
+    "-Xexperimental",
+    "-Ydelambdafy:method"),
+  scalacOptions in Test ~= (_.filterNot(_ == "-Xfatal-warnings") :+ "-Yrangepos"),
   scalacOptions in (Compile, console) ~= (_ filterNot (x ⇒ x == "-Xfatal-warnings" || x.startsWith("-Ywarn"))),
   shellPrompt := { state ⇒
     val name = Project.extract(state).currentRef.project
     (if (name == "parent") "" else name + " ") + "> "
   },
-  coverageExcludedPackages := "scalax.transducers.benchmark.*|scalax.transducers.contrib.*|buildinfo",
   headers := {
     val thisYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
     val years = List(startYear.value.getOrElse(thisYear), thisYear).distinct.mkString(" – ")
@@ -151,8 +159,8 @@ lazy val publishSettings = List(
                   homepage := Some(url(s"https://github.com/${githubUser.value}/${githubRepo.value}")),
                   licenses := List("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
                    scmInfo := _scmInfo(githubUser.value, githubRepo.value),
-        releaseTagComment <<= version map (v => s"Release version $v"),
-     releaseCommitMessage <<= version map (v => s"Set version to $v"),
+         releaseTagComment := s"Release version ${version.value}",
+      releaseCommitMessage := s"Set version to ${version.value}",
         releaseVersionBump := sbtrelease.Version.Bump.Minor,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
@@ -250,4 +258,4 @@ def _scmInfo(user: String, repo: String) = Some(ScmInfo(
   Some(s"scm:git:ssh://git@github.com:$user/$repo.git")
 ))
 
-addCommandAlias("travis", ";clean;coverage;testOnly -- xonly exclude contrib;coverageReport;coverageAggregate")
+addCommandAlias("travis", ";clean;testOnly -- xonly exclude contrib")

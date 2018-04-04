@@ -17,8 +17,6 @@
 package scalax.transducers
 package internal
 
-import scala.language.higherKinds
-
 private[transducers] object Reducing {
 
   def reduce[A, R, F[_]: AsSource](result: R, input: F[A])(f: Reducer[A, R]): R =

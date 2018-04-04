@@ -16,7 +16,6 @@
 
 package scalax
 
-import scala.language.higherKinds
 import transducers.internal.Reducing
 
 package object transducers extends TransducerOps {

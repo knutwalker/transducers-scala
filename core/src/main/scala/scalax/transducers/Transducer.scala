@@ -19,8 +19,6 @@ package transducers
 
 import internal.CombinedTransducer
 
-import scala.language.{existentials, higherKinds}
-
 trait Transducer[@specialized(Int, Long, Double, Char, Boolean) A, @specialized(Int, Long, Double, Char, Boolean) B] extends TransducerCore[A, B] {
   self ⇒
 

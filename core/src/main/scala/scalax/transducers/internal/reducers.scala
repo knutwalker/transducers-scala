@@ -17,8 +17,6 @@
 package scalax.transducers
 package internal
 
-import scala.language.higherKinds
-
 private[internal] abstract class Delegate[A, R](rf: Reducer[_, R]) extends Reducer[A, R] {
   final def apply(r: R): R = rf(r)
   def prepare(r: R, s: Reduced): R = rf.prepare(r, s)
@@ -184,7 +182,7 @@ private[internal] final class TakeRightReducer[A, R](rf: Reducer[A, R], n: Int) 
 
   def apply(r: R): R = {
     if (queue.nonEmpty) {
-      Reducing.reduce(r, queue.elements)(rf)
+      Reducing.reduce(r, queue.elements)(rf)(AsSource.iterator)
     } else {
       rf(r)
     }

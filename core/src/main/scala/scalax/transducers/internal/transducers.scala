@@ -17,8 +17,6 @@
 package scalax.transducers
 package internal
 
-import scala.language.higherKinds
-
 private[transducers] final class CombinedTransducer[A, B, C](left: Transducer[A, B], right: Transducer[B, C]) extends Transducer[A, C] {
   def apply[R](rf: Reducer[C, R]): Reducer[A, R] =
     left(right(rf))

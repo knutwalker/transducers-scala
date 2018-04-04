@@ -16,7 +16,6 @@
 
 package scalax.transducers
 
-import scala.language.higherKinds
 import scalax.transducers.internal._
 
 private[transducers] trait TransducerOps {

@@ -59,6 +59,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     }
     else {
       inputBuffer.offer(a)
+      ()
     }
   }
 
@@ -94,6 +95,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     else {
       demand.incrementAndGet()
       outputBuffer.offer(b)
+      ()
     }
   }
 
@@ -109,6 +111,7 @@ final class PublisherState[A, B](downstream: Subscriber[_ >: B], bufferSize: Int
     } recover {
       case t ⇒ downstream.onError(t)
     }
+    ()
   }
 
   private[this] def drainBuffer[X](requested: Long, queue: BlockingQueue[X], sending: X ⇒ Unit): Long = {
