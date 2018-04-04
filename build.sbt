@@ -57,9 +57,9 @@ lazy val benchmarks = project enablePlugins (AutomateHeaderPlugin, JmhPlugin) de
     "org.functionaljava" % "functionaljava"   % "4.5",
     "com.cognitect"      % "transducers-java" % "0.4.67",
     "co.fs2"            %% "fs2-core"         % "0.10.3",
-    "com.typesafe.play" %% "play-iteratees"   % "2.5.0",
-    "org.scalaz.stream" %% "scalaz-stream"    % "0.8",
-    "io.iteratee"       %% "iteratee-core"    % "0.2.1"))
+    "com.typesafe.play" %% "play-iteratees"   % "2.6.1",
+    "org.scalaz.stream" %% "scalaz-stream"    % "0.8.6",
+    "io.iteratee"       %% "iteratee-core"    % "0.17.0"))
 
 lazy val guide = project enablePlugins (AutomateHeaderPlugin, BuildInfoPlugin) configs IntegrationTest dependsOn (tests % "it->test") settings (
   transducersSettings,

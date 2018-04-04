@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 – 2016 Paul Horn
+ * Copyright 2014 – 2018 Paul Horn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import akka.stream.{ ActorMaterializer, Materializer }
 
 import scalaz.stream.Process
 
-import io.iteratee.{ Enumeratee, Iteratee }
+import io.iteratee.Enumeratee
 import org.openjdk.jmh.annotations._
-import play.api.libs.{ iteratee ⇒ p }
+import play.api.libs.{ iteratee => p }
 
 import scala.collection.immutable.List
 import scala.collection.mutable.ListBuffer
@@ -121,11 +121,12 @@ class StreamsBenchmark extends AkkaStreamSupport {
 
   @Benchmark
   def bench_05_ioIteratee(input: Input): List[Int] = {
-    io.iteratee.pure.enumList(input.xs)
+    io.iteratee.Enumerator.enumList(input.xs)
       .map(ScalaFun1)
-      .mapE(Enumeratee.filter(ScalaPred))
+      .through(Enumeratee.filter(ScalaPred))
       .map(ScalaFun2)
-      .run(Iteratee.take(50))
+      .take(50)
+      .toVector
       .toList
   }
 
