@@ -143,7 +143,7 @@ lazy val commonSettings = List(
   },
   initialCommands in      console := """import scalax.transducers._""",
   initialCommands in consoleQuick := "",
-  fork in test := true,
+  fork := true,
   logBuffered := false)
 
 lazy val publishSettings = List(
