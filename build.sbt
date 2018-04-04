@@ -95,9 +95,8 @@ lazy val transducersSettings =
   buildSettings ++ commonSettings ++ publishSettings
 
 lazy val buildSettings = List(
-        organization := "de.knutwalker",
-        scalaVersion := "2.12.5",
-  crossScalaVersions := scalaVersion.value :: "2.11.8" :: "2.10.6" :: Nil)
+  organization := "de.knutwalker",
+  scalaVersion := "2.12.5")
 
 lazy val commonSettings = List(
   scalacOptions ++= List(
@@ -242,7 +241,7 @@ lazy val runIntegrationTest = ReleaseStep(
       extracted.runAggregated(test in IntegrationTest in ref, state)
     } else state
   },
-  enableCrossBuild = true)
+  enableCrossBuild = false)
 
 lazy val publishSignedArtifacts = publishArtifacts.copy(
   action = { state =>
@@ -250,7 +249,7 @@ lazy val publishSignedArtifacts = publishArtifacts.copy(
     val ref = extracted get thisProjectRef
     extracted.runAggregated(publishSigned in Global in ref, state)
   },
-  enableCrossBuild = true)
+  enableCrossBuild = false)
 
 def _scmInfo(user: String, repo: String) = Some(ScmInfo(
   url(s"https://github.com/$user/$repo"),
